@@ -107,3 +107,17 @@ F1 Share Extension (foundation)
 | **Total** | **~891h** | **~32.5 weeks** | **13 features** |
 
 *Estimates assume 1 iOS + 1 Android developer working in parallel, with shared KMP logic layer and dedicated backend work.*
+
+---
+
+## Implementation Architecture Plans
+
+Detailed implementation blueprints for each platform and the master execution plan:
+
+| Doc | Scope | Contents |
+|-----|-------|----------|
+| [IMPL-iOS](./IMPL-iOS-Architecture.md) | **iOS Architecture** | SwiftUI + MVVM + Core Data, Share Extension, Foundation Models (Tier 1), CoreML (Tier 2.5), FTS5 search, Kingfisher caching, Firebase analytics, 8-sprint breakdown |
+| [IMPL-Android](./IMPL-Android-Architecture.md) | **Android Architecture** | Kotlin + Compose + Room, multi-module Gradle, Hilt DI, Gemini Nano (Tier 1), ML Kit OCR/Speech, Coil caching, 10-sprint breakdown, GitHub Actions CI/CD |
+| [IMPL-Backend](./IMPL-Backend-Architecture.md) | **Backend Architecture** | Node.js/TypeScript + Express, Supabase (PostgreSQL + Auth), BullMQ job queue, Redis cache, scraper circuit breaker (Apify/ScrapeCreators/Bright Data), SSE streaming, 12-sprint breakdown |
+| [IMPL-KMP](./IMPL-KMP-Shared-Module.md) | **KMP Shared Module** | Ktor networking, kotlinx.serialization, SQLDelight, URL normalization, keyword classifier (5 languages), TF-IDF scorer, expect/actual patterns, 8-week migration path |
+| [IMPL-Master](./IMPL-Master-Execution-Plan.md) | **Master Execution Plan** | 4.5 FTE team structure, RACI matrix, 16-week Gantt chart, 8-sprint plan, critical path analysis, risk register (top 10), 50+ item launch checklist, budget estimate, decision log |
