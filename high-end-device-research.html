@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>High-End Device AI — Product Research & Use Case Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0b0e14;
+    --paper: #f4f1eb;
+    --cream: #ede8df;
+    --warm: #d4cdc1;
+    --muted: #8a8278;
+    --copper: #b4652a;
+    --teal: #1a6b5a;
+    --deep: #2c3e50;
+    --red: #c0392b;
+    --gold: #d4a34a;
+    --blue: #2d6a9f;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); line-height: 1.75; -webkit-font-smoothing: antialiased; }
+  
+  .page { max-width: 880px; margin: 0 auto; padding: 60px 32px 100px; }
+
+  /* Header */
+  .masthead { border-bottom: 3px solid var(--ink); padding-bottom: 24px; margin-bottom: 56px; }
+  .masthead .label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--copper); margin-bottom: 12px; }
+  h1 { font-family: 'Playfair Display', serif; font-size: 2.6rem; line-height: 1.15; font-weight: 700; max-width: 700px; }
+  .masthead .meta { margin-top: 14px; font-size: 0.85rem; color: var(--muted); display: flex; gap: 20px; flex-wrap: wrap; }
+  .masthead .meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* Section */
+  .section { margin-bottom: 64px; }
+  h2 { font-family: 'Playfair Display', serif; font-size: 1.65rem; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid var(--warm); }
+  h3 { font-size: 1.05rem; font-weight: 700; margin: 28px 0 10px; color: var(--deep); }
+  h4 { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--copper); margin: 24px 0 8px; }
+  p { margin-bottom: 14px; font-size: 0.95rem; }
+  strong { font-weight: 700; }
+
+  /* Target Devices */
+  .device-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0 28px; }
+  @media (max-width: 640px) { .device-grid { grid-template-columns: 1fr; } }
+  .device-card { background: #fff; border: 1px solid var(--warm); border-radius: 3px; padding: 22px; position: relative; }
+  .device-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .device-card.apple::before { background: linear-gradient(90deg, #555, #000); }
+  .device-card.android::before { background: linear-gradient(90deg, #4285f4, #34a853, #ea4335); }
+  .device-card .d-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+  .device-card .d-chip { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); margin-bottom: 10px; }
+  .device-card .d-ai { font-size: 0.85rem; color: var(--deep); }
+
+  /* API Table */
+  .api-table { width: 100%; border-collapse: collapse; margin: 16px 0 28px; font-size: 0.85rem; }
+  .api-table th { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--ink); color: var(--copper); background: var(--cream); }
+  .api-table td { padding: 10px 12px; border-bottom: 1px solid var(--warm); vertical-align: top; }
+  .api-table tr:hover td { background: rgba(180,101,42,0.04); }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 2px; margin: 1px 2px; }
+  .tag.offline { background: #d5f0e8; color: var(--teal); }
+  .tag.online { background: #fde8d0; color: var(--copper); }
+  .tag.hybrid { background: #dde8f5; color: var(--blue); }
+
+  /* Offline/Online Grid */
+  .oo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 20px 0 28px; border: 1px solid var(--warm); border-radius: 3px; overflow: hidden; }
+  @media (max-width: 640px) { .oo-grid { grid-template-columns: 1fr; } }
+  .oo-col { padding: 24px; }
+  .oo-col.offline-col { background: #eaf5f0; border-right: 1px solid var(--warm); }
+  .oo-col.online-col { background: #fdf6ee; }
+  .oo-col h3 { margin-top: 0; font-size: 1rem; }
+  .oo-item { padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.88rem; }
+  .oo-item:last-child { border-bottom: none; }
+  .oo-item .oo-title { font-weight: 700; font-size: 0.85rem; }
+  .oo-item .oo-desc { color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
+  .oo-badge { display: inline-block; font-family: var(--mono); font-size: 0.6rem; padding: 1px 6px; border-radius: 2px; margin-left: 6px; vertical-align: middle; }
+  .oo-badge.high { background: var(--teal); color: #fff; }
+  .oo-badge.med { background: var(--gold); color: #fff; }
+
+  /* Competitor */
+  .comp-row { background: #fff; border: 1px solid var(--warm); border-radius: 3px; padding: 20px; margin-bottom: 14px; }
+  .comp-row .cr-top { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .comp-row .cr-name { font-weight: 700; font-size: 1.05rem; }
+  .comp-row .cr-price { font-family: var(--mono); font-size: 0.75rem; color: var(--copper); }
+  .comp-row .cr-desc { font-size: 0.88rem; color: var(--muted); margin-bottom: 10px; }
+  .comp-row .cr-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .cr-tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--warm); color: var(--deep); }
+  .cr-tag.gap { border-color: var(--red); color: var(--red); background: rgba(192,57,43,0.04); }
+  .verdict { font-size: 0.82rem; color: var(--teal); font-weight: 500; margin-top: 8px; font-style: italic; }
+
+  /* Callout */
+  .callout { background: var(--cream); border-left: 4px solid var(--copper); padding: 18px 22px; margin: 24px 0; font-size: 0.92rem; }
+  .callout.green { border-left-color: var(--teal); background: #eaf5f0; }
+  .callout.blue { border-left-color: var(--blue); background: #edf3fa; }
+
+  /* Use case flow */
+  .flow { margin: 20px 0; }
+  .flow-step { display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start; }
+  .flow-num { font-family: var(--mono); font-size: 0.75rem; background: var(--ink); color: var(--paper); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .flow-content { flex: 1; }
+  .flow-content .flow-title { font-weight: 700; font-size: 0.92rem; }
+  .flow-content .flow-desc { font-size: 0.85rem; color: var(--muted); }
+  .flow-content .flow-tech { font-family: var(--mono); font-size: 0.72rem; color: var(--teal); margin-top: 3px; }
+
+  /* MVP Priority table */
+  .priority-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.85rem; }
+  .priority-table th { text-align: left; padding: 8px 10px; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; background: var(--ink); color: var(--paper); }
+  .priority-table td { padding: 10px; border-bottom: 1px solid var(--warm); vertical-align: top; }
+  .priority-table tr:nth-child(even) td { background: rgba(0,0,0,0.015); }
+  .p-high { color: var(--red); font-weight: 700; }
+  .p-med { color: var(--gold); font-weight: 700; }
+  .p-low { color: var(--muted); font-weight: 500; }
+
+  ul { padding-left: 20px; margin: 8px 0 16px; }
+  li { font-size: 0.9rem; margin-bottom: 5px; }
+
+  .divider { border: none; border-top: 1px solid var(--warm); margin: 56px 0; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    h1 { font-size: 1.8rem; }
+    .page { padding: 32px 18px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<header class="masthead">
+  <div class="label">Product Research Brief</div>
+  <h1>AI-Powered Cross-Platform Content Curation for High-End Devices</h1>
+  <div class="meta">
+    <span>February 2026</span>
+    <span>·</span>
+    <span>Focus: On-device AI, Offline-first</span>
+    <span>·</span>
+    <span>Target: iPhone 16+, Pixel 9+, Galaxy S25+</span>
+  </div>
+</header>
+
+<!-- ===================== SECTION 1 ===================== -->
+<div class="section">
+<h2>1. Target Device Universe</h2>
+
+<p>By focusing exclusively on high-end phones with native AI capabilities, you're targeting users who are tech-forward, willing to pay for quality apps, and have hardware that enables experiences impossible on older devices. Here's the current landscape:</p>
+
+<div class="device-grid">
+  <div class="device-card apple">
+    <div class="d-name">iPhone 16 / 16 Pro / 15 Pro</div>
+    <div class="d-chip">A18 Pro / A17 Pro — 16-core Neural Engine</div>
+    <div class="d-ai">
+      <strong>Foundation Models framework</strong> (iOS 26) — ~3B param on-device LLM. Free for developers. Text understanding, summarization, entity extraction, guided generation via Swift. Works fully offline.<br><br>
+      <strong>Vision framework</strong> — 31+ APIs: image classification (1000+ categories), object detection (5000+ classes), text recognition (18 languages), document structure reading, scene classification, saliency detection. All on-device.<br><br>
+      <strong>Core ML</strong> — Run custom ML models on Neural Engine. Train with Create ML.<br><br>
+      <strong>Visual Intelligence</strong> — Screen content recognition + camera-based object identification.
+    </div>
+  </div>
+  <div class="device-card android">
+    <div class="d-name">Pixel 9/10, Galaxy S25, Xiaomi 15, OnePlus 13</div>
+    <div class="d-chip">Tensor G4 / Snapdragon 8 Elite / Dimensity — NPU accelerated</div>
+    <div class="d-ai">
+      <strong>ML Kit GenAI APIs</strong> (Gemini Nano) — 1.8-3.25B params. Summarization (3000 words), proofreading, rewriting, image description. Free, on-device, offline. Now in beta for production.<br><br>
+      <strong>Prompt API</strong> (Alpha, Oct 2025) — Send any custom prompt to Gemini Nano. Full flexibility for classification, extraction, etc.<br><br>
+      <strong>ML Kit Vision</strong> — Image labeling, object detection, text recognition, face detection, barcode scanning. All on-device.<br><br>
+      <strong>TensorFlow Lite</strong> — Custom models optimized for mobile NPUs.
+    </div>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>Key insight:</strong> As of September 2025, Apple's Foundation Models framework is live in production (iOS 26), with developers like SmartGym, Stoic, Day One, OmniFocus, and VLLO already shipping features using it. Google's ML Kit GenAI APIs are in beta with production use now permitted on Pixel 9+, Galaxy S25+, and 10+ other flagships. Both platforms offer <strong>zero inference cost</strong> — the AI is literally free to run.
+</div>
+</div>
+
+<!-- ===================== SECTION 2 ===================== -->
+<div class="section">
+<h2>2. On-Device AI Capabilities — What You Can Actually Use</h2>
+
+<p>Here's a concrete mapping of every AI capability available on these devices, what it does, and whether it works offline:</p>
+
+<table class="api-table">
+<thead>
+  <tr>
+    <th>Capability</th>
+    <th>Apple (iOS 26)</th>
+    <th>Android (Gemini Nano + ML Kit)</th>
+    <th>Mode</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><strong>Text Summarization</strong><br><span style="color:var(--muted);font-size:0.8rem">Summarize captions, descriptions, articles</span></td>
+    <td>Foundation Models — high quality, guided generation ensures structured output</td>
+    <td>ML Kit Summarization API — up to 3000 words, bulleted output</td>
+    <td><span class="tag offline">OFFLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Entity Extraction</strong><br><span style="color:var(--muted);font-size:0.8rem">Pull out places, prices, brands, dates</span></td>
+    <td>Foundation Models with @Generable structs — returns typed Swift objects</td>
+    <td>Prompt API (alpha) — custom prompts for extraction</td>
+    <td><span class="tag offline">OFFLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Text Classification</strong><br><span style="color:var(--muted);font-size:0.8rem">Classify content into buckets (travel, food, fashion)</span></td>
+    <td>Foundation Models — guided generation with enum types</td>
+    <td>Prompt API — custom classification prompts</td>
+    <td><span class="tag offline">OFFLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Image Classification</strong><br><span style="color:var(--muted);font-size:0.8rem">Identify scenes, objects, food, clothing in images</span></td>
+    <td>Vision ClassifyImageRequest — 1000+ categories, multi-label</td>
+    <td>ML Kit Image Labeling — 400+ labels</td>
+    <td><span class="tag offline">OFFLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Image Description</strong><br><span style="color:var(--muted);font-size:0.8rem">Generate text description of an image</span></td>
+    <td>Foundation Models (multimodal, new in 2025)</td>
+    <td>ML Kit GenAI Image Description API</td>
+    <td><span class="tag offline">OFFLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>OCR / Text Recognition</strong><br><span style="color:var(--muted);font-size:0.8rem">Read text from images, screenshots, receipts</span></td>
+    <td>Vision RecognizeTextRequest — 18 languages + document structure</td>
+    <td>ML Kit Text Recognition v2 — Latin, Chinese, Devanagari, Japanese, Korean</td>
+    <td><span class="tag offline">OFFLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Object Detection</strong><br><span style="color:var(--muted);font-size:0.8rem">Locate specific objects, products in images</span></td>
+    <td>Vision DetectObjectRequest + Core ML custom models</td>
+    <td>ML Kit Object Detection — 5 objects per image, custom models</td>
+    <td><span class="tag offline">OFFLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Text Rewriting / Tone</strong><br><span style="color:var(--muted);font-size:0.8rem">Rewrite descriptions for consistency</span></td>
+    <td>Foundation Models — instruction-based</td>
+    <td>ML Kit Rewriting API — formal, casual, excited, concise</td>
+    <td><span class="tag offline">OFFLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>URL Metadata Fetching</strong><br><span style="color:var(--muted);font-size:0.8rem">Get Open Graph title, image, description from URLs</span></td>
+    <td>LinkPresentation framework</td>
+    <td>Custom implementation (OkHttp + jsoup or similar)</td>
+    <td><span class="tag online">ONLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Full Content Extraction</strong><br><span style="color:var(--muted);font-size:0.8rem">Fetch full article/video metadata from platform APIs</span></td>
+    <td>Custom (YouTube Data API, platform embeds)</td>
+    <td>Custom (YouTube Data API, platform embeds)</td>
+    <td><span class="tag online">ONLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Price Tracking</strong><br><span style="color:var(--muted);font-size:0.8rem">Monitor price changes for shopping items</span></td>
+    <td>Server-side scraping + push notifications</td>
+    <td>Server-side scraping + push notifications</td>
+    <td><span class="tag online">ONLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Cross-Device Sync</strong><br><span style="color:var(--muted);font-size:0.8rem">Sync buckets across devices</span></td>
+    <td>CloudKit (Apple-only) or custom backend</td>
+    <td>Firebase / custom backend</td>
+    <td><span class="tag online">ONLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Shared Buckets / Collaboration</strong><br><span style="color:var(--muted);font-size:0.8rem">Multi-user access to lists</span></td>
+    <td>Custom backend required</td>
+    <td>Custom backend required</td>
+    <td><span class="tag online">ONLINE</span></td>
+  </tr>
+  <tr>
+    <td><strong>Deep Content Analysis</strong><br><span style="color:var(--muted);font-size:0.8rem">Full video transcript analysis, complex reasoning</span></td>
+    <td>Private Cloud Compute (Apple server fallback)</td>
+    <td>Gemini Flash via Firebase AI Logic</td>
+    <td><span class="tag hybrid">HYBRID</span></td>
+  </tr>
+</tbody>
+</table>
+</div>
+
+<!-- ===================== SECTION 3 ===================== -->
+<div class="section">
+<h2>3. Offline vs Online — The Complete Use Case Map</h2>
+
+<p>This is the critical architecture decision. Here's exactly what can happen on-device (offline) vs what requires a network connection:</p>
+
+<div class="oo-grid">
+  <div class="oo-col offline-col">
+    <h3>✈️ Fully Offline (On-Device AI)</h3>
+    
+    <div class="oo-item">
+      <div class="oo-title">Auto-classify saved content into buckets <span class="oo-badge high">CORE</span></div>
+      <div class="oo-desc">Analyze thumbnail image + caption text → classify as Travel / Shopping / Recipe / Learning / Fitness / Entertainment / Home. Uses Vision image classification + Foundation Models text classification in parallel.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Extract rich metadata <span class="oo-badge high">CORE</span></div>
+      <div class="oo-desc">From cached caption text: extract location names, prices, brand names, ingredients, exercise names. Foundation Models guided generation returns typed structs.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Generate content summaries <span class="oo-badge high">CORE</span></div>
+      <div class="oo-desc">1-2 sentence summary of saved content. "Reel showing a 3-day Bali itinerary covering Ubud rice terraces, Seminyak beach, and local food spots."</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Natural language search <span class="oo-badge high">CORE</span></div>
+      <div class="oo-desc">Search across all saved items using natural queries: "that pasta recipe with mushrooms" — matches against AI-generated tags, summaries, and metadata.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Image-based understanding</div>
+      <div class="oo-desc">Identify what's in a saved image: clothing items, food dishes, landmarks, products. Vision framework multi-label classification + saliency detection.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Read text from screenshots</div>
+      <div class="oo-desc">If user saves a screenshot instead of a link, OCR extracts all text, which is then classified. Handles product screenshots, recipe screenshots, booking confirmations.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Smart suggestions & corrections</div>
+      <div class="oo-desc">"This looks like a travel post but you put it in Recipes — move to Travel?" Learn from user corrections to improve future classification.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Browse & review all saved items</div>
+      <div class="oo-desc">Full library accessible offline with thumbnails, summaries, metadata. No internet needed to review your buckets.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Re-classify & bulk organize</div>
+      <div class="oo-desc">Move items between buckets, merge buckets, re-tag — all processed locally.</div>
+    </div>
+  </div>
+  
+  <div class="oo-col online-col">
+    <h3>🌐 Requires Network (Online)</h3>
+    
+    <div class="oo-item">
+      <div class="oo-title">Fetch content from shared URL <span class="oo-badge high">CORE</span></div>
+      <div class="oo-desc">When user shares a link from Instagram/TikTok/YouTube, fetch Open Graph metadata (title, image, description). Cache locally immediately.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Download & cache thumbnails <span class="oo-badge high">CORE</span></div>
+      <div class="oo-desc">Download the preview image/thumbnail and store locally. This is what survives content deletion on the source platform.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">YouTube/TikTok transcript extraction</div>
+      <div class="oo-desc">For video content: fetch transcript or auto-generated captions via APIs. Feed to on-device AI for classification (transcript analysis is offline once fetched).</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Price tracking & alerts</div>
+      <div class="oo-desc">For shopping bucket items: server-side price monitoring. Push notification when price drops. Requires ongoing scraping infrastructure.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Shared/collaborative buckets</div>
+      <div class="oo-desc">Multi-user access to shared lists. Real-time sync of who added what. Requires backend (Supabase, Firebase, or custom).</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Cross-device sync</div>
+      <div class="oo-desc">Sync saved items + buckets across user's devices. CloudKit (Apple) or custom backend. Essential for multi-device users.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Deep video analysis (heavy AI)</div>
+      <div class="oo-desc">Complex tasks: analyze full video content, extract step-by-step recipes from cooking videos, generate trip itineraries from travel vlogs. On-device model too small → use cloud AI (Claude/Gemini Flash).</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Content recommendations</div>
+      <div class="oo-desc">"Based on your travel saves, you might like..." Requires aggregate analysis across many items → better on server with larger model.</div>
+    </div>
+    
+    <div class="oo-item">
+      <div class="oo-title">Account & backup</div>
+      <div class="oo-desc">User account creation, cloud backup of all saves, export functionality.</div>
+    </div>
+  </div>
+</div>
+
+<div class="callout green">
+  <strong>Architecture principle:</strong> The app should work fully offline for the core loop — save, classify, browse, search. Network is needed only at the moment of saving (to fetch the URL metadata) and for sync/collaboration features. Once content is cached locally, everything else is on-device. This means the app feels instant, private, and reliable even on airplane mode.
+</div>
+</div>
+
+<!-- ===================== SECTION 4 ===================== -->
+<div class="section">
+<h2>4. The AI Classification Pipeline — How It Works</h2>
+
+<p>Here's the exact technical flow when a user shares content from Instagram, TikTok, or YouTube to your app:</p>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="flow-num">1</div>
+    <div class="flow-content">
+      <div class="flow-title">User taps "Share → YourApp" from Instagram/TikTok/YouTube</div>
+      <div class="flow-desc">iOS Share Extension or Android Share Sheet receives the URL. Instantly show "Saving..." confirmation and dismiss.</div>
+      <div class="flow-tech">iOS: Share Extension (Swift) / Android: Intent Filter + Activity</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">2</div>
+    <div class="flow-content">
+      <div class="flow-title">Fetch URL metadata (online, ~0.5-2s)</div>
+      <div class="flow-desc">Resolve the URL → fetch Open Graph tags (og:title, og:image, og:description). For YouTube: use Data API for title + transcript. Cache everything locally.</div>
+      <div class="flow-tech">iOS: LPMetadataProvider / Android: OkHttp + HTML parsing / YouTube Data API v3</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">3</div>
+    <div class="flow-content">
+      <div class="flow-title">Image analysis (offline, ~100-300ms)</div>
+      <div class="flow-desc">Feed cached thumbnail to Vision/ML Kit. Get multi-label classification: "beach, ocean, resort, tropical, vacation" or "dress, fashion, woman, studio". Also run saliency to identify the dominant subject.</div>
+      <div class="flow-tech">iOS: VNClassifyImageRequest / Android: ML Kit ImageLabeler</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">4</div>
+    <div class="flow-content">
+      <div class="flow-title">Text analysis (offline, ~200-500ms)</div>
+      <div class="flow-desc">Feed caption/description + hashtags to on-device LLM. Prompt: "Given this social media post, extract: category (travel/shopping/recipe/learning/fitness/entertainment/home/other), key entities (location, price, brand, product), and a one-sentence summary." Returns structured Swift/Kotlin object.</div>
+      <div class="flow-tech">iOS: Foundation Models @Generable / Android: Gemini Nano Prompt API</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">5</div>
+    <div class="flow-content">
+      <div class="flow-title">Combine signals → assign bucket (offline, instant)</div>
+      <div class="flow-desc">Merge image labels + text classification + hashtag signals. If image says "beach, resort" AND text says "travel" → high confidence Travel. If signals conflict, use confidence scores. Store with the highest-confidence bucket + second-best alternative.</div>
+      <div class="flow-tech">Custom scoring logic — weighted ensemble of image + text signals</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">6</div>
+    <div class="flow-content">
+      <div class="flow-title">Store locally + present to user</div>
+      <div class="flow-desc">Save to local DB: URL, cached thumbnail, title, description, AI summary, bucket assignment, extracted metadata (price, location, etc.), source platform, timestamp. User sees item appear in the correct bucket with rich card.</div>
+      <div class="flow-tech">iOS: SwiftData/Core Data / Android: Room / Flutter: Drift/Hive</div>
+    </div>
+  </div>
+</div>
+
+<p><strong>Total time from share to classified:</strong> Under 3 seconds. The user sees confirmation instantly (step 1), and by the time they open the app, the item is already in the right bucket with a summary.</p>
+</div>
+
+<hr class="divider">
+
+<!-- ===================== SECTION 5 ===================== -->
+<div class="section">
+<h2>5. Updated Competitive Landscape (Feb 2026)</h2>
+
+<h4>Tier 1 — Direct Competitors (Cross-Platform Social Saving)</h4>
+
+<div class="comp-row">
+  <div class="cr-top">
+    <span class="cr-name">mymind</span>
+    <span class="cr-price">Free (100 items) → $8/mo → $13/mo</span>
+  </div>
+  <div class="cr-desc">The most polished AI bookmarking tool. Beautiful visual grid. AI auto-tags everything. Natural-language search ("that pink jacket"). Recognizes content types (product, book, recipe, article) and renders different card styles. No manual folders — AI does everything.</div>
+  <div class="cr-tags">
+    <span class="cr-tag">AI auto-tagging</span>
+    <span class="cr-tag">Visual/color search</span>
+    <span class="cr-tag">Content-type detection</span>
+    <span class="cr-tag">AI summaries (TLDR)</span>
+    <span class="cr-tag">PDF analysis</span>
+    <span class="cr-tag">Serendipity mode</span>
+    <span class="cr-tag gap">✗ Cloud-only AI</span>
+    <span class="cr-tag gap">✗ No native social sync</span>
+    <span class="cr-tag gap">✗ No purpose-driven buckets</span>
+    <span class="cr-tag gap">✗ No sharing/collaboration</span>
+    <span class="cr-tag gap">✗ No actionability (price tracking etc)</span>
+  </div>
+  <div class="verdict">Best AI, worst at social platform integration and actionable lists.</div>
+</div>
+
+<div class="comp-row">
+  <div class="cr-top">
+    <span class="cr-name">Dewey</span>
+    <span class="cr-price">Free tier + paid plans</span>
+  </div>
+  <div class="cr-desc">Best native social sync — pulls bookmarks from X, Instagram, TikTok, LinkedIn, Bluesky. AI bulk-tagging. Content preserved even when deleted. Strong export (CSV, PDF, Google Sheets). Chrome extension required — fundamentally desktop-first.</div>
+  <div class="cr-tags">
+    <span class="cr-tag">X/IG/TikTok/LinkedIn sync</span>
+    <span class="cr-tag">AI bulk tagging</span>
+    <span class="cr-tag">Deleted content backup</span>
+    <span class="cr-tag">Public collections</span>
+    <span class="cr-tag">Export tools</span>
+    <span class="cr-tag gap">✗ Desktop-first (Chrome ext)</span>
+    <span class="cr-tag gap">✗ No mobile app</span>
+    <span class="cr-tag gap">✗ Cloud AI only</span>
+    <span class="cr-tag gap">✗ No smart buckets</span>
+  </div>
+  <div class="verdict">Best social sync, but terrible mobile experience and no intelligent organization.</div>
+</div>
+
+<div class="comp-row">
+  <div class="cr-top">
+    <span class="cr-name">Readwise Reader</span>
+    <span class="cr-price">$9.99/mo (with Readwise)</span>
+  </div>
+  <div class="cr-desc">The power-user champion. Saves articles, PDFs, YouTube (with transcripts), Twitter threads, newsletters. Best-in-class highlighting and annotation. AI "Ghostreader" summarizes, defines, answers questions. Spaced repetition review of highlights. Deep integrations (Notion, Obsidian).</div>
+  <div class="cr-tags">
+    <span class="cr-tag">Multi-format (article, PDF, YouTube, tweets)</span>
+    <span class="cr-tag">AI summaries (Ghostreader)</span>
+    <span class="cr-tag">Highlighting & annotation</span>
+    <span class="cr-tag">Spaced repetition</span>
+    <span class="cr-tag">Knowledge graph</span>
+    <span class="cr-tag gap">✗ Reading-focused (not action-focused)</span>
+    <span class="cr-tag gap">✗ No Instagram/TikTok</span>
+    <span class="cr-tag gap">✗ No visual content (fashion, recipes, travel photos)</span>
+    <span class="cr-tag gap">✗ Complex for casual users</span>
+    <span class="cr-tag gap">✗ Cloud AI only</span>
+  </div>
+  <div class="verdict">Incredible for readers/researchers. But text-heavy — misses the visual, social-media-first use case entirely.</div>
+</div>
+
+<div class="comp-row">
+  <div class="cr-top">
+    <span class="cr-name">Saver (CentralSave)</span>
+    <span class="cr-price">Free</span>
+  </div>
+  <div class="cr-desc">Rising iOS star with passionate user base. Simple share-sheet save from Instagram, TikTok, YouTube, Pinterest. Manual collections + sub-collections. Growing fast — users love the simplicity. But zero AI, zero intelligence.</div>
+  <div class="cr-tags">
+    <span class="cr-tag">Share sheet integration</span>
+    <span class="cr-tag">Sub-collections</span>
+    <span class="cr-tag">Notes & color coding</span>
+    <span class="cr-tag gap">✗ Zero AI</span>
+    <span class="cr-tag gap">✗ Manual organization only</span>
+    <span class="cr-tag gap">✗ iOS only</span>
+    <span class="cr-tag gap">✗ No content backup</span>
+  </div>
+  <div class="verdict">Proves the demand exists. Users want exactly this — but with AI doing the work.</div>
+</div>
+
+<div class="comp-row">
+  <div class="cr-top">
+    <span class="cr-name">Raindrop.io</span>
+    <span class="cr-price">Free → $28/year Pro</span>
+  </div>
+  <div class="cr-desc">The reliable veteran. Clean visual interface, nested collections, full-text search, content backup. Pro tier now has AI tag suggestions. Collaborative collections. IFTTT integrations for social sync. Cross-platform. Pocket just shut down (July 2025), driving users to Raindrop.</div>
+  <div class="cr-tags">
+    <span class="cr-tag">Nested collections</span>
+    <span class="cr-tag">Full-text search</span>
+    <span class="cr-tag">Content backup</span>
+    <span class="cr-tag">Collaboration</span>
+    <span class="cr-tag">AI tag suggestions (Pro)</span>
+    <span class="cr-tag gap">✗ No auto-categorization</span>
+    <span class="cr-tag gap">✗ Bookmark manager, not "bucket" organizer</span>
+    <span class="cr-tag gap">✗ No on-device AI</span>
+    <span class="cr-tag gap">✗ Web-first experience</span>
+  </div>
+  <div class="verdict">The default choice for many. Solid but uninspired. Ripe for disruption by AI-first approach.</div>
+</div>
+
+<h4>Tier 2 — Adjacent Competitors (Niche or Partial Overlap)</h4>
+
+<div class="comp-row">
+  <div class="cr-top">
+    <span class="cr-name">ClipCrate</span>
+    <span class="cr-price">$5.99/mo</span>
+  </div>
+  <div class="cr-desc">Video-only bookmark manager for iOS. AI generates summaries of saved videos. Share-sheet native. Offline browsing. Strong for TikTok/YouTube/Reels but misses images, articles, products.</div>
+  <div class="cr-tags">
+    <span class="cr-tag">AI video summaries</span>
+    <span class="cr-tag">Video-only focus</span>
+    <span class="cr-tag gap">✗ No images/articles/products</span>
+  </div>
+</div>
+
+<div class="comp-row">
+  <div class="cr-top">
+    <span class="cr-name">Stacks</span>
+    <span class="cr-price">Free + paid</span>
+  </div>
+  <div class="cr-desc">Social curation with community layer. Follow curators, trending collections, public sharing. Saves from X, LinkedIn, IG, Reddit, TikTok. Differentiator is social discovery — but no AI.</div>
+  <div class="cr-tags">
+    <span class="cr-tag">Community/social layer</span>
+    <span class="cr-tag">Multi-platform</span>
+    <span class="cr-tag gap">✗ No AI</span>
+  </div>
+</div>
+
+<div class="comp-row">
+  <div class="cr-top">
+    <span class="cr-name">Wishlist Apps (Giftful, WishUpon, Moonsift)</span>
+    <span class="cr-price">Free</span>
+  </div>
+  <div class="cr-desc">Shopping-focused wishlist tools. Save products from any store, share with family, price drop alerts. Strong for the shopping bucket use case but don't handle non-shopping content at all.</div>
+  <div class="cr-tags">
+    <span class="cr-tag">Price tracking</span>
+    <span class="cr-tag">Gift sharing</span>
+    <span class="cr-tag gap">✗ Shopping only</span>
+    <span class="cr-tag gap">✗ No AI classification</span>
+  </div>
+</div>
+
+<div class="callout blue">
+  <strong>Competitive gap confirmed (Feb 2026):</strong> Even with Pocket's shutdown driving millions of users to find alternatives, and Saver/CentralSave proving viral demand for mobile-first social saving — <strong>nobody is using on-device AI for auto-classification into purpose-driven buckets</strong>. Not mymind (cloud AI, no buckets). Not Dewey (no mobile, no buckets). Not Saver (no AI at all). Not Raindrop (basic AI tags, no auto-sort). Not Readwise (text-only, complex). The intersection of on-device AI + social share-sheet saving + smart buckets is completely empty.
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ===================== SECTION 6 ===================== -->
+<div class="section">
+<h2>6. Use Cases — What Users Will Actually Do</h2>
+
+<h3>Use Case 1: "The Travel Dreamer"</h3>
+<p>User scrolls TikTok, sees a Bali travel vlog. Taps Share → YourApp. On-device AI sees beach imagery + "Bali, Ubud, temples" in caption → auto-files to <strong>Travel Bucket</strong>. Extracts location: "Bali, Indonesia". Later, user saves a YouTube video "Best restaurants in Bali" → same bucket, sub-tagged "food". When planning their trip, they open Travel Bucket → filter by "Bali" → see all 12 saved items organized with summaries. All works offline on the plane.</p>
+
+<h3>Use Case 2: "The Fashion Shopper"</h3>
+<p>User sees an outfit on Instagram. Shares to app. Vision framework identifies "dress, floral pattern, summer" from image. Foundation Models extracts brand name and approximate price from caption. Auto-filed to <strong>Shopping Bucket</strong>. Over weeks, user accumulates 30+ clothing items. App notices pattern: "You've saved 8 floral dresses — here's your Floral collection." Optional price tracking for items with product links.</p>
+
+<h3>Use Case 3: "The Recipe Collector"</h3>
+<p>User saves cooking Reels from Instagram + YouTube cooking videos. AI recognizes food imagery + recipe-related text → <strong>Recipes Bucket</strong>. Extracts ingredients from captions when visible. User can mark items as "Tried it ✓" or "Want to try". Weekend review: "You haven't tried these 5 recipes you saved last month."</p>
+
+<h3>Use Case 4: "The Skill Builder"</h3>
+<p>User saves coding tutorials, design tips, language learning content from YouTube and X threads. AI classifies as <strong>Learning Bucket</strong>. Auto-generates topic tags: "Python", "UI Design", "Spanish". User can track progress: "Watched 3/8 Python tutorials this week."</p>
+
+<h3>Use Case 5: "The Shared Trip Planner"</h3>
+<p>User creates a shared "Japan 2026" bucket. Invites 3 friends. Everyone saves content from different platforms. AI classifies and organizes: temples, food spots, neighborhoods, JR pass tips. Before the trip, the bucket is a complete planning guide — built collaboratively from everyone's discoveries. (Requires online.)</p>
+
+<h3>Use Case 6: "The Home Renovator"</h3>
+<p>User saves Pinterest boards, Instagram interiors, YouTube DIY videos. AI detects interior design imagery, extracts room types (kitchen, bathroom, living room). <strong>Home Bucket</strong> auto-organizes by room. Save a product → extracted price and link ready for purchase.</p>
+</div>
+
+<hr class="divider">
+
+<!-- ===================== SECTION 7 ===================== -->
+<div class="section">
+<h2>7. MVP Priority Matrix</h2>
+
+<table class="priority-table">
+<thead>
+  <tr>
+    <th>Feature</th>
+    <th>Priority</th>
+    <th>Offline/Online</th>
+    <th>Rationale</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Share sheet save from any app</td>
+    <td><span class="p-high">P0</span></td>
+    <td><span class="tag online">ONLINE</span> (initial fetch)</td>
+    <td>Core interaction. Must be 1-tap, sub-second confirmation.</td>
+  </tr>
+  <tr>
+    <td>AI auto-classify into buckets</td>
+    <td><span class="p-high">P0</span></td>
+    <td><span class="tag offline">OFFLINE</span></td>
+    <td>The differentiator. Start with 8 buckets: Travel, Shopping, Recipes, Learning, Fitness, Home, Entertainment, Other.</td>
+  </tr>
+  <tr>
+    <td>Rich preview cards with AI summary</td>
+    <td><span class="p-high">P0</span></td>
+    <td><span class="tag offline">OFFLINE</span></td>
+    <td>Visual browsing experience. Thumbnail + title + 1-line summary + source icon + metadata.</td>
+  </tr>
+  <tr>
+    <td>Manual bucket correction</td>
+    <td><span class="p-high">P0</span></td>
+    <td><span class="tag offline">OFFLINE</span></td>
+    <td>One-swipe to move item to correct bucket. Trains future classification.</td>
+  </tr>
+  <tr>
+    <td>Local content caching (survive deletion)</td>
+    <td><span class="p-high">P0</span></td>
+    <td><span class="tag offline">OFFLINE</span></td>
+    <td>Cache thumbnail + metadata locally. Content preservation is a top user need.</td>
+  </tr>
+  <tr>
+    <td>Natural language search</td>
+    <td><span class="p-high">P1</span></td>
+    <td><span class="tag offline">OFFLINE</span></td>
+    <td>"that blue dress" or "beach hotel someone posted" — search across all AI tags, summaries, metadata.</td>
+  </tr>
+  <tr>
+    <td>Custom buckets</td>
+    <td><span class="p-high">P1</span></td>
+    <td><span class="tag offline">OFFLINE</span></td>
+    <td>User creates "Japan 2026" or "Gift ideas" — AI learns to route to custom buckets.</td>
+  </tr>
+  <tr>
+    <td>Smart review feed ("Forgotten gems")</td>
+    <td><span class="p-med">P2</span></td>
+    <td><span class="tag offline">OFFLINE</span></td>
+    <td>Weekly digest: "You saved 12 items this week. 5 items from 3 months ago you might want to revisit."</td>
+  </tr>
+  <tr>
+    <td>Action states (Tried / Bought / Visited / Watched)</td>
+    <td><span class="p-med">P2</span></td>
+    <td><span class="tag offline">OFFLINE</span></td>
+    <td>Track progress through your saves. Turns passive saving into active living.</td>
+  </tr>
+  <tr>
+    <td>Cross-device sync</td>
+    <td><span class="p-med">P2</span></td>
+    <td><span class="tag online">ONLINE</span></td>
+    <td>CloudKit (Apple) or Supabase/Firebase for cross-platform.</td>
+  </tr>
+  <tr>
+    <td>Shared/collaborative buckets</td>
+    <td><span class="p-low">P3</span></td>
+    <td><span class="tag online">ONLINE</span></td>
+    <td>Trip planning with friends, family gift lists. Strong growth feature.</td>
+  </tr>
+  <tr>
+    <td>Price tracking for shopping items</td>
+    <td><span class="p-low">P3</span></td>
+    <td><span class="tag online">ONLINE</span></td>
+    <td>Requires server-side scraping. High value but high complexity.</td>
+  </tr>
+  <tr>
+    <td>iOS Widgets & Shortcuts</td>
+    <td><span class="p-low">P3</span></td>
+    <td><span class="tag offline">OFFLINE</span></td>
+    <td>"Recent saves" widget, "Quick save" shortcut. Good for engagement.</td>
+  </tr>
+</tbody>
+</table>
+</div>
+
+<hr class="divider">
+
+<!-- ===================== SECTION 8 ===================== -->
+<div class="section">
+<h2>8. Platform Decision: Native Swift + Kotlin vs Flutter</h2>
+
+<p>This is a critical decision given your Flutter background. Here's the honest tradeoff:</p>
+
+<div class="callout">
+<strong>Recommendation: Go native Swift (iOS first), then evaluate Kotlin for Android.</strong>
+
+<p style="margin-top:12px;">The reason is specific to this app: <strong>Apple's Foundation Models framework is Swift-only</strong>. The @Generable macros, guided generation, and tool calling APIs are deeply integrated with Swift's type system. There is no Objective-C bridge and no Flutter plugin. You'd need to write the entire AI classification pipeline in Swift anyway and bridge it to Flutter via platform channels — which adds complexity, debugging pain, and latency.</p>
+
+<p>For this particular app, where on-device AI IS the product, native gives you:</p>
+<ul style="margin-top:8px;">
+  <li>Direct access to Foundation Models, Vision, Core ML — no bridging overhead</li>
+  <li>SwiftUI for the UI (Liquid Glass design language, native feel)</li>
+  <li>Share Extension in native Swift (Flutter share extensions are fragile)</li>
+  <li>First-class iOS 26 widget + Shortcuts support</li>
+  <li>Better App Store positioning (Apple features native apps more)</li>
+</ul>
+
+<p style="margin-top:12px;"><strong>For Android (Phase 2):</strong> Kotlin with ML Kit GenAI APIs + Gemini Nano Prompt API. The Android AI stack is similarly Kotlin-native. A shared backend (Supabase/Firebase) keeps data in sync across platforms.</p>
+
+<p style="margin-top:12px;"><strong>If you strongly prefer Flutter:</strong> It's possible but you'll need Swift platform channels for all AI features on iOS and Kotlin channels for Android. Budget 30-40% additional development time for the bridging layer. The core UI and data layer can still be Flutter.</p>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ===================== SECTION 9 ===================== -->
+<div class="section">
+<h2>9. Strategic Recommendations</h2>
+
+<h3>Why this, why now</h3>
+<p><strong>Pocket shut down in July 2025</strong>, displacing millions of users. <strong>Apple Foundation Models just launched</strong> (Sept 2025, iOS 26) — you'd be among the first wave of apps using it, which Apple actively promotes. <strong>Saver/CentralSave is proving viral demand</strong> for mobile social saving with zero AI — showing the market wants this but nobody has added intelligence yet. High-end phone users are the perfect early adopters: willing to pay, comfortable with new concepts, and their devices can actually run the AI.</p>
+
+<h3>The moat</h3>
+<p>On-device AI creates a genuine competitive advantage. Cloud-based competitors (mymind, Dewey) face latency, cost, and privacy tradeoffs you don't. As Apple and Google improve their on-device models with each OS release, your app gets better for free — without increasing your infrastructure costs. Every user correction to bucket classification trains a better model, creating a personalization flywheel no competitor can replicate without the same on-device approach.</p>
+
+<h3>Start with iOS</h3>
+<p>Apple's Foundation Models framework is more mature, better documented, and Apple actively features apps that use it. The iPhone user base skews toward the willingness-to-pay demographic you want. iOS share extensions work more reliably than Android's. Launch on iOS, build traction, then bring it to Android Pixel/Galaxy users.</p>
+
+<h3>Pricing for high-end users</h3>
+<p>Free tier: 50 saves/month, 3 default buckets. This is enough to hook users. Pro ($5.99/mo or $49.99/year): Unlimited saves, unlimited custom buckets, advanced AI (summaries, entity extraction, natural language search), action states, smart review feed. Family ($8.99/mo): Shared buckets for up to 5 people.</p>
+
+<h3>Name ideas</h3>
+<p>BucketSave, Stash.ai, Sortd, PileUp, SaveKit, Cura, Capsule — the name should convey both "saving" and "intelligent organization." Short, memorable, available as .com and on the App Store.</p>
+</div>
+
+</div>
+</body>
+</html>

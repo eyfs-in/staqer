@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staq – Competitive Feature Analysis & Recommendations</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0f; color: #e0e0e0; line-height: 1.6; }
+  
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px 24px; }
+  
+  /* Header */
+  .header { text-align: center; padding: 48px 0 32px; border-bottom: 1px solid #1a1a2e; margin-bottom: 40px; }
+  .header h1 { font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .header .subtitle { font-size: 15px; color: #888; }
+  .header .date { font-size: 12px; color: #555; margin-top: 4px; }
+
+  /* Section */
+  .section { margin-bottom: 48px; }
+  .section-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .section-subtitle { font-size: 13px; color: #666; margin-bottom: 20px; }
+
+  /* Competitor Cards */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .comp-card { background: #111118; border: 1px solid #1e1e30; border-radius: 12px; padding: 20px; }
+  .comp-card.highlight { border-color: #f43f5e; }
+  .comp-card .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .comp-card .app-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #fff; }
+  .comp-card .app-name { font-size: 16px; font-weight: 600; color: #fff; }
+  .comp-card .app-tagline { font-size: 11px; color: #666; }
+  .comp-card .app-meta { font-size: 11px; color: #888; margin-bottom: 12px; }
+  .comp-card .features { list-style: none; }
+  .comp-card .features li { font-size: 12px; color: #aaa; padding: 3px 0; padding-left: 18px; position: relative; }
+  .comp-card .features li::before { content: ''; position: absolute; left: 0; top: 9px; width: 8px; height: 8px; border-radius: 50%; }
+  .comp-card .features li.has::before { background: #22c55e; }
+  .comp-card .features li.partial::before { background: #f59e0b; }
+  .comp-card .features li.missing::before { background: #ef4444; }
+  .comp-card .verdict { font-size: 11px; color: #f43f5e; font-weight: 600; margin-top: 12px; padding-top: 10px; border-top: 1px solid #1e1e30; }
+
+  /* Feature Matrix */
+  .matrix-wrap { overflow-x: auto; margin-bottom: 8px; }
+  table.matrix { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.matrix th { background: #16162a; color: #aaa; font-weight: 600; padding: 10px 8px; text-align: left; border-bottom: 2px solid #222240; white-space: nowrap; position: sticky; top: 0; }
+  table.matrix th.staq { color: #a78bfa; }
+  table.matrix td { padding: 8px; border-bottom: 1px solid #1a1a28; vertical-align: top; }
+  table.matrix td:first-child { font-weight: 500; color: #ccc; white-space: nowrap; min-width: 180px; }
+  table.matrix tr:hover td { background: #12121f; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+  .dot.yes { background: #22c55e; }
+  .dot.partial { background: #f59e0b; }
+  .dot.no { background: #333; border: 1px solid #555; }
+  .dot.planned { background: transparent; border: 2px solid #a78bfa; }
+  .legend { display: flex; gap: 16px; margin-bottom: 16px; font-size: 11px; color: #888; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+
+  /* Recommendations */
+  .rec-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .rec-card { background: #111118; border: 1px solid #1e1e30; border-radius: 12px; padding: 20px; }
+  .rec-card.must { border-left: 3px solid #ef4444; }
+  .rec-card.should { border-left: 3px solid #f59e0b; }
+  .rec-card.could { border-left: 3px solid #22c55e; }
+  .rec-card .priority { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .rec-card.must .priority { color: #ef4444; }
+  .rec-card.should .priority { color: #f59e0b; }
+  .rec-card.could .priority { color: #22c55e; }
+  .rec-card h3 { font-size: 14px; color: #fff; margin-bottom: 6px; }
+  .rec-card p { font-size: 12px; color: #999; }
+  .rec-card .source { font-size: 10px; color: #555; margin-top: 8px; font-style: italic; }
+
+  /* Insight callouts */
+  .insight { background: linear-gradient(135deg, #1a1028, #12121f); border: 1px solid #2d1f4e; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+  .insight .label { font-size: 10px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .insight p { font-size: 13px; color: #ccc; }
+
+  /* User pain quotes */
+  .quotes { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .quote { background: #0e0e18; border: 1px solid #1a1a2e; border-radius: 8px; padding: 14px; }
+  .quote p { font-size: 12px; color: #bbb; font-style: italic; }
+  .quote .src { font-size: 10px; color: #555; margin-top: 6px; }
+
+  /* Vertical feature deep-dive */
+  .vertical-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .vert-card { background: #111118; border: 1px solid #1e1e30; border-radius: 10px; padding: 16px; text-align: center; }
+  .vert-card .emoji { font-size: 28px; margin-bottom: 8px; }
+  .vert-card h4 { font-size: 13px; color: #fff; margin-bottom: 4px; }
+  .vert-card .fields { font-size: 11px; color: #888; text-align: left; }
+  .vert-card .fields span { display: block; padding: 2px 0; }
+  .vert-card .who { font-size: 10px; color: #a78bfa; margin-top: 8px; }
+
+  @media (max-width: 768px) {
+    .comp-grid, .rec-grid { grid-template-columns: 1fr; }
+    .quotes, .vertical-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>Staq — Competitive Feature Analysis</h1>
+  <div class="subtitle">What 12 competitor apps are doing, what's working, what's not, and what Staq should build</div>
+  <div class="date">Research compiled Feb 2026 • Based on App Store data, user reviews, and product pages</div>
+</div>
+
+<!-- REAL USER PAIN POINTS -->
+<div class="section">
+  <div class="section-title">What Users Are Actually Saying</div>
+  <div class="section-subtitle">Direct quotes from App Store reviews across all competitor apps — the pain is real and consistent</div>
+  
+  <div class="quotes">
+    <div class="quote">
+      <p>"Previously I would text or email reels to myself or save in social media, but it never worked out."</p>
+      <div class="src">— Saver user, App Store</div>
+    </div>
+    <div class="quote">
+      <p>"I literally had like 1000+ travel reels saved and never looked at them again."</p>
+      <div class="src">— Trott beta tester</div>
+    </div>
+    <div class="quote">
+      <p>"There is too much friction in capturing an idea. I have to search for the app, open it, click the bar, then type."</p>
+      <div class="src">— MyMind user, App Store</div>
+    </div>
+    <div class="quote">
+      <p>"94% of saved social content is never viewed again. Average user has 400+ saved videos across platforms."</p>
+      <div class="src">— Trott marketing (industry stat)</div>
+    </div>
+    <div class="quote">
+      <p>"This is exactly what I've been wishing TikTok had as a feature. Finally, a way to sort helpful videos."</p>
+      <div class="src">— PickTok user, App Store</div>
+    </div>
+    <div class="quote">
+      <p>"Needless to say it's become such a disaster that I rarely refer back to it. Bookmarks never worked for me."</p>
+      <div class="src">— Saver user, App Store</div>
+    </div>
+  </div>
+</div>
+
+<!-- DIRECT COMPETITORS -->
+<div class="section">
+  <div class="section-title">Direct Competitors — Detailed Feature Breakdown</div>
+  <div class="section-subtitle">Apps specifically trying to organize saved social media content. Red border = your closest competitors.</div>
+
+  <div class="comp-grid">
+    <!-- TROTT -->
+    <div class="comp-card highlight">
+      <div class="card-header">
+        <div class="app-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">T</div>
+        <div><div class="app-name">Trott</div><div class="app-tagline">AI-Powered Organization for Saved Reels & Shorts</div></div>
+      </div>
+      <div class="app-meta">India (HattiMatimLabs) • iOS + Android • Launched Oct 2025 • Credit-based pricing • Built for RevenueCat Shipathon</div>
+      <ul class="features">
+        <li class="has">Share extension from IG, YT, TikTok</li>
+        <li class="has">AI auto-detects content type (recipe, travel, product, fitness)</li>
+        <li class="has">Category-specific data extraction (ingredients, coordinates, reps)</li>
+        <li class="has">Pinterest-style visual grid by category</li>
+        <li class="has">AI chat — "show me cafes in Bali" across all saves</li>
+        <li class="has">Fuzzy search across all saved content</li>
+        <li class="has">Google Maps integration for travel saves</li>
+        <li class="has">Video transcript extraction</li>
+        <li class="missing">No user-created collections / manual organization</li>
+        <li class="missing">No offline access</li>
+        <li class="missing">No content persistence (relies on original platform)</li>
+        <li class="missing">Credit-based pricing adds friction</li>
+      </ul>
+      <div class="verdict">⚠️ CLOSEST COMPETITOR — identical thesis to Staq. Very early, tiny team, buggy. But the concept matches yours almost exactly.</div>
+    </div>
+
+    <!-- TRUNKY -->
+    <div class="comp-card highlight">
+      <div class="card-header">
+        <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">🐘</div>
+        <div><div class="app-name">Trunky (formerly Nabu)</div><div class="app-tagline">Social Media Organizer — Recipes, Travel, Shows</div></div>
+      </div>
+      <div class="app-meta">France (solo dev Paul Moine) • iOS • Multiple name changes • Has mascot "Nab"</div>
+      <ul class="features">
+        <li class="has">Save from TikTok, YouTube, Instagram via share extension</li>
+        <li class="has">Smart recipe collections — auto-extract ingredients & steps</li>
+        <li class="has">Travel organizer with map view + Google ratings</li>
+        <li class="has">Movie/TV watchlist with OMDB metadata</li>
+        <li class="has">AI search — "find me an Asian restaurant near Toronto"</li>
+        <li class="has">Auto-summaries of video content</li>
+        <li class="has">Shared collections</li>
+        <li class="has">Recipe planning + grocery list (!)</li>
+        <li class="has">Cross-platform sync</li>
+        <li class="missing">No general-purpose collections (only recipes/travel/movies)</li>
+        <li class="missing">Not enough reviews to assess quality</li>
+        <li class="missing">Name instability (Nabu → Trunky) suggests identity struggles</li>
+      </ul>
+      <div class="verdict">⚠️ SECOND CLOSEST — more feature-rich than Trott, but locked to 3 verticals (food, travel, entertainment). Can't save a product link or workout.</div>
+    </div>
+
+    <!-- SAVER -->
+    <div class="comp-card">
+      <div class="card-header">
+        <div class="app-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">S</div>
+        <div><div class="app-name">Saver (formerly CentralSave)</div><div class="app-tagline">Social Bookmark Manager</div></div>
+      </div>
+      <div class="app-meta">Solo dev (Adrien Cens) • iOS + Android • Very active development • Best reviewed in category</div>
+      <ul class="features">
+        <li class="has">Save from TikTok, IG, YT Shorts, Pinterest via share extension</li>
+        <li class="has">Custom collections + sub-collections</li>
+        <li class="has">Notes & tags on each save</li>
+        <li class="has">Link previews in collections</li>
+        <li class="has">Move items between collections</li>
+        <li class="has">CSV export</li>
+        <li class="has">Account backup</li>
+        <li class="has">Liquid Glass iOS 26 design update</li>
+        <li class="missing">Zero AI — entirely manual organization</li>
+        <li class="missing">No auto-categorization</li>
+        <li class="missing">No content-type intelligence</li>
+        <li class="missing">No search beyond browsing collections</li>
+      </ul>
+      <div class="verdict">📊 BEST SIGNAL — highest user satisfaction with ZERO AI. Proves the share extension + collections UX is the real PMF driver. AI is the upgrade, not the foundation.</div>
+    </div>
+
+    <!-- FAVES -->
+    <div class="comp-card">
+      <div class="card-header">
+        <div class="app-icon" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">♥</div>
+        <div><div class="app-name">Faves</div><div class="app-tagline">Cloud Video Storage</div></div>
+      </div>
+      <div class="app-meta">The Hive Social Network, Inc • iOS • Viral during TikTok ban scare • 51K likes on promo TikTok</div>
+      <ul class="features">
+        <li class="has">Bulk import entire TikTok collections at once</li>
+        <li class="has">Cloud storage — content persists even if original deleted</li>
+        <li class="has">"Stacks" organization metaphor</li>
+        <li class="has">Web viewer</li>
+        <li class="has">Explore/discovery page</li>
+        <li class="partial">Part personal storage, part social discovery platform</li>
+        <li class="missing">Users report losing all organized stacks after updates</li>
+        <li class="missing">Broken auth flows, forced re-onboarding</li>
+        <li class="missing">$3.33/month for 200GB</li>
+        <li class="missing">Identity crisis: storage tool vs social platform</li>
+      </ul>
+      <div class="verdict">⚡ GROWTH SIGNAL — TikTok ban drove explosive demand. Bulk import is killer feature. But reliability is terrible and identity is confused.</div>
+    </div>
+
+    <!-- PICKTOK -->
+    <div class="comp-card">
+      <div class="card-header">
+        <div class="app-icon" style="background: linear-gradient(135deg, #10b981, #059669);">▶</div>
+        <div><div class="app-name">PickTok</div><div class="app-tagline">TikTok Video Saver & Organizer</div></div>
+      </div>
+      <div class="app-meta">iOS • TikTok-first, expanded to Reels/Shorts • Enthusiastic reviews</div>
+      <ul class="features">
+        <li class="has">Share extension direct from TikTok — "save directly to folder"</li>
+        <li class="has">Color-coded folders + subfolders</li>
+        <li class="has">Built-in video player (play 4 videos simultaneously)</li>
+        <li class="has">Slow motion, ending credit skip playback features</li>
+        <li class="has">Search within saved videos</li>
+        <li class="missing">TikTok/Reels/Shorts only — no articles, products, links</li>
+        <li class="missing">Zero AI</li>
+        <li class="missing">Manual folder creation and sorting</li>
+      </ul>
+      <div class="verdict">💡 UX LESSON — color-coded folders is the simplest possible organization and users LOVE it. The "save directly to folder from share sheet" flow gets rave reviews.</div>
+    </div>
+
+    <!-- MYMIND -->
+    <div class="comp-card">
+      <div class="card-header">
+        <div class="app-icon" style="background: linear-gradient(135deg, #1e1e1e, #333);">◯</div>
+        <div><div class="app-name">MyMind</div><div class="app-tagline">Remember Everything. Organize Nothing.</div></div>
+      </div>
+      <div class="app-meta">Independent • $79-129/year • Beautiful design • Privacy-first • No investors</div>
+      <ul class="features">
+        <li class="has">AI auto-tagging on everything saved</li>
+        <li class="has">Visual search (search by color, keyword, vague description)</li>
+        <li class="has">Beautiful visual grid — genuinely stunning design</li>
+        <li class="has">Recipe extraction (strips cruft from recipe pages)</li>
+        <li class="has">PDF analysis + indexing</li>
+        <li class="has">Serendipity mode (resurface random past saves)</li>
+        <li class="has">IG gallery post saving with auto-tagging</li>
+        <li class="has">Read-later mode for articles</li>
+        <li class="has">Bidirectional linking between notes</li>
+        <li class="partial">Offline support (beta opt-in)</li>
+        <li class="missing">No collections/folders/stacks — "flat pile" breaks at scale</li>
+        <li class="missing">No sharing or collaboration</li>
+        <li class="missing">Mobile save experience has too much friction</li>
+        <li class="missing">Browser-first, not social-media-first</li>
+      </ul>
+      <div class="verdict">🎨 DESIGN BENCHMARK — the gold standard for aesthetics and AI tagging. But the "organize nothing" philosophy breaks for power users. Your stacks solve their biggest complaint.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADJACENT COMPETITORS -->
+<div class="section">
+  <div class="section-title">Adjacent Competitors & Vertical Threats</div>
+  <div class="section-subtitle">Apps that eat parts of your market from specialized angles</div>
+
+  <div class="comp-grid">
+    <div class="comp-card">
+      <div class="card-header">
+        <div class="app-icon" style="background: #22c55e;">🐝</div>
+        <div><div class="app-name">Honeydew / Flavorish / Whisk</div><div class="app-tagline">Recipe-specific save from social media</div></div>
+      </div>
+      <ul class="features">
+        <li class="has">AI extract recipes from TikTok/IG/YouTube videos</li>
+        <li class="has">Structured ingredient lists, prep time, dietary tags</li>
+        <li class="has">Meal planning calendar</li>
+        <li class="has">Auto-generated grocery list</li>
+        <li class="has">Instacart integration (Honeydew)</li>
+        <li class="has">Family sharing (6 members)</li>
+        <li class="has">Nutrition tracking</li>
+      </ul>
+      <div class="verdict">🔪 VERTICAL THREAT — proves people pay $4-5/mo for "TikTok recipe → structured card → grocery list." Staq must match 80% of this for recipes.</div>
+    </div>
+
+    <div class="comp-card">
+      <div class="card-header">
+        <div class="app-icon" style="background: #3b82f6;">✈️</div>
+        <div><div class="app-name">Roamy</div><div class="app-tagline">AI Trip Planning from Saved Reels</div></div>
+      </div>
+      <ul class="features">
+        <li class="has">Import spots from IG, TikTok, notes, screenshots</li>
+        <li class="has">AI route planning from saved locations</li>
+        <li class="has">Creates optimized itineraries</li>
+        <li class="missing">Travel-only</li>
+      </ul>
+      <div class="verdict">✈️ VERTICAL THREAT — "saved travel reel → planned trip" is a powerful workflow Staq should eventually offer.</div>
+    </div>
+
+    <div class="comp-card">
+      <div class="card-header">
+        <div class="app-icon" style="background: #8b5cf6;">📸</div>
+        <div><div class="app-name">ScreenshotAI (Fabric)</div><div class="app-tagline">Screenshots organized by AI</div></div>
+      </div>
+      <ul class="features">
+        <li class="has">Auto-syncs with iOS screenshots folder</li>
+        <li class="has">AI analyzes, tags, extracts info from screenshots</li>
+        <li class="has">Everything searchable</li>
+        <li class="has">Zero-friction capture (just screenshot)</li>
+      </ul>
+      <div class="verdict">📱 ADJACENT — many users screenshot social posts instead of sharing. Screenshot import could be a Staq feature.</div>
+    </div>
+
+    <div class="comp-card">
+      <div class="card-header">
+        <div class="app-icon" style="background: #06b6d4;">📚</div>
+        <div><div class="app-name">Dewey</div><div class="app-tagline">Social Bookmark Manager (Chrome extension)</div></div>
+      </div>
+      <ul class="features">
+        <li class="has">50K+ members</li>
+        <li class="has">Sync bookmarks from X, IG, TikTok, Reddit, Bluesky</li>
+        <li class="has">AI bulk tagging</li>
+        <li class="has">Folders + nested folders</li>
+        <li class="has">Export to CSV, PDF, Notion</li>
+        <li class="has">Public shareable collections</li>
+        <li class="missing">Browser-extension-first — weak mobile experience</li>
+        <li class="missing">IG integration reportedly broken</li>
+        <li class="missing">TikTok sync fails for many</li>
+      </ul>
+      <div class="verdict">🖥️ DESKTOP OVERLAP — proves demand for cross-platform bookmark organization but can't deliver on mobile.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURE MATRIX -->
+<div class="section">
+  <div class="section-title">Feature Comparison Matrix</div>
+  <div class="section-subtitle">How every app stacks up across key capabilities. Purple dots = planned for Staq.</div>
+  
+  <div class="legend">
+    <span><span class="dot yes"></span> Has</span>
+    <span><span class="dot partial"></span> Partial</span>
+    <span><span class="dot no"></span> Missing</span>
+    <span><span class="dot planned"></span> Staq (planned)</span>
+  </div>
+
+  <div class="matrix-wrap">
+  <table class="matrix">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th class="staq">STAQ</th>
+        <th>Trott</th>
+        <th>Trunky</th>
+        <th>Saver</th>
+        <th>Faves</th>
+        <th>PickTok</th>
+        <th>MyMind</th>
+        <th>Dewey</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="9" style="background:#0d0d1a; color:#666; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:12px 8px;">SAVE FLOW</td></tr>
+      <tr><td>iOS Share Extension</td><td><span class="dot planned"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot partial"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Save-to-folder from share sheet</td><td><span class="dot planned"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Bulk import collections</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td></tr>
+      <tr><td>Screenshot import & analysis</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Content persists if original deleted</td><td><span class="dot planned"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td></tr>
+      
+      <tr><td colspan="9" style="background:#0d0d1a; color:#666; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:12px 8px;">ORGANIZATION</td></tr>
+      <tr><td>AI auto-categorization</td><td><span class="dot planned"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot partial"></span></td></tr>
+      <tr><td>User-created collections/stacks</td><td><span class="dot planned"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td></tr>
+      <tr><td>Sub-collections / nesting</td><td><span class="dot planned"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td></tr>
+      <tr><td>Confidence tiers (auto/maybe/inbox)</td><td><span class="dot planned"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Manual tags</td><td><span class="dot planned"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td></tr>
+      <tr><td>Color-coded folders</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Notes per save</td><td><span class="dot planned"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td></tr>
+
+      <tr><td colspan="9" style="background:#0d0d1a; color:#666; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:12px 8px;">AI / INTELLIGENCE</td></tr>
+      <tr><td>Content-type detection</td><td><span class="dot planned"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot partial"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Progressive enrichment (type-specific metadata)</td><td><span class="dot planned"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot partial"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>AI chat across all saves</td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Auto-summaries of video content</td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Serendipity / resurface old saves</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>User corrections train the model</td><td><span class="dot planned"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+
+      <tr><td colspan="9" style="background:#0d0d1a; color:#666; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:12px 8px;">CONTENT TYPE ENRICHMENT</td></tr>
+      <tr><td>Recipes → ingredients + steps</td><td><span class="dot planned"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Travel → map pins + coordinates</td><td><span class="dot planned"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Products → price + buy link</td><td><span class="dot planned"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot partial"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Workouts → exercises + reps</td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Movies/TV → metadata from OMDB/TMDB</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Grocery list from recipe saves</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+
+      <tr><td colspan="9" style="background:#0d0d1a; color:#666; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:12px 8px;">SEARCH & DISCOVERY</td></tr>
+      <tr><td>Keyword search</td><td><span class="dot planned"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot partial"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td></tr>
+      <tr><td>Visual / image-based search</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Filter by content type</td><td><span class="dot planned"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Reminders / "watch later" nudge</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+
+      <tr><td colspan="9" style="background:#0d0d1a; color:#666; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:12px 8px;">SOCIAL & SHARING</td></tr>
+      <tr><td>Shared / collaborative collections</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td></tr>
+      <tr><td>Public shareable links</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td></tr>
+      <tr><td>Export (CSV, PDF)</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot yes"></span></td></tr>
+
+      <tr><td colspan="9" style="background:#0d0d1a; color:#666; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:12px 8px;">PLATFORM & UX</td></tr>
+      <tr><td>Widgets (lock screen / home)</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Offline access</td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot no"></span></td><td><span class="dot partial"></span></td><td><span class="dot yes"></span></td><td><span class="dot partial"></span></td><td><span class="dot no"></span></td></tr>
+      <tr><td>Rich link previews / thumbnails</td><td><span class="dot planned"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td><td><span class="dot yes"></span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- CONTENT TYPE ENRICHMENT DETAIL -->
+<div class="section">
+  <div class="section-title">Content-Type Enrichment — What to Extract Per Category</div>
+  <div class="section-subtitle">Based on what Trott, Trunky, and vertical apps are doing. These are the metadata fields users find most valuable.</div>
+
+  <div class="vertical-grid">
+    <div class="vert-card">
+      <div class="emoji">🍳</div>
+      <h4>Recipes</h4>
+      <div class="fields">
+        <span>✓ Ingredient list</span>
+        <span>✓ Step-by-step instructions</span>
+        <span>✓ Prep + cook time</span>
+        <span>✓ Dietary tags (vegan, keto…)</span>
+        <span>✓ Servings</span>
+        <span>★ Grocery list generation</span>
+        <span>★ Nutrition estimates</span>
+      </div>
+      <div class="who">Proven by: Honeydew, Trunky, Trott, Flavorish</div>
+    </div>
+    <div class="vert-card">
+      <div class="emoji">✈️</div>
+      <h4>Travel / Places</h4>
+      <div class="fields">
+        <span>✓ Location name + coordinates</span>
+        <span>✓ Google Maps deep link</span>
+        <span>✓ Google rating</span>
+        <span>✓ Activity type</span>
+        <span>★ Multi-stop route planning</span>
+        <span>★ Price range</span>
+        <span>★ "Best time to visit"</span>
+      </div>
+      <div class="who">Proven by: Trunky, Trott, Roamy</div>
+    </div>
+    <div class="vert-card">
+      <div class="emoji">🛍️</div>
+      <h4>Products</h4>
+      <div class="fields">
+        <span>✓ Product name + brand</span>
+        <span>✓ Price</span>
+        <span>✓ Buy link</span>
+        <span>✓ Pro/con summary</span>
+        <span>★ Price tracking / alerts</span>
+        <span>★ Alternative products</span>
+      </div>
+      <div class="who">Proven by: Trott, MyMind</div>
+    </div>
+    <div class="vert-card">
+      <div class="emoji">🎬</div>
+      <h4>Movies / TV / Books</h4>
+      <div class="fields">
+        <span>✓ Title + year</span>
+        <span>✓ Rating (IMDB/RT)</span>
+        <span>✓ Genre + cast</span>
+        <span>✓ Where to watch (streaming)</span>
+        <span>★ "Watched" toggle</span>
+        <span>★ Personal rating</span>
+      </div>
+      <div class="who">Proven by: Trunky (OMDB)</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="label">Key Insight</div>
+    <p>Trunky's grocery list feature (recipe save → auto-generated shopping list) is the most compelling "save-to-action" pipeline in this entire competitive set. It turns a passive save into an active workflow. Staq should think about what the "grocery list equivalent" is for each content type: recipes → grocery list, travel → itinerary, products → price alert, movies → "where to watch" link.</p>
+  </div>
+</div>
+
+<!-- FEATURE RECOMMENDATIONS -->
+<div class="section">
+  <div class="section-title">Feature Recommendations for Staq</div>
+  <div class="section-subtitle">Prioritized based on competitive gaps, user demand signals, and differentiation potential</div>
+
+  <div class="rec-grid">
+    <!-- MUST HAVE -->
+    <div class="rec-card must">
+      <div class="priority">Must Have — V1 Launch</div>
+      <h3>Bulletproof Share Extension</h3>
+      <p>Save-to-stack in ≤2 taps from any app. Option to pick stack OR auto-assign. This is THE feature that makes or breaks every app in this space. Saver and PickTok prove it.</p>
+      <div class="source">Signal: Every top-reviewed app cites the share extension as #1 feature</div>
+    </div>
+    <div class="rec-card must">
+      <div class="priority">Must Have — V1 Launch</div>
+      <h3>Rich Link Previews</h3>
+      <p>Every saved link shows thumbnail, title, source platform icon, and a 1-line description. Without this, saves feel like a list of URLs. Every competitor has this.</p>
+      <div class="source">Signal: Saver's addition of link previews is mentioned in multiple positive reviews</div>
+    </div>
+    <div class="rec-card must">
+      <div class="priority">Must Have — V1 Launch</div>
+      <h3>Content Persistence</h3>
+      <p>Cache thumbnails and key metadata locally so saves remain useful even if the original post is deleted. Users mention this fear constantly — "creators delete posts" is a real pain.</p>
+      <div class="source">Signal: Dewey, Faves, MyMind all market this. Users cite it in reviews.</div>
+    </div>
+    <div class="rec-card must">
+      <div class="priority">Must Have — V1 Launch</div>
+      <h3>AI Auto-Categorization + Manual Override</h3>
+      <p>Your confidence-tier system (auto/maybe/inbox) is the unique middle ground between MyMind's "organize nothing" and Saver's "organize everything manually." Ship this in V1 — it's your key differentiator.</p>
+      <div class="source">Signal: No competitor has this. Trott auto-sorts but has no user override. Saver is 100% manual.</div>
+    </div>
+    <div class="rec-card must">
+      <div class="priority">Must Have — V1 Launch</div>
+      <h3>Content-Type Detection (at minimum)</h3>
+      <p>Identify whether a save is a recipe, product, place, article, video, etc. Display a type badge. Even without full enrichment, this context makes the grid useful.</p>
+      <div class="source">Signal: Trott and Trunky both lead with this. MyMind does it silently.</div>
+    </div>
+    <div class="rec-card must">
+      <div class="priority">Must Have — V1 Launch</div>
+      <h3>Search Across All Saves</h3>
+      <p>Keyword search across titles, tags, notes, and AI-generated metadata. Users with 200+ saves need this immediately.</p>
+      <div class="source">Signal: MyMind's #1 praised feature. Saver's biggest missing feature per reviews.</div>
+    </div>
+
+    <!-- SHOULD HAVE -->
+    <div class="rec-card should">
+      <div class="priority">Should Have — V1.1</div>
+      <h3>Recipe Enrichment Pipeline</h3>
+      <p>Auto-extract ingredients, steps, prep time from recipe URLs and videos. This is the highest-demand content type across all competitors. Start here before other verticals.</p>
+      <div class="source">Signal: Honeydew ($4/mo), Trunky, Trott, Flavorish all prove willingness to pay for this</div>
+    </div>
+    <div class="rec-card should">
+      <div class="priority">Should Have — V1.1</div>
+      <h3>Travel / Places Enrichment</h3>
+      <p>Extract location from travel saves, show on map, pull Google rating. Second-highest demand after recipes.</p>
+      <div class="source">Signal: Trunky's map view, Trott's Google Maps integration, Roamy's entire product</div>
+    </div>
+    <div class="rec-card should">
+      <div class="priority">Should Have — V1.1</div>
+      <h3>Color / Visual Customization for Stacks</h3>
+      <p>Let users assign colors or icons to stacks. PickTok's color-coded folders get mentioned in almost every positive review. Simple but emotionally resonant.</p>
+      <div class="source">Signal: PickTok, Saver both have this. Users love visual differentiation.</div>
+    </div>
+    <div class="rec-card should">
+      <div class="priority">Should Have — V1.1</div>
+      <h3>Video Auto-Summary</h3>
+      <p>For saved TikToks/Reels, generate a 2-line text summary so users don't have to re-watch to remember what it was. This turns a video save into a scannable card.</p>
+      <div class="source">Signal: Trunky and Trott both have this. Solves "I saved 50 reels and can't remember what any of them are"</div>
+    </div>
+    <div class="rec-card should">
+      <div class="priority">Should Have — V1.1</div>
+      <h3>AI Chat / Natural Language Search</h3>
+      <p>"Show me that pasta recipe from last week" or "find the hotel in Santorini." Both Trott and Trunky have this. It's the magic moment that makes users go "wow."</p>
+      <div class="source">Signal: Trott's most-cited feature in testimonials. "Mind = blown 🤯"</div>
+    </div>
+
+    <!-- COULD HAVE -->
+    <div class="rec-card could">
+      <div class="priority">Could Have — V2</div>
+      <h3>Serendipity Mode</h3>
+      <p>Resurface random past saves — MyMind's signature feature. Turns the app from a "file-and-forget" tool into something you open for inspiration. Great for retention.</p>
+      <div class="source">Signal: MyMind's most unique feature. No social-first competitor has copied it yet.</div>
+    </div>
+    <div class="rec-card could">
+      <div class="priority">Could Have — V2</div>
+      <h3>Shared Stacks</h3>
+      <p>Let users share a stack publicly or with friends. "My Tokyo trip stack" or "Wedding inspiration." Trunky and Dewey have this. Growth vector via sharing.</p>
+      <div class="source">Signal: Trunky's newest feature. Dewey's public folders are popular.</div>
+    </div>
+    <div class="rec-card could">
+      <div class="priority">Could Have — V2</div>
+      <h3>Grocery List from Recipe Stack</h3>
+      <p>Aggregate ingredients across multiple recipe saves into one shopping list. Trunky just shipped this. It's the ultimate "save → action" pipeline.</p>
+      <div class="source">Signal: Trunky, Honeydew both have this. Turns passive saves into active utility.</div>
+    </div>
+    <div class="rec-card could">
+      <div class="priority">Could Have — V2</div>
+      <h3>Screenshot Import</h3>
+      <p>Many users screenshot social posts instead of using share. ScreenshotAI (Fabric) proves the concept. Auto-detect screenshots of social content and import them.</p>
+      <div class="source">Signal: ScreenshotAI has traction. "Save and Organize" app has this partially.</div>
+    </div>
+    <div class="rec-card could">
+      <div class="priority">Could Have — V2</div>
+      <h3>Reminders / "Watch Later" Nudge</h3>
+      <p>Set a reminder on a save — "watch this recipe Saturday morning." No competitor does this well. The "Save and Organize" app has basic reminders.</p>
+      <div class="source">Signal: "Save and Organize" is the only app with reminders. Massive unserved need.</div>
+    </div>
+    <div class="rec-card could">
+      <div class="priority">Could Have — V2</div>
+      <h3>Widgets (Lock Screen + Home)</h3>
+      <p>Show recent saves or a random save from your stacks. MyMind users begged for a lock screen widget to reduce capture friction. Zero competitors have this.</p>
+      <div class="source">Signal: #1 MyMind feature request. "Save and Organize" has basic widgets. Nobody does it well.</div>
+    </div>
+  </div>
+</div>
+
+<!-- UNIQUE STAQ ADVANTAGES -->
+<div class="section">
+  <div class="section-title">Staq's Unique Advantages (Features Nobody Else Has)</div>
+  <div class="section-subtitle">These are already in your design that no competitor offers</div>
+
+  <div class="comp-grid">
+    <div class="comp-card" style="border-color: #a78bfa;">
+      <h3 style="color: #a78bfa; margin-bottom: 8px;">Confidence-Tier Organization</h3>
+      <p style="font-size: 13px; color: #999;">High confidence → auto-placed. Medium → "Maybe Recipes?" suggestion. Low → Inbox triage. User corrections train the model. Nobody else has this middle ground between full-auto (MyMind/Trott) and full-manual (Saver/PickTok).</p>
+    </div>
+    <div class="comp-card" style="border-color: #a78bfa;">
+      <h3 style="color: #a78bfa; margin-bottom: 8px;">Learning Loop from Corrections</h3>
+      <p style="font-size: 13px; color: #999;">When a user moves something from "Products" to "Gift Ideas," Staq learns. Trott and Trunky auto-sort but never learn from user behavior. This is a genuine ML moat that improves with usage.</p>
+    </div>
+    <div class="comp-card" style="border-color: #a78bfa;">
+      <h3 style="color: #a78bfa; margin-bottom: 8px;">Universal Content Types</h3>
+      <p style="font-size: 13px; color: #999;">Trott does video only. Trunky does food/travel/movies only. Saver does everything but dumbly. Staq handles ALL content types (links, videos, articles, products, places) with smart enrichment per type.</p>
+    </div>
+    <div class="comp-card" style="border-color: #a78bfa;">
+      <h3 style="color: #a78bfa; margin-bottom: 8px;">The "Stacks" Metaphor</h3>
+      <p style="font-size: 13px; color: #999;">Not folders (boring), not boards (Pinterest), not collections (generic), not "spaces" (MyMind). Stacks feel tactile, stackable, browsable. Combined with the Q in Staq — ownable brand language.</p>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM LINE -->
+<div class="section">
+  <div class="section-title">The Bottom Line</div>
+
+  <div class="insight" style="background: linear-gradient(135deg, #1a1028, #0a1628); border-color: #1e4e8e;">
+    <div class="label" style="color: #60a5fa;">Strategic Summary</div>
+    <p style="font-size: 14px;">The market is moving fast — Trott and Trunky appeared in the last 6 months with nearly identical theses to Staq. But both are early, small, and have critical gaps. <strong>The window is open but narrowing.</strong></p>
+    <br>
+    <p style="font-size: 13px;"><strong>V1 priority order:</strong> (1) Nail the share extension. Saver proves this alone drives love. (2) Ship AI auto-categorization with confidence tiers — your unique differentiator. (3) Rich previews + content-type badges. (4) Search.</p>
+    <br>
+    <p style="font-size: 13px;"><strong>V1.1 priority:</strong> Recipe enrichment first (highest demand), then travel/maps, then video summaries, then AI chat.</p>
+    <br>
+    <p style="font-size: 13px;"><strong>V2 differentiation:</strong> Serendipity mode, shared stacks, grocery lists, widgets, screenshot import. These are the features that turn a utility app into a beloved daily-open app.</p>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

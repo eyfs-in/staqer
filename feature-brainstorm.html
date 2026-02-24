@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature Brainstorm & Platform Strategy</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf8f4;
+    --card: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #7d756a;
+    --border: #e2ddd5;
+    --accent: #c45d2c;
+    --teal: #1a7a65;
+    --blue: #2b6cb0;
+    --purple: #6b46a3;
+    --gold: #b8860b;
+    --red: #b83232;
+    --green-bg: #edf7f2;
+    --blue-bg: #eef4fb;
+    --orange-bg: #fdf3ec;
+    --purple-bg: #f5f0fa;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.7; }
+  .page { max-width: 920px; margin: 0 auto; padding: 48px 28px 120px; }
+
+  /* Header */
+  .hero { margin-bottom: 56px; }
+  .hero .eyebrow { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  h1 { font-family: 'Fraunces', serif; font-size: 2.4rem; line-height: 1.18; font-weight: 700; margin-bottom: 14px; }
+  .hero .sub { font-size: 1rem; color: var(--muted); max-width: 640px; }
+
+  /* Sections */
+  .section { margin-bottom: 60px; }
+  h2 { font-family: 'Fraunces', serif; font-size: 1.55rem; margin-bottom: 16px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); display: inline-block; }
+  h3 { font-size: 1.05rem; font-weight: 700; margin: 20px 0 8px; }
+  h4 { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 28px 0 12px; }
+  p { font-size: 0.93rem; margin-bottom: 12px; }
+
+  /* Platform cards */
+  .platform-answer { background: var(--green-bg); border: 2px solid var(--teal); border-radius: 6px; padding: 28px; margin: 20px 0 32px; }
+  .platform-answer h3 { margin-top: 0; color: var(--teal); font-size: 1.1rem; }
+  .platform-answer p { font-size: 0.92rem; }
+
+  /* Device grid */
+  .device-section { margin: 24px 0; }
+  .device-tier { margin-bottom: 24px; }
+  .tier-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 12px; border-radius: 3px; display: inline-block; margin-bottom: 10px; }
+  .tier-label.t1 { background: var(--ink); color: var(--bg); }
+  .tier-label.t2 { background: var(--accent); color: #fff; }
+  .tier-label.t3 { background: var(--muted); color: #fff; }
+  .device-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .device-chip { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; font-size: 0.85rem; }
+  .device-chip .dc-name { font-weight: 700; font-size: 0.88rem; }
+  .device-chip .dc-info { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+  .device-chip .dc-note { font-size: 0.75rem; color: var(--teal); margin-top: 4px; }
+
+  /* Feature brainstorm */
+  .feature-category { margin-bottom: 32px; }
+  .fc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; cursor: default; }
+  .fc-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+  .fc-title { font-weight: 700; font-size: 1.05rem; }
+  .fc-sub { font-size: 0.78rem; color: var(--muted); }
+
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 640px) { .feature-grid { grid-template-columns: 1fr; } }
+
+  .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 5px; padding: 16px; position: relative; transition: box-shadow 0.15s; }
+  .feature-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .feature-card .f-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .feature-card .f-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .feature-card .f-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+
+  .ftag { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 2px; }
+  .ftag.p0 { background: #fde2e2; color: var(--red); }
+  .ftag.p1 { background: #fef3cd; color: var(--gold); }
+  .ftag.p2 { background: #e0ecf7; color: var(--blue); }
+  .ftag.p3 { background: #f0e8f5; color: var(--purple); }
+  .ftag.off { background: #d8f0e5; color: var(--teal); }
+  .ftag.on { background: #fde8d0; color: var(--accent); }
+  .ftag.new { background: var(--ink); color: var(--bg); }
+  .ftag.wow { background: linear-gradient(90deg, var(--accent), var(--purple)); color: #fff; }
+
+  .callout { padding: 20px 24px; border-radius: 5px; margin: 20px 0; font-size: 0.92rem; }
+  .callout.green { background: var(--green-bg); border-left: 4px solid var(--teal); }
+  .callout.blue { background: var(--blue-bg); border-left: 4px solid var(--blue); }
+  .callout.orange { background: var(--orange-bg); border-left: 4px solid var(--accent); }
+  .callout.purple { background: var(--purple-bg); border-left: 4px solid var(--purple); }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  /* Path comparison */
+  .path-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 20px 0; }
+  @media (max-width: 700px) { .path-grid { grid-template-columns: 1fr; } }
+  .path-card { background: var(--card); border: 2px solid var(--border); border-radius: 6px; padding: 20px; }
+  .path-card.recommended { border-color: var(--teal); }
+  .path-card .pc-label { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .path-card .pc-label.rec { color: var(--teal); }
+  .path-card h3 { margin: 0 0 10px; font-size: 1rem; }
+  .path-card ul { padding-left: 16px; margin: 0; }
+  .path-card li { font-size: 0.82rem; margin-bottom: 4px; }
+  .pro { color: var(--teal); }
+  .con { color: var(--red); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* Phase timeline */
+  .phase { display: flex; gap: 20px; margin: 16px 0; align-items: flex-start; }
+  .phase-dot { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 0.75rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .phase-dot.ph1 { background: var(--teal); }
+  .phase-dot.ph2 { background: var(--blue); }
+  .phase-dot.ph3 { background: var(--purple); }
+  .phase-dot.ph4 { background: var(--gold); }
+  .phase-content h3 { margin: 0 0 4px; font-size: 0.95rem; }
+  .phase-content p { font-size: 0.85rem; color: var(--muted); margin: 0; }
+  .phase-content .phase-time { font-family: var(--mono); font-size: 0.7rem; color: var(--accent); }
+
+  /* Count badge */
+  .count { font-family: var(--mono); font-size: 0.7rem; background: var(--border); padding: 1px 8px; border-radius: 10px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <div class="eyebrow">Feature Brainstorm & Platform Strategy</div>
+  <h1>Every Feature This App Could Have — And Which Platform to Build It On</h1>
+  <div class="sub">A wide-open brainstorm across 11 feature categories, followed by an honest platform recommendation with exact device support.</div>
+</div>
+
+<!-- ============================== -->
+<!-- PART 1: PLATFORM STRATEGY      -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Part 1: The Platform Question</h2>
+
+<p>Let me give you the honest, nuanced answer — not just "go iOS." There are three realistic paths, each with real tradeoffs:</p>
+
+<div class="path-grid">
+  <div class="path-card recommended">
+    <div class="pc-label rec">✦ RECOMMENDED</div>
+    <h3>Path A: Native iOS First → Android Later</h3>
+    <ul>
+      <li class="pro">✓ Foundation Models is Swift-native — no bridging</li>
+      <li class="pro">✓ Share Extensions work reliably in native</li>
+      <li class="pro">✓ Apple actively promotes apps using Foundation Models — editorial feature potential</li>
+      <li class="pro">✓ SwiftUI + Liquid Glass = premium feel</li>
+      <li class="pro">✓ iOS users 2x more likely to pay for apps</li>
+      <li class="pro">✓ Fastest path to a polished MVP</li>
+      <li class="con">✗ No Android at launch</li>
+      <li class="con">✗ Need to learn Swift/SwiftUI (new for you)</li>
+      <li class="con">✗ Android later = separate codebase</li>
+    </ul>
+  </div>
+  
+  <div class="path-card">
+    <div class="pc-label">PRACTICAL ALTERNATIVE</div>
+    <h3>Path B: Flutter UI + Native AI Channels</h3>
+    <ul>
+      <li class="pro">✓ Leverages your Flutter expertise</li>
+      <li class="pro">✓ Cross-platform UI from day one</li>
+      <li class="pro">✓ Shared business logic and data layer</li>
+      <li class="con">✗ Still need Swift platform channel for Foundation Models</li>
+      <li class="con">✗ Still need Kotlin channel for ML Kit GenAI</li>
+      <li class="con">✗ Share Extensions in Flutter are fragile and limited</li>
+      <li class="con">✗ ~30-40% extra work on bridging layer</li>
+      <li class="con">✗ Can't use Liquid Glass / Material You natively</li>
+      <li class="con">✗ Apple less likely to feature Flutter apps</li>
+    </ul>
+  </div>
+  
+  <div class="path-card">
+    <div class="pc-label">AMBITIOUS</div>
+    <h3>Path C: Native iOS + Native Android</h3>
+    <ul>
+      <li class="pro">✓ Best possible experience on both platforms</li>
+      <li class="pro">✓ Full native AI access everywhere</li>
+      <li class="pro">✓ Both App Store and Play Store from launch</li>
+      <li class="con">✗ Double the development effort</li>
+      <li class="con">✗ Need proficiency in both Swift and Kotlin</li>
+      <li class="con">✗ Feature parity becomes a constant struggle</li>
+      <li class="con">✗ Only viable with a team or co-founder</li>
+    </ul>
+  </div>
+</div>
+
+<div class="platform-answer">
+  <h3>My Recommendation: Path A — Native iOS First, Validate, Then Expand</h3>
+  <p>Here's why this isn't just "iOS only" — it's a <strong>staged strategy</strong>:</p>
+  <p>For this specific app, the on-device AI IS the product. Apple's Foundation Models framework is deeply tied to Swift's type system (@Generable macros, guided generation, tool calling). Building this in Flutter would mean writing all the AI logic in Swift anyway, then bridging it — adding complexity without adding value. The share extension (your #1 entry point) is also significantly more reliable in native iOS.</p>
+  <p>More importantly: <strong>Apple is actively looking for apps that showcase Foundation Models.</strong> They highlighted SmartGym, Stoic, Day One, OmniFocus in press releases within weeks of iOS 26 launch. A well-built AI curation app could earn editorial featuring — which is worth more than any marketing budget.</p>
+  <p><strong>The plan:</strong> Launch iOS → validate product-market fit (3-4 months) → if traction is strong, build Android natively with Kotlin + ML Kit GenAI APIs. Shared backend (Supabase or Firebase) keeps data portable. By then, Gemini Nano's Prompt API will be out of alpha and into production.</p>
+  <p style="margin-bottom:0;"><strong>Your Flutter skills aren't wasted.</strong> If you later want a web companion, admin dashboard, or decide Android needs to ship fast — Flutter is perfect for those. And your understanding of cross-platform architecture will make the backend design cleaner.</p>
+</div>
+</div>
+
+<!-- ============================== -->
+<!-- PART 2: DEVICE SUPPORT          -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Part 2: Exact Device Support</h2>
+
+<p>Foundation Models framework requires Apple Intelligence, which requires an A17 Pro chip or newer. Here's every device that can run your app's full AI features:</p>
+
+<div class="device-section">
+  <h4>iPhone — Full AI Support (Foundation Models + Vision)</h4>
+  
+  <div class="device-tier">
+    <span class="tier-label t1">Tier 1 — Latest Flagships (2025)</span>
+    <div class="device-list">
+      <div class="device-chip">
+        <div class="dc-name">iPhone 17 Pro Max</div>
+        <div class="dc-info">A19 Pro · 12GB RAM</div>
+        <div class="dc-note">Best AI performance</div>
+      </div>
+      <div class="device-chip">
+        <div class="dc-name">iPhone 17 Pro</div>
+        <div class="dc-info">A19 Pro · 12GB RAM</div>
+      </div>
+      <div class="device-chip">
+        <div class="dc-name">iPhone 17</div>
+        <div class="dc-info">A19 · 8GB RAM</div>
+      </div>
+      <div class="device-chip">
+        <div class="dc-name">iPhone 17 Air</div>
+        <div class="dc-info">A19 · 8GB RAM</div>
+        <div class="dc-note">New form factor, large market</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="device-tier">
+    <span class="tier-label t2">Tier 2 — 2024 Models (Your Primary Market)</span>
+    <div class="device-list">
+      <div class="device-chip">
+        <div class="dc-name">iPhone 16 Pro Max</div>
+        <div class="dc-info">A18 Pro · 8GB RAM</div>
+      </div>
+      <div class="device-chip">
+        <div class="dc-name">iPhone 16 Pro</div>
+        <div class="dc-info">A18 Pro · 8GB RAM</div>
+      </div>
+      <div class="device-chip">
+        <div class="dc-name">iPhone 16 Plus</div>
+        <div class="dc-info">A18 · 8GB RAM</div>
+      </div>
+      <div class="device-chip">
+        <div class="dc-name">iPhone 16</div>
+        <div class="dc-info">A18 · 8GB RAM</div>
+      </div>
+      <div class="device-chip">
+        <div class="dc-name">iPhone 16e</div>
+        <div class="dc-info">A18 · 8GB RAM</div>
+        <div class="dc-note">Budget but AI-capable</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="device-tier">
+    <span class="tier-label t3">Tier 3 — 2023 Pro Models (Still Strong)</span>
+    <div class="device-list">
+      <div class="device-chip">
+        <div class="dc-name">iPhone 15 Pro Max</div>
+        <div class="dc-info">A17 Pro · 8GB RAM</div>
+        <div class="dc-note">Minimum for Foundation Models</div>
+      </div>
+      <div class="device-chip">
+        <div class="dc-name">iPhone 15 Pro</div>
+        <div class="dc-info">A17 Pro · 8GB RAM</div>
+        <div class="dc-note">Minimum for Foundation Models</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="device-section">
+  <h4>iPad — Full AI Support</h4>
+  <div class="device-list">
+    <div class="device-chip">
+      <div class="dc-name">iPad Pro (M1, M2, M4)</div>
+      <div class="dc-info">M-series · 8-16GB RAM</div>
+    </div>
+    <div class="device-chip">
+      <div class="dc-name">iPad Air (M1, M2, M3)</div>
+      <div class="dc-info">M-series · 8GB RAM</div>
+    </div>
+    <div class="device-chip">
+      <div class="dc-name">iPad mini (A17 Pro)</div>
+      <div class="dc-info">A17 Pro · 8GB RAM</div>
+    </div>
+  </div>
+</div>
+
+<div class="device-section">
+  <h4>Android — For Phase 2 (Gemini Nano + ML Kit GenAI)</h4>
+  <div class="device-list">
+    <div class="device-chip">
+      <div class="dc-name">Pixel 10 / 10 Pro</div>
+      <div class="dc-info">Tensor G5 · Latest Nano</div>
+    </div>
+    <div class="device-chip">
+      <div class="dc-name">Pixel 9 / 9 Pro / 9 Pro XL</div>
+      <div class="dc-info">Tensor G4</div>
+    </div>
+    <div class="device-chip">
+      <div class="dc-name">Samsung Galaxy S25 series</div>
+      <div class="dc-info">Snapdragon 8 Elite</div>
+    </div>
+    <div class="device-chip">
+      <div class="dc-name">Samsung Galaxy S24+ / Ultra</div>
+      <div class="dc-info">Snapdragon 8 Gen 3</div>
+    </div>
+    <div class="device-chip">
+      <div class="dc-name">Xiaomi 15</div>
+      <div class="dc-info">Snapdragon 8 Elite</div>
+    </div>
+    <div class="device-chip">
+      <div class="dc-name">OnePlus 13</div>
+      <div class="dc-info">Snapdragon 8 Elite</div>
+    </div>
+    <div class="device-chip">
+      <div class="dc-name">Motorola Razr 60 Ultra</div>
+      <div class="dc-info">MediaTek Dimensity</div>
+    </div>
+    <div class="device-chip">
+      <div class="dc-name">Honor Magic 7</div>
+      <div class="dc-info">Snapdragon 8 Elite</div>
+    </div>
+  </div>
+</div>
+
+<div class="callout blue">
+  <strong>Market size estimate:</strong>
+  Apple Intelligence-compatible iPhones represent roughly 350-400 million active devices globally as of early 2026 (iPhone 15 Pro + all iPhone 16/17 models). These skew heavily toward users who buy the latest phones — exactly the demographic willing to pay $5-6/month for a premium app. iPad adds another 100M+ devices. For Phase 2, Gemini Nano-capable Androids likely number 150-200M devices (Pixel 8+, Galaxy S24+, etc). Combined: 500M+ potential devices with on-device AI.
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- PART 3: FEATURE BRAINSTORM      -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Part 3: The Complete Feature Brainstorm</h2>
+<p>Let's go wide — every possible feature, organized by category. I've tagged each with priority (P0 = MVP, P1 = fast follow, P2 = growth, P3 = future) and whether it's offline or online.</p>
+
+<!-- CATEGORY 1: CAPTURE -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#fde8d0;">📥</div>
+    <div>
+      <div class="fc-title">Capture — Getting Content In <span class="count">8 features</span></div>
+      <div class="fc-sub">Every way a user might want to save content</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">Share Sheet Save</div>
+      <div class="f-desc">One-tap save from any app. User shares a URL from Instagram, TikTok, YouTube, Pinterest, X, Safari — app grabs it. The #1 entry point. Must feel instant.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag on">ONLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Screenshot Auto-Detect</div>
+      <div class="f-desc">Detect when user takes a screenshot. Show a subtle prompt: "Save this to your buckets?" If yes, run OCR + image classification on the screenshot to classify it. Great for content that can't be shared via URL (Instagram stories, Snapchat, etc).</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Clipboard URL Detection</div>
+      <div class="f-desc">When user opens the app with a URL on clipboard, gently ask "Save this link?" — like many read-it-later apps do. Low-friction alternative to share sheet.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag on">ONLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Camera Scan Save</div>
+      <div class="f-desc">Point camera at a restaurant menu, product label, event poster, book cover. AI reads text + recognizes objects → saves with structured data. "Scan this menu → save to Restaurants bucket with dishes extracted."</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Safari Extension</div>
+      <div class="f-desc">For web browsing: one-tap save button in Safari toolbar. Captures full page metadata, screenshot, and article text. Works for blog posts, product pages, recipes.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag on">ONLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Manual URL Entry</div>
+      <div class="f-desc">Paste a URL directly in the app. Fallback for when share sheet doesn't work or user wants to save from desktop via copy-paste.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag on">ONLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Quick Note Capture</div>
+      <div class="f-desc">Save a text note without a URL. "Raj recommended a restaurant called Dishoom in London" → AI parses → saves to Restaurants bucket with location "London" and name "Dishoom." Like saving a verbal recommendation.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Voice Save</div>
+      <div class="f-desc">"Hey Siri, save this to my travel bucket" — or in-app voice memo. Transcribed + classified. Perfect for when user hears a recommendation IRL and wants to capture it fast.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY 2: AI INTELLIGENCE -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#d8f0e5;">🧠</div>
+    <div>
+      <div class="fc-title">AI Intelligence — The Brain <span class="count">10 features</span></div>
+      <div class="fc-sub">On-device AI features that make the app smart</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">Auto-Bucket Classification</div>
+      <div class="f-desc">The core feature. Analyzes image + text + hashtags → assigns to the right bucket. Uses Vision framework for image signals + Foundation Models for text understanding. Returns structured result: bucket, confidence, alternative bucket.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span><span class="ftag new">CORE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Entity Extraction</div>
+      <div class="f-desc">Pull structured data from captions: location names ("Bali"), prices ("$49.99"), brand names ("Zara"), ingredient lists, exercise names, book titles. Foundation Models @Generable returns typed Swift structs.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span><span class="ftag new">CORE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">AI Summary Generation</div>
+      <div class="f-desc">1-2 sentence summary of every saved item. "A 15-min HIIT workout targeting core and glutes, no equipment needed." Makes browsing buckets fast and scannable.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Image Scene Understanding</div>
+      <div class="f-desc">Vision framework classifies thumbnail: beach → travel, food plating → recipe, clothing → shopping, gym → fitness. Multi-label: "beach + restaurant + sunset" = Travel + Food. Handles ambiguous content with confidence scores.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Natural Language Search</div>
+      <div class="f-desc">"That pasta recipe from TikTok" or "blue dress someone posted" — searches across all AI-generated tags, summaries, extracted entities, and source metadata. Feels like searching your own brain.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Learning from Corrections</div>
+      <div class="f-desc">When user moves an item from wrong bucket to correct bucket, the app learns. Over time: "Posts from @chef_mike always go to Recipes" or "Videos with #bali go to your Japan 2026 bucket." On-device personalization.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Duplicate Detection</div>
+      <div class="f-desc">If user saves the same URL twice (or similar content from different reposts), detect and alert. "You already saved this 2 weeks ago — it's in your Travel bucket." Uses URL matching + image similarity.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Auto Sub-Bucket Clustering</div>
+      <div class="f-desc">"You've saved 12 items about Bali in your Travel bucket — create a 'Bali Trip' sub-bucket?" AI detects clusters of related content within a bucket and suggests grouping them. Emergent organization.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Cross-Bucket Intelligence</div>
+      <div class="f-desc">"You saved 5 Bali travel posts + 3 Bali restaurant posts + 2 Bali hotel posts across different buckets. Create a unified Bali Trip plan?" Connects dots across categories.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Content-Aware Descriptions</div>
+      <div class="f-desc">For image-heavy saves with no caption, generate a description: "Photo of a modern Scandinavian living room with white oak floors and a green velvet sofa." Uses Foundation Models multimodal + Vision.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY 3: ORGANIZATION -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#e0ecf7;">📂</div>
+    <div>
+      <div class="fc-title">Organization & Browsing <span class="count">9 features</span></div>
+      <div class="fc-sub">How users navigate and manage their saved content</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">Default Smart Buckets</div>
+      <div class="f-desc">Pre-created buckets with AI tuned for each: Travel, Shopping, Recipes, Learning, Fitness, Home & Decor, Entertainment, Inspiration. Each has a distinct icon and card layout optimized for its content type.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Custom Buckets</div>
+      <div class="f-desc">User creates "Japan 2026" or "Gift Ideas for Mom" or "Apartment Hunt." Provide a name + optional description → AI learns to route matching content. Can set bucket-specific rules: "anything with #tokyo goes here."</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Multiple View Modes</div>
+      <div class="f-desc">Grid (Pinterest-style masonry), List (compact with summaries), Moodboard (large images, design-focused), Timeline (chronological). Different buckets benefit from different views — recipes as list, home decor as moodboard.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Smart Filters</div>
+      <div class="f-desc">Filter any bucket by: source platform (only Instagram), date range, content type (video vs image vs article), price range (shopping), location (travel), AI-extracted tags. Combinable.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Swipe to Re-Classify</div>
+      <div class="f-desc">In any bucket, swipe an item → quick-action menu: move to another bucket, archive, delete, mark as "Done." One-handed, fast. Like Tinder for your saves.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Inbox / Unsorted Queue</div>
+      <div class="f-desc">Items where AI confidence is below threshold land in Inbox. User reviews and assigns. Keeps buckets clean. Also useful for users who prefer manual control — save everything to inbox first, then sort.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Bulk Operations</div>
+      <div class="f-desc">Select multiple items → move all to a bucket, delete, archive, export, share as collection. Essential for power users who save 50+ items/week.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Pin / Star Favorites</div>
+      <div class="f-desc">Pin top items to top of bucket. Star items across buckets for a global "Favorites" view. Simple but essential for finding the most important saves quickly.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Archive</div>
+      <div class="f-desc">Items you've acted on (bought the shirt, visited the restaurant, made the recipe) move to Archive. Out of sight but searchable. Keeps active buckets focused on what's still ahead.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY 4: CONTENT PRESERVATION -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#fef3cd;">🛡️</div>
+    <div>
+      <div class="fc-title">Content Preservation <span class="count">5 features</span></div>
+      <div class="fc-sub">Saving content that survives deletion, linkrot, and platform changes</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">Local Thumbnail Cache</div>
+      <div class="f-desc">Download and store the preview image locally immediately on save. Even if the Instagram post is deleted tomorrow, you still have the image. This alone solves a huge pain point.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span><span class="ftag new">CORE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Metadata Snapshot</div>
+      <div class="f-desc">Store title, description, hashtags, creator name, platform, date saved — all locally. Even without the original content, you have complete context of what you saved and why.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Dead Link Detection</div>
+      <div class="f-desc">Periodically check if saved URLs are still live. Mark dead links with a "Content removed" badge but keep the cached data. "This post was deleted, but here's what you saved."</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag on">ONLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Full Page Archive (Premium)</div>
+      <div class="f-desc">For articles and web pages: save the complete HTML/text content locally. Read saved articles offline, forever. Like a personal Wayback Machine. Storage-intensive — premium tier.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag on">ONLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Export & Backup</div>
+      <div class="f-desc">Export any bucket or entire library as: JSON, CSV, PDF mood board, or shareable web link. Full data portability. Users never feel locked in.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY 5: ACTIONABILITY -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#fde2e2;">⚡</div>
+    <div>
+      <div class="fc-title">Actionability — From Saved to Done <span class="count">8 features</span></div>
+      <div class="fc-sub">The "so what?" — turning saves into actions</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">Action States</div>
+      <div class="f-desc">Mark any item: Want → Tried / Bought / Visited / Watched / Made / Read / Booked. Each bucket has context-appropriate states. Shopping: "Want → Bought." Travel: "Want → Booked → Visited." Recipes: "Want → Made." Turns passive saving into active living.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Price Drop Alerts</div>
+      <div class="f-desc">For shopping bucket items with product links: track price. Notify when price drops below threshold. "That jacket you saved is now 30% off!" Requires server-side scraping.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag on">ONLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Quick Actions per Bucket Type</div>
+      <div class="f-desc">Travel: "Open in Maps" / "Search flights." Shopping: "Open product page" / "Compare prices." Recipes: "Start cooking timer" / "Add ingredients to grocery list." Learning: "Open video" / "Mark as completed." Context-specific one-tap actions.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Grocery List Generator</div>
+      <div class="f-desc">Select multiple recipe saves → AI extracts ingredients from all → generates combined grocery list with duplicates merged. "You need: 3 onions, 500g chicken, 2 cans coconut milk..." Exportable to Reminders or AnyList.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Trip Planner View</div>
+      <div class="f-desc">For travel buckets: show saved items on a map. Group by location. Suggest an itinerary order. "You saved 4 things in Ubud and 3 in Seminyak — here's a suggested day-by-day plan."</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag on">ONLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Learning Progress Tracker</div>
+      <div class="f-desc">For learning bucket: track which tutorials/courses you've completed. Show progress bar: "Python fundamentals: 5/12 videos watched." Gamifies skill building from saved content.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Reminders Integration</div>
+      <div class="f-desc">"Remind me about this recipe on Saturday" or "Remind me to check this price in 2 weeks." Native iOS Reminders integration or in-app scheduling. Connects saves to your calendar.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">One-Tap "Open Original"</div>
+      <div class="f-desc">Every card has a clear button to open the original content in its native app (Instagram, YouTube, TikTok) or in Safari. Deep links where possible. The app is a launchpad, not a prison.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY 6: REVIEW & REDISCOVERY -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#f0e8f5;">✨</div>
+    <div>
+      <div class="fc-title">Review & Rediscovery <span class="count">7 features</span></div>
+      <div class="fc-sub">Preventing the "save and forget" problem</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">Weekly Digest</div>
+      <div class="f-desc">Push notification or in-app card: "This week: 14 new saves. 6 in Shopping, 4 in Travel, 4 in Recipes. You have 23 unacted items from last month." Gentle nudge to review.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Forgotten Gems</div>
+      <div class="f-desc">Surface random items from 30+ days ago: "Remember this? You saved it 6 weeks ago." Serendipity mode — like mymind's "wonder" feature. Prevents content burial.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Seasonal Highlights</div>
+      <div class="f-desc">"Summer is coming — here are 8 travel destinations you saved." / "Holiday season — here are gift ideas from your shopping bucket." Time-aware resurfacing based on content context.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Bucket Insights</div>
+      <div class="f-desc">Stats per bucket: "Travel: 47 saves, 12 unique destinations, most saved: Japan (8), most active month: March." Gives users a mirror of their aspirations and interests.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Monthly Recap</div>
+      <div class="f-desc">Shareable monthly summary card: "Your February: 32 saves across 5 buckets. Top interest: Italian cooking. New bucket: Apartment Hunt. 4 items completed." Instagram Stories-style recap.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Review Mode (Triage)</div>
+      <div class="f-desc">Tinder-style swipe through unsorted or old items: swipe right to keep, left to archive, up to re-bucket. Quick, fun, and satisfying. Borrowed from Readwise Reader's triage and Superhuman's inbox zero.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">"This Time Last Year"</div>
+      <div class="f-desc">On the anniversary of a save: "One year ago you saved this Santorini sunset post. Did you ever go?" Emotional, nostalgic, and drives action. Like Apple Photos' memories.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY 7: SOCIAL & SHARING -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#dde5f0;">👥</div>
+    <div>
+      <div class="fc-title">Social & Sharing <span class="count">6 features</span></div>
+      <div class="fc-sub">Collaborative and shareable features</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">Shared Buckets</div>
+      <div class="f-desc">Invite others to a bucket via link. Everyone can add content. Perfect for: trip planning with friends, couple's apartment hunt, family gift list, team mood boards. Real-time sync.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag on">ONLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Share Bucket as Link</div>
+      <div class="f-desc">Generate a beautiful read-only web link for any bucket. Share your "Best of Tokyo" recommendations or "Wedding Inspiration" board with anyone — even non-app users. Virality engine.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag on">ONLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Gift List Mode</div>
+      <div class="f-desc">Shopping bucket variant: mark items as "gift ideas for [person]." Share the list with that person before birthday/holiday. They can mark which ones they'd love. Private wish-list sharing.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag on">ONLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Recommend to Friends</div>
+      <div class="f-desc">"Send this bucket item to [contact]" — share a single save with context. "Check out this restaurant I saved!" Includes thumbnail, summary, and source link. iMessage + WhatsApp.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Public Curated Collections</div>
+      <div class="f-desc">Users optionally publish curated lists: "My Top 20 Bali Restaurants" or "Best YouTube Coding Tutorials 2026." Discoverable by other users. Builds community and content.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag on">ONLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Activity Feed (Shared Buckets)</div>
+      <div class="f-desc">In shared buckets, see who added what and when: "Sarah added 3 items to Japan Trip" / "Mike marked Tsukiji Market as Visited." Social layer without becoming a social network.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag on">ONLINE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY 8: SYSTEM INTEGRATION -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#e8e0f0;">📱</div>
+    <div>
+      <div class="fc-title">System Integration <span class="count">7 features</span></div>
+      <div class="fc-sub">Deep iOS integration that makes the app feel native and essential</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">Home Screen Widget</div>
+      <div class="f-desc">Small: shows save count + quick-save button. Medium: shows last 3-4 saves with thumbnails. Large: shows a bucket preview (e.g., "Travel" bucket carousel). Interactive widgets (iOS 17+).</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Lock Screen Widget</div>
+      <div class="f-desc">Quick access: tap to open app, or show "X unsorted items" counter. Subtle but keeps the app top-of-mind.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Siri Shortcuts</div>
+      <div class="f-desc">"Hey Siri, save this to my travel bucket" / "Hey Siri, show my shopping list" / "Hey Siri, what did I save this week?" App Intents integration for voice-driven interaction.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Spotlight Search</div>
+      <div class="f-desc">Saved items appear in iOS Spotlight search. User searches "pasta recipe" on home screen → your app's saved items appear alongside web results. Massive visibility.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Visual Intelligence Integration</div>
+      <div class="f-desc">New in iOS 26: apps can appear in Visual Intelligence results. User points camera at a product → your app surfaces matching saved items. "You saved something similar 2 weeks ago."</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Apple Watch Companion</div>
+      <div class="f-desc">Quick view of recent saves, bucket item counts, and "save from Watch" via dictation. Glanceable info: "3 new items in Travel today." Light utility.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">iPad Multi-Window</div>
+      <div class="f-desc">Full iPad support with multi-column layout, drag-and-drop between buckets, and Split View (browse Safari + save to app side-by-side). Premium experience on iPad.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY 9: PRIVACY & TRUST -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#d8f0e5;">🔒</div>
+    <div>
+      <div class="fc-title">Privacy & Trust <span class="count">5 features</span></div>
+      <div class="fc-sub">Privacy as a genuine feature, not just a checkbox</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">All AI On-Device Badge</div>
+      <div class="f-desc">Prominently show "All AI runs on your device. Your content never leaves your phone." in onboarding and settings. This is a marketing message AND a technical truth. Competitors (mymind, Dewey) can't claim this.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span><span class="ftag new">CORE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">No Account Required</div>
+      <div class="f-desc">Core app works without creating an account. Sign in only needed for sync and sharing. Removes friction from adoption. Privacy-conscious users love this.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Private Bucket (Face ID)</div>
+      <div class="f-desc">Lock any bucket behind Face ID / Touch ID. For sensitive saves: health research, gift surprises, personal purchases. Hidden from casual over-the-shoulder viewing.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Privacy Report</div>
+      <div class="f-desc">In-app transparency report: "Your data: 247 items stored locally. 0 items sent to cloud. AI processing: 100% on-device. Network calls: metadata fetch only." Full transparency.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">iCloud Sync (Apple-only)</div>
+      <div class="f-desc">For users who want sync but don't want a third-party backend: offer iCloud/CloudKit sync. Data stays within Apple ecosystem. No custom server. Privacy-first sync.</div>
+      <div class="f-tags"><span class="ftag p2">P2</span><span class="ftag on">ONLINE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY 10: RICH CARDS -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#fde8d0;">🎴</div>
+    <div>
+      <div class="fc-title">Rich Content Cards <span class="count">6 features</span></div>
+      <div class="fc-sub">How each saved item looks and feels</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">Platform-Aware Cards</div>
+      <div class="f-desc">Cards show the source platform icon (Instagram, TikTok, YouTube, X, Pinterest). Each renders slightly differently: video cards show duration, article cards show read time, product cards show price.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Bucket-Specific Card Layouts</div>
+      <div class="f-desc">Travel cards show location + map pin. Shopping cards show price + brand. Recipe cards show ingredients + cook time. Fitness cards show duration + equipment. Each bucket type renders cards with relevant metadata prominently displayed.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span><span class="ftag wow">DIFFERENTIATOR</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">AI Confidence Indicator</div>
+      <div class="f-desc">Subtle indicator on card: high confidence (solid bucket icon) vs lower confidence (dotted outline with "?" — tap to confirm or reclassify). Trains users to trust the AI while giving them control.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Personal Notes on Items</div>
+      <div class="f-desc">Add a note to any saved item: "Raj says this place is amazing" or "Size M, check if they ship to India." Personal context attached to external content.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Tags (Manual + AI)</div>
+      <div class="f-desc">AI auto-generates tags; user can add custom tags. Tags work across buckets for cross-cutting organization: #date-night could appear in Restaurants, Recipes, and Entertainment.</div>
+      <div class="f-tags"><span class="ftag p1">P1</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Inline Preview</div>
+      <div class="f-desc">Tap a card to expand without leaving the app: show full image, complete description, all extracted metadata, AI summary, personal notes. Long-press for 3D Touch/Haptic preview. Open original only when needed.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY 11: ENGAGEMENT & DELIGHT -->
+<div class="feature-category">
+  <div class="fc-header">
+    <div class="fc-icon" style="background:#fce4ec;">💫</div>
+    <div>
+      <div class="fc-title">Engagement & Delight <span class="count">5 features</span></div>
+      <div class="fc-sub">Features that make the app sticky and joyful</div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="f-name">Satisfying Save Animation</div>
+      <div class="f-desc">When content is saved and classified, show a micro-animation: item "flies" into the correct bucket icon with a subtle haptic. The classification should feel magical, not mechanical.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Save Streak</div>
+      <div class="f-desc">Track daily saving streak. "7-day streak! You've saved something every day this week." Gentle gamification. Not aggressive — more like an Apple Watch ring.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Bucket Milestones</div>
+      <div class="f-desc">"🎉 Your Travel bucket just hit 50 saves! You're a serious explorer." / "Your Recipe bucket has 3 'Made it!' items this month." Small celebrations that reward engagement.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Onboarding That Wows</div>
+      <div class="f-desc">First-run experience: user shares one link → watch the AI classify it in real-time with visible reasoning: "I see a beach... palm trees... the caption says 'Bali trip planning' → Travel bucket!" Demonstrate the magic immediately.</div>
+      <div class="f-tags"><span class="ftag p0">P0-MVP</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="f-name">Year in Review</div>
+      <div class="f-desc">Annual recap: "In 2026 you saved 312 items. Top bucket: Shopping (89). You completed 23 items. Most saved platform: Instagram. You discovered 14 restaurants and visited 6." Shareable card.</div>
+      <div class="f-tags"><span class="ftag p3">P3</span><span class="ftag off">OFFLINE</span></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- FEATURE COUNT & SUMMARY        -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Summary: 76 Features, 4 Phases</h2>
+
+<div class="callout green">
+  <strong>Feature count by priority:</strong>
+  <p>P0 (MVP): 17 features — the core save → classify → browse → search loop<br>
+  P1 (Fast follow, month 2-3): 16 features — custom buckets, smart filters, corrections learning, Safari extension<br>
+  P2 (Growth, months 4-6): 19 features — shared buckets, widgets, review modes, export, action states<br>
+  P3 (Future, months 6+): 24 features — price tracking, trip planner, public collections, voice save, year in review</p>
+</div>
+
+<h3>Phased Rollout</h3>
+
+<div class="phase">
+  <div class="phase-dot ph1">1</div>
+  <div class="phase-content">
+    <h3>MVP Launch</h3>
+    <div class="phase-time">Months 1-3</div>
+    <p>Share sheet save, auto-bucket classification, AI summaries, entity extraction, natural language search, rich cards, inbox/unsorted queue, manual correction, local caching, privacy messaging, satisfying animations, onboarding. iOS only. No account needed.</p>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-dot ph2">2</div>
+  <div class="phase-content">
+    <h3>Intelligence & Polish</h3>
+    <div class="phase-time">Months 3-5</div>
+    <p>Custom buckets, smart filters, Safari extension, screenshot detection, clipboard detection, Spotlight integration, bucket-specific cards, tags, notes, pin/star, archive, learning from corrections, duplicate detection, bulk operations.</p>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-dot ph3">3</div>
+  <div class="phase-content">
+    <h3>Social & Ecosystem</h3>
+    <div class="phase-time">Months 5-8</div>
+    <p>Shared buckets, share as link, widgets, Siri shortcuts, action states, review mode, forgotten gems, weekly digest, bucket insights, dead link detection, export, iCloud sync, iPad support, private buckets. Consider Android launch.</p>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-dot ph4">4</div>
+  <div class="phase-content">
+    <h3>Platform & Moat</h3>
+    <div class="phase-time">Months 8+</div>
+    <p>Auto sub-bucket clustering, cross-bucket intelligence, price tracking, trip planner, grocery list generator, public collections, voice save, Visual Intelligence integration, year in review, Apple Watch, camera scan. Android native app.</p>
+  </div>
+</div>
+</div>
+
+<hr>
+
+<div class="section">
+<div class="callout orange">
+  <strong>The one thing to remember:</strong>
+  <p style="margin-bottom:0;">The MVP is deceptively simple for the user — share a link, it appears in the right bucket, done. But behind that simplicity is a powerful AI pipeline running entirely on their device. That contrast between effortless UX and sophisticated intelligence is the entire product thesis. Every feature should reinforce it: <em>"I just saved it and it already knew exactly what it was."</em></p>
+</div>
+</div>
+
+</div>
+</body>
+</html>

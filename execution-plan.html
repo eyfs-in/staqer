@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Execution Plan — iOS Background Processing Architecture for All Platforms</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117; --card: #181b23; --card2: #1e2230; --ink: #e4e4e7; --muted: #71717a;
+    --border: #27272a; --accent: #f97316; --teal: #2dd4bf; --blue: #60a5fa;
+    --purple: #a78bfa; --rose: #fb7185; --green: #4ade80; --gold: #fbbf24;
+    --red: #f87171;
+    --mono: 'JetBrains Mono', monospace;
+    --zone1: #065f46; --zone1-bg: rgba(6,95,70,0.15); --zone1-border: #059669;
+    --zone2: #1e40af; --zone2-bg: rgba(30,64,175,0.15); --zone2-border: #3b82f6;
+    --zone3: #92400e; --zone3-bg: rgba(146,64,14,0.12); --zone3-border: #f59e0b;
+    --zone4: #5b21b6; --zone4-bg: rgba(91,33,182,0.12); --zone4-border: #8b5cf6;
+    --zone5: #9d174d; --zone5-bg: rgba(157,23,77,0.12); --zone5-border: #ec4899;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.7; }
+  .page { max-width: 1300px; margin: 0 auto; padding: 48px 28px 120px; }
+  .eyebrow { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  h1 { font-family: 'Fraunces', serif; font-size: 2.1rem; line-height: 1.18; font-weight: 700; margin-bottom: 14px; }
+  .sub { font-size: 0.92rem; color: var(--muted); max-width: 800px; margin-bottom: 48px; }
+  h2 { font-family: 'Fraunces', serif; font-size: 1.4rem; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border); display: inline-block; }
+  h3 { font-size: 1rem; font-weight: 700; margin: 22px 0 10px; }
+  h4 { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 28px 0 12px; }
+  p, li { font-size: 0.86rem; margin-bottom: 8px; }
+  ul { margin-left: 18px; margin-bottom: 12px; }
+  .section { margin-bottom: 60px; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 50px 0; }
+  code { font-family: var(--mono); font-size: 0.76rem; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 3px; color: var(--teal); }
+  pre { font-family: var(--mono); font-size: 0.7rem; background: #0a0c10; color: var(--muted); padding: 18px 22px; border-radius: 6px; overflow-x: auto; margin: 12px 0 16px; line-height: 1.7; border: 1px solid var(--border); }
+  pre .h { color: var(--green); } /* highlight */
+  pre .d { color: var(--muted); } /* dim */
+  pre .w { color: var(--gold); } /* warn */
+  pre .e { color: var(--accent); } /* emphasis */
+  pre .r { color: var(--rose); } /* rose */
+
+  /* Callouts */
+  .callout { padding: 18px 22px; border-radius: 6px; margin: 16px 0; font-size: 0.84rem; border: 1px solid var(--border); }
+  .callout.green { background: var(--zone1-bg); border-color: var(--zone1-border); }
+  .callout.blue { background: var(--zone2-bg); border-color: var(--zone2-border); }
+  .callout.orange { background: var(--zone3-bg); border-color: var(--zone3-border); }
+  .callout.purple { background: var(--zone4-bg); border-color: var(--zone4-border); }
+  .callout.rose { background: var(--zone5-bg); border-color: var(--zone5-border); }
+  .callout-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; display: block; }
+  .callout.green .callout-label { color: var(--teal); }
+  .callout.blue .callout-label { color: var(--blue); }
+  .callout.orange .callout-label { color: var(--gold); }
+  .callout.purple .callout-label { color: var(--purple); }
+  .callout.rose .callout-label { color: var(--rose); }
+
+  /* Execution Zones */
+  .zone { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
+  .zone-header { padding: 14px 22px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .zone-badge { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; font-weight: 700; white-space: nowrap; }
+  .zone-badge.z1 { background: var(--zone1-bg); color: var(--teal); border: 1px solid var(--zone1-border); }
+  .zone-badge.z2 { background: var(--zone2-bg); color: var(--blue); border: 1px solid var(--zone2-border); }
+  .zone-badge.z3 { background: var(--zone3-bg); color: var(--gold); border: 1px solid var(--zone3-border); }
+  .zone-badge.z4 { background: var(--zone4-bg); color: var(--purple); border: 1px solid var(--zone4-border); }
+  .zone-badge.z5 { background: var(--zone5-bg); color: var(--rose); border: 1px solid var(--zone5-border); }
+  .zone-title { font-weight: 700; font-size: 0.95rem; }
+  .zone-time { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); margin-left: auto; }
+  .zone-body { padding: 20px 22px; }
+
+  /* Platform rows */
+  .platform-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin: 14px 0; }
+  .platform-table th { font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; text-align: left; padding: 10px 12px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); color: var(--muted); }
+  .platform-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+  .platform-table tr:last-child td { border-bottom: none; }
+  .platform-table tr:hover { background: rgba(255,255,255,0.02); }
+  .p-icon { font-size: 1.1rem; }
+
+  /* Tags */
+  .tag { display: inline-block; font-family: var(--mono); font-size: 0.56rem; padding: 2px 7px; border-radius: 3px; margin: 1px 2px; font-weight: 500; }
+  .tag.yes { background: rgba(74,222,128,0.15); color: var(--green); }
+  .tag.no { background: rgba(248,113,113,0.15); color: var(--red); }
+  .tag.maybe { background: rgba(251,191,36,0.15); color: var(--gold); }
+  .tag.skip { background: rgba(113,113,122,0.15); color: var(--muted); }
+
+  /* Master timeline */
+  .timeline { position: relative; padding-left: 32px; margin: 20px 0; }
+  .timeline::before { content: ''; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .tl-item { position: relative; margin-bottom: 20px; }
+  .tl-item::before { content: ''; position: absolute; left: -25px; top: 6px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg); }
+  .tl-item.z1::before { border-color: var(--teal); background: var(--zone1-bg); }
+  .tl-item.z2::before { border-color: var(--blue); background: var(--zone2-bg); }
+  .tl-item.z3::before { border-color: var(--gold); background: var(--zone3-bg); }
+  .tl-item.z4::before { border-color: var(--purple); background: var(--zone4-bg); }
+  .tl-item.z5::before { border-color: var(--rose); background: var(--zone5-bg); }
+  .tl-time { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
+  .tl-title { font-weight: 700; font-size: 0.86rem; margin: 2px 0 4px; }
+  .tl-desc { font-size: 0.78rem; color: var(--muted); }
+
+  /* Constraint box */
+  .constraint { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; margin: 12px 0; }
+  .constraint-title { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 6px; }
+
+  /* Grid */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 16px 0; }
+
+  @media (max-width: 900px) {
+    h1 { font-size: 1.6rem; }
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+    pre { font-size: 0.62rem; }
+    .zone-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .zone-time { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ============================================ -->
+<!-- HEADER -->
+<!-- ============================================ -->
+<div class="eyebrow">Architecture Spec · Execution Plan</div>
+<h1>iOS Execution Zones: What Runs Where, For Every Platform</h1>
+<p class="sub">iOS imposes strict limits on background execution. This document maps every data extraction task to one of 5 execution zones, for every major social media platform. The goal: maximum enrichment within iOS constraints, 100% on-device, zero server dependency.</p>
+
+<!-- ============================================ -->
+<!-- EXECUTION ZONES -->
+<!-- ============================================ -->
+<div class="section">
+<h2>The 5 Execution Zones</h2>
+<p>iOS gives us 5 distinct windows to run code, each with different time limits, capabilities, and guarantees.</p>
+
+<div class="zone">
+<div class="zone-header">
+  <span class="zone-badge z1">Zone 1</span>
+  <span class="zone-title">Share Extension</span>
+  <span class="zone-time">~30 seconds · guaranteed · runs immediately</span>
+</div>
+<div class="zone-body">
+  <p>Executes the moment the user taps "Save" in the share sheet. The extension process is separate from the main app. Has access to <code>NSExtensionItem</code> with the shared data. Can read/write to App Group shared container. Can start background URLSession downloads (which survive the extension being killed).</p>
+  <div class="constraint">
+    <div class="constraint-title">Constraints</div>
+    <ul>
+      <li>~30 seconds max execution before the system kills the extension process</li>
+      <li>Limited memory (~120MB on modern iPhones)</li>
+      <li>Cannot use <code>UIApplication</code> APIs (it's not an app)</li>
+      <li>Cannot launch the main app directly</li>
+      <li>Can use <code>ProcessInfo.performExpiringActivity</code> for slightly more time</li>
+      <li>Can start <strong>background URLSession</strong> tasks that survive extension termination — the system daemon (<code>nsurlsessiond</code>) continues the download</li>
+    </ul>
+  </div>
+  <div class="callout green">
+    <span class="callout-label">What must happen here</span>
+    Parse URL, detect platform, extract shortcode/ID, write save record to App Group, show confirmation to user, dismiss extension. Optionally: kick off background URLSession for OG tag fetch + image download.
+  </div>
+</div>
+</div>
+
+<div class="zone">
+<div class="zone-header">
+  <span class="zone-badge z2">Zone 2</span>
+  <span class="zone-title">Background URLSession (from Extension)</span>
+  <span class="zone-time">minutes · high reliability · network-dependent</span>
+</div>
+<div class="zone-body">
+  <p>When the share extension starts a <code>URLSessionDownloadTask</code> on a <strong>background session</strong>, the actual download is handled by the system's <code>nsurlsessiond</code> daemon — it continues even after the extension is killed. When the download completes, the system wakes the <strong>main app</strong> (not the extension) via <code>application(_:handleEventsForBackgroundURLSession:)</code>.</p>
+  <div class="constraint">
+    <div class="constraint-title">Constraints</div>
+    <ul>
+      <li>Only <code>URLSessionDownloadTask</code> and <code>URLSessionUploadTask</code> work in background sessions — <strong>NOT</strong> <code>URLSessionDataTask</code></li>
+      <li>Extension and main app must share the same session identifier via App Group</li>
+      <li>Only one process can be connected to a background session at a time</li>
+      <li>Downloads write to the Caches directory — must move file before delegate method returns</li>
+      <li>System may delay downloads based on battery/network (if <code>isDiscretionary = true</code>)</li>
+      <li>Set <code>isDiscretionary = false</code> for user-initiated saves (they expect immediate results)</li>
+    </ul>
+  </div>
+  <div class="callout blue">
+    <span class="callout-label">What runs here</span>
+    OG tag HTML fetch (download <code>&lt;head&gt;</code> section), thumbnail image download, platform-specific metadata fetch (Reddit .json, TikTok oEmbed, YouTube oEmbed). These are all simple HTTP GETs that return small payloads.
+  </div>
+</div>
+</div>
+
+<div class="zone">
+<div class="zone-header">
+  <span class="zone-badge z3">Zone 3</span>
+  <span class="zone-title">App Foreground (Next App Open)</span>
+  <span class="zone-time">unlimited · guaranteed · user-initiated</span>
+</div>
+<div class="zone-body">
+  <p>When the user opens the main app, we have unlimited execution time. This is where all CPU-intensive processing happens: Vision AI, Foundation Models classification, speech-to-text, GraphQL enrichment requests, and any pending enrichment that didn't complete in Zones 1-2.</p>
+  <div class="constraint">
+    <div class="constraint-title">Constraints</div>
+    <ul>
+      <li>No time limit while app is in foreground</li>
+      <li>Must remain responsive — heavy processing on background queues</li>
+      <li>User may not open the app for hours/days after saving — UI must show partial state gracefully</li>
+      <li>On first open after save: process Zone 2 download results + run Vision + classification</li>
+    </ul>
+  </div>
+  <div class="callout orange">
+    <span class="callout-label">What runs here</span>
+    Vision AI on cached thumbnails, Foundation Models text + image classification, GraphQL enrichment fetches (Instagram, YouTube Data API), transcript generation, AI summary generation, search index update. Basically: everything that needs CPU or that we couldn't do in Zones 1-2.
+  </div>
+</div>
+</div>
+
+<div class="zone">
+<div class="zone-header">
+  <span class="zone-badge z4">Zone 4</span>
+  <span class="zone-title">BGAppRefreshTask</span>
+  <span class="zone-time">~30 seconds · not guaranteed · system-scheduled</span>
+</div>
+<div class="zone-body">
+  <p>Registered via <code>BGTaskScheduler</code>. The system decides when to run it based on user's app usage patterns, battery, network. Good for quick maintenance tasks.</p>
+  <div class="constraint">
+    <div class="constraint-title">Constraints</div>
+    <ul>
+      <li>~30 seconds execution time</li>
+      <li>System may never call it if user rarely opens the app</li>
+      <li>Requires "Background fetch" capability in Xcode</li>
+      <li>No user-facing permission dialog needed</li>
+      <li>Frequency is entirely at iOS's discretion — could be hours or days between calls</li>
+    </ul>
+  </div>
+  <div class="callout purple">
+    <span class="callout-label">What runs here</span>
+    Quick housekeeping: check for any un-enriched saves from Zone 2, kick off their processing if quick enough. Dead link detection for oldest saves. Index maintenance. NOT suitable for heavy processing.
+  </div>
+</div>
+</div>
+
+<div class="zone">
+<div class="zone-header">
+  <span class="zone-badge z5">Zone 5</span>
+  <span class="zone-title">BGProcessingTask</span>
+  <span class="zone-time">minutes · not guaranteed · charging + WiFi preferred</span>
+</div>
+<div class="zone-body">
+  <p>Longer background processing. System runs these when device is charging and on WiFi (if <code>requiresExternalPower</code> and <code>requiresNetworkConnectivity</code> are set). Can run for several minutes.</p>
+  <div class="constraint">
+    <div class="constraint-title">Constraints</div>
+    <ul>
+      <li>Several minutes of execution (exact time varies)</li>
+      <li>Best when user charges phone at night — ideal for batch processing</li>
+      <li>Requires "Background processing" capability in Xcode</li>
+      <li>Set <code>requiresExternalPower = true</code> for video downloads</li>
+      <li>Set <code>requiresNetworkConnectivity = true</code> for all network tasks</li>
+      <li>System may delay for hours/days if conditions aren't met</li>
+    </ul>
+  </div>
+  <div class="callout rose">
+    <span class="callout-label">What runs here</span>
+    Reel/TikTok video downloads for transcript extraction, batch Vision AI processing of un-processed thumbnails, batch speech-to-text for downloaded videos, price tracking checks for shopping saves, bulk search index rebuild.
+  </div>
+</div>
+</div>
+
+</div>
+
+<!-- ============================================ -->
+<!-- REQUIRED CAPABILITIES -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Required Xcode Capabilities & Permissions</h2>
+
+<table class="platform-table">
+<thead><tr><th>Capability</th><th>What it enables</th><th>User-facing permission?</th><th>App Review risk?</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>Background Modes → Background fetch</code></td>
+  <td>BGAppRefreshTask (Zone 4)</td>
+  <td><span class="tag yes">No dialog</span></td>
+  <td><span class="tag yes">Low</span> — standard for content apps</td>
+</tr>
+<tr>
+  <td><code>Background Modes → Background processing</code></td>
+  <td>BGProcessingTask (Zone 5)</td>
+  <td><span class="tag yes">No dialog</span></td>
+  <td><span class="tag yes">Low</span> — justify as "content enrichment"</td>
+</tr>
+<tr>
+  <td><code>App Groups</code></td>
+  <td>Shared container between extension ↔ main app</td>
+  <td><span class="tag yes">No dialog</span></td>
+  <td><span class="tag yes">None</span> — required for any extension</td>
+</tr>
+<tr>
+  <td><code>Speech Recognition</code> (on-device only)</td>
+  <td>Apple Speech framework for Reel transcripts</td>
+  <td><span class="tag maybe">Permission dialog</span> — "Allow access to Speech Recognition"</td>
+  <td><span class="tag yes">Low</span> — explain as "transcribing saved videos for search"</td>
+</tr>
+</tbody>
+</table>
+
+<div class="callout green">
+  <span class="callout-label">Good News</span>
+  Background fetch + Background processing are <strong>entitlements, not user permissions</strong>. No dialog pops up. Apple reviews them during App Store review but they're routinely approved for content/bookmarking apps. The only user-facing permission is Speech Recognition (optional, for transcript extraction).
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- MASTER ZONE MATRIX -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Master Zone Matrix — Every Task, Every Platform</h2>
+<p>This is the core reference. For each platform, every extraction task is assigned to the earliest possible zone, with fallbacks.</p>
+
+<!-- INSTAGRAM -->
+<h3>📸 Instagram (Posts, Reels, Stories, Carousels)</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback if fails</th></tr></thead>
+<tbody>
+<tr><td>Extract URL + detect /reel/ or /p/</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td>Parse <code>NSExtensionItem</code> URL, extract shortcode</td><td>—</td></tr>
+<tr><td>Write save record to App Group DB</td><td><span class="zone-badge z1">Zone 1</span></td><td>5ms</td><td>SwiftData/SQLite in shared container. Status: "pending"</td><td>—</td></tr>
+<tr><td>Show ✓ confirmation, dismiss extension</td><td><span class="zone-badge z1">Zone 1</span></td><td>50ms</td><td>User returns to Instagram within &lt;1 second</td><td>—</td></tr>
+<tr><td>Start background download: HTML HEAD</td><td><span class="zone-badge z1">Zone 1</span></td><td>100ms</td><td>Kick off <code>URLSessionDownloadTask</code> for OG tags. Set <code>isDiscretionary = false</code></td><td>Zone 3</td></tr>
+<tr><td>OG tag fetch completes</td><td><span class="zone-badge z2">Zone 2</span></td><td>~500ms</td><td>System daemon downloads HTML HEAD (~5KB). Wakes main app to process. Parse og:title, og:description, og:image URL</td><td>Zone 3</td></tr>
+<tr><td>Start background download: og:image</td><td><span class="zone-badge z2">Zone 2</span></td><td>~600ms</td><td>Kick off image download from CDN URL extracted from OG tags. ~200KB</td><td>Zone 3</td></tr>
+<tr><td>Image download completes, cache locally</td><td><span class="zone-badge z2">Zone 2</span></td><td>~1.5s</td><td>Move from Caches to permanent storage. Generate blurhash</td><td>Zone 3</td></tr>
+<tr><td>Quick hashtag-based classification</td><td><span class="zone-badge z2">Zone 2</span></td><td>~1.6s</td><td>When app is woken by download: regex parse hashtags from og:description → lookup taxonomy → assign stack. No ML needed, pure string matching</td><td>Zone 3</td></tr>
+<tr><td>Vision AI on thumbnail</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Scene classification + object detection + OCR on cached image. ~500-2000ms per image</td><td>Zone 5</td></tr>
+<tr><td>Foundation Models classification</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Combine all signals (hashtags + caption + vision) → final stack assignment + confidence score</td><td>Zone 5</td></tr>
+<tr><td>GraphQL enrichment fetch</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Fetch <code>xdt_api</code> from device IP. Get full caption, location, creator category, product tags, music metadata</td><td>Skip — OG tags + Vision sufficient</td></tr>
+<tr><td>AI summary generation</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Foundation Models generates 1-2 sentence summary from all collected data</td><td>Use caption snippet from OG tags</td></tr>
+<tr><td>Reel video download (for transcript)</td><td><span class="zone-badge z5">Zone 5</span></td><td>Charging</td><td>~8MB per 30s Reel. Only for Reels with speech. WiFi + power required</td><td>Skip — classification works without transcript</td></tr>
+<tr><td>Speech-to-text on downloaded Reel</td><td><span class="zone-badge z5">Zone 5</span></td><td>Charging</td><td>Apple Speech framework. ~10s processing per 30s video</td><td>Skip</td></tr>
+<tr><td>Entity extraction from transcript</td><td><span class="zone-badge z5">Zone 5</span></td><td>Charging</td><td>Foundation Models on transcript → extract venues, prices, locations, products</td><td>Skip</td></tr>
+</tbody>
+</table>
+
+<!-- YOUTUBE -->
+<h3>📺 YouTube</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback</th></tr></thead>
+<tbody>
+<tr><td>Extract URL + video ID</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td>Parse <code>youtu.be/{id}</code> or <code>youtube.com/watch?v={id}</code></td><td>—</td></tr>
+<tr><td>Write save record</td><td><span class="zone-badge z1">Zone 1</span></td><td>5ms</td><td>URL + extracted title text (share sheet gives title for YouTube)</td><td>—</td></tr>
+<tr><td>Quick classification from share text</td><td><span class="zone-badge z1">Zone 1</span></td><td>20ms</td><td>YouTube share sheet gives title text. Keyword scan for initial stack guess</td><td>Zone 2</td></tr>
+<tr><td>Show ✓, dismiss, start BG downloads</td><td><span class="zone-badge z1">Zone 1</span></td><td>50ms</td><td>Kick off: (1) OG/JSON-LD fetch, (2) oEmbed fetch</td><td>—</td></tr>
+<tr><td>OG tags + JSON-LD VideoObject fetch</td><td><span class="zone-badge z2">Zone 2</span></td><td>~500ms</td><td>YouTube pages have rich JSON-LD: title, description, thumbnailUrl, duration, uploadDate, interactionCount</td><td>Zone 3</td></tr>
+<tr><td>Thumbnail download</td><td><span class="zone-badge z2">Zone 2</span></td><td>~1s</td><td><code>https://img.youtube.com/vi/{id}/maxresdefault.jpg</code> — direct URL, no parsing needed</td><td>Zone 3</td></tr>
+<tr><td>YouTube Data API call</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>GET <code>videos?id={id}&part=snippet,contentDetails,statistics,topicDetails</code>. Returns tags, topic categories, full description, exact duration</td><td>OG tags already give 80%</td></tr>
+<tr><td>Vision AI on thumbnail</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Lower value than Instagram — YouTube thumbnails are often clickbait/text overlays. OCR on text-heavy thumbnails more useful</td><td>Zone 5</td></tr>
+<tr><td>Foundation Models classification</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Title + description + topic categories → very high confidence. YouTube is the easiest platform to classify from text alone</td><td>—</td></tr>
+<tr><td>Transcript fetch (youtube-transcript)</td><td><span class="zone-badge z5">Zone 5</span></td><td>Charging</td><td>Fetch auto-generated captions via timedtext API. ~95% of videos have captions. Text only (~10KB), no video download needed!</td><td>Skip — title + description already strong</td></tr>
+<tr><td>Entity extraction from transcript</td><td><span class="zone-badge z5">Zone 5</span></td><td>Charging</td><td>Foundation Models on transcript → extract detailed entities. This is where YouTube shines — 10-min travel vlog yields 50+ entities</td><td>Skip</td></tr>
+</tbody>
+</table>
+
+<div class="callout green">
+  <span class="callout-label">YouTube Advantage</span>
+  YouTube transcripts are <strong>text-only</strong> — fetched via a simple HTTP GET to the timedtext API. No video download needed (unlike Instagram Reels where we must download the video to run Speech-to-text). This makes YouTube transcripts feasible even in Zone 3 (app foreground) rather than needing Zone 5.
+</div>
+
+<!-- TIKTOK -->
+<h3>🎵 TikTok</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback</th></tr></thead>
+<tbody>
+<tr><td>Extract URL + full caption text</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td><strong>TikTok is the most generous</strong> — share sheet gives URL + complete caption with hashtags</td><td>—</td></tr>
+<tr><td>Quick hashtag classification</td><td><span class="zone-badge z1">Zone 1</span></td><td>10ms</td><td>Hashtags arrive in share text immediately. Regex parse → taxonomy lookup → stack assignment. Can classify before extension closes!</td><td>—</td></tr>
+<tr><td>Write save record + initial classification</td><td><span class="zone-badge z1">Zone 1</span></td><td>15ms</td><td>Save includes full caption + preliminary stack. Status: "classified"</td><td>—</td></tr>
+<tr><td>Show ✓ with stack name, dismiss</td><td><span class="zone-badge z1">Zone 1</span></td><td>50ms</td><td>"✓ Saved to Travel" — can show stack immediately because caption is available in Zone 1</td><td>—</td></tr>
+<tr><td>Start BG download: oEmbed</td><td><span class="zone-badge z1">Zone 1</span></td><td>100ms</td><td>Kick off: <code>tiktok.com/oembed?url={VIDEO_URL}</code> — free, no auth</td><td>Zone 3</td></tr>
+<tr><td>oEmbed response</td><td><span class="zone-badge z2">Zone 2</span></td><td>~400ms</td><td>Returns: title, author_name, author_url, thumbnail_url, thumbnail_width/height</td><td>Zone 3</td></tr>
+<tr><td>Thumbnail download</td><td><span class="zone-badge z2">Zone 2</span></td><td>~1s</td><td>Download from oEmbed thumbnail_url. Cache locally</td><td>Zone 3</td></tr>
+<tr><td>OG tags + embedded JSON parse</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>TikTok embeds <code>__UNIVERSAL_DATA_FOR_REHYDRATION__</code> JSON in page HTML. Contains: full description, hashtags, music metadata, engagement stats, creator info, duration</td><td>oEmbed gives 80%</td></tr>
+<tr><td>Vision AI on thumbnail</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Scene classification. Useful for dance/cooking/travel disambiguation</td><td>Zone 5</td></tr>
+<tr><td>Foundation Models final classification</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Caption (from Zone 1!) + oEmbed + Vision → high confidence. TikTok is typically already well-classified from Zone 1 alone</td><td>—</td></tr>
+<tr><td>Video download + Speech-to-text</td><td><span class="zone-badge z5">Zone 5</span></td><td>Charging</td><td>Same as Instagram — download video, run Apple Speech. Only for speech-heavy TikToks with sparse captions</td><td>Skip</td></tr>
+</tbody>
+</table>
+
+<!-- X / TWITTER -->
+<h3>𝕏 X (Twitter)</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback</th></tr></thead>
+<tbody>
+<tr><td>Extract URL + full tweet text</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td>X share sheet gives URL + complete tweet text (like TikTok, very generous)</td><td>—</td></tr>
+<tr><td>Classify from tweet text</td><td><span class="zone-badge z1">Zone 1</span></td><td>10ms</td><td>Parse hashtags, detect URLs in tweet. If tweet contains a link to an article/product, that linked URL is more valuable than the tweet itself</td><td>—</td></tr>
+<tr><td>Write save + initial stack</td><td><span class="zone-badge z1">Zone 1</span></td><td>15ms</td><td>Full tweet text stored. If tweet has a URL → save that as the "real" source</td><td>—</td></tr>
+<tr><td>Show ✓, dismiss, start BG downloads</td><td><span class="zone-badge z1">Zone 1</span></td><td>50ms</td><td>If tweet contains a link: kick off BG download for THAT link's OG tags (the linked article/product/recipe)</td><td>—</td></tr>
+<tr><td>OG tags from tweet page</td><td><span class="zone-badge z2">Zone 2</span></td><td>~500ms</td><td>X's own OG tags: tweet text + image. Lower value since we already have full text</td><td>—</td></tr>
+<tr><td>OG tags from linked URL (if any)</td><td><span class="zone-badge z2">Zone 2</span></td><td>~800ms</td><td><strong>This is the high-value fetch.</strong> If tweet links to a recipe blog → get Recipe JSON-LD. If links to a product → get Product schema. The tweet is just the pointer; the linked content is the payload</td><td>Zone 3</td></tr>
+<tr><td>Linked page thumbnail download</td><td><span class="zone-badge z2">Zone 2</span></td><td>~1.2s</td><td>Download og:image from the linked URL (article hero image, product photo)</td><td>Zone 3</td></tr>
+<tr><td>Vision AI + Foundation Models</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Vision on image (if applicable) + Foundation Models on tweet text + linked page metadata → final classification</td><td>—</td></tr>
+</tbody>
+</table>
+
+<div class="callout blue">
+  <span class="callout-label">X Strategy: Follow the Link</span>
+  The tweet itself is rarely the valuable content — it's the <strong>linked URL</strong> that matters. "Just tried this recipe and it's amazing! 🔥 [link]" → The recipe blog has full JSON-LD with ingredients, cook time, nutrition. Our pipeline: tweet text for context + linked URL's structured data for classification. Two hops, maximum data.
+</div>
+
+<!-- PINTEREST -->
+<h3>📌 Pinterest</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback</th></tr></thead>
+<tbody>
+<tr><td>Extract URL (+ sometimes description)</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td>Pinterest share sheet: URL always, description sometimes</td><td>—</td></tr>
+<tr><td>Write save record</td><td><span class="zone-badge z1">Zone 1</span></td><td>5ms</td><td>Store URL + any text</td><td>—</td></tr>
+<tr><td>Show ✓, dismiss, start BG downloads</td><td><span class="zone-badge z1">Zone 1</span></td><td>50ms</td><td>Kick off pin page HTML fetch</td><td>—</td></tr>
+<tr><td>Pin page OG tags fetch</td><td><span class="zone-badge z2">Zone 2</span></td><td>~500ms</td><td>Pin title, description, high-res image URL. Pinterest OG images are excellent quality</td><td>Zone 3</td></tr>
+<tr><td>Pin image download</td><td><span class="zone-badge z2">Zone 2</span></td><td>~1.5s</td><td>Pinterest images are typically high-res. Cache locally</td><td>Zone 3</td></tr>
+<tr><td>Extract source link from pin page</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td><strong>THE KEY: double-hop.</strong> Parse pin page HTML/embedded JSON to find the original source URL (recipe blog, product page, article)</td><td>Classify from pin image + description only</td></tr>
+<tr><td>Fetch source page OG + JSON-LD</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Follow source link → fetch original page. Recipe pins → full Recipe schema with ingredients, cook time, nutrition. Product pins → Product schema with price, availability</td><td>Use pin-level data only</td></tr>
+<tr><td>Vision AI on pin image</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Pinterest is highly visual (like Instagram). Vision AI very effective here — food, fashion, home decor, DIY</td><td>Zone 5</td></tr>
+<tr><td>Foundation Models classification</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Pin description + source page JSON-LD + Vision → very high confidence, especially for recipes and products</td><td>—</td></tr>
+</tbody>
+</table>
+
+<!-- REDDIT -->
+<h3>🤖 Reddit</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback</th></tr></thead>
+<tbody>
+<tr><td>Extract URL + post title</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td>Reddit share sheet gives URL + title. URL path contains <code>/r/{subreddit}/</code> — free classification signal!</td><td>—</td></tr>
+<tr><td>Parse subreddit from URL</td><td><span class="zone-badge z1">Zone 1</span></td><td>5ms</td><td><code>/r/recipes</code> → Food. <code>/r/travel</code> → Travel. <code>/r/malefashionadvice</code> → Fashion. Subreddit name IS a category label</td><td>—</td></tr>
+<tr><td>Write save + subreddit-based classification</td><td><span class="zone-badge z1">Zone 1</span></td><td>15ms</td><td>Subreddit → stack mapping gives immediate classification. Higher confidence than hashtags because subreddits are strictly topical</td><td>—</td></tr>
+<tr><td>Show ✓ with stack, dismiss</td><td><span class="zone-badge z1">Zone 1</span></td><td>50ms</td><td>"✓ Saved to Food & Recipes" — subreddit mapping is so reliable we can show this immediately</td><td>—</td></tr>
+<tr><td>Fetch .json endpoint</td><td><span class="zone-badge z2">Zone 2</span></td><td>~400ms</td><td>Append <code>.json</code> to any Reddit URL → complete post data. No API key needed. Returns: title, selftext (full post body), score, upvote_ratio, link_flair_text, preview images, linked URL</td><td>Zone 3</td></tr>
+<tr><td>Download preview image (if any)</td><td><span class="zone-badge z2">Zone 2</span></td><td>~1s</td><td>Reddit preview images from the .json response</td><td>Zone 3</td></tr>
+<tr><td>Follow linked URL (for link posts)</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Many Reddit posts link to external content. Same double-hop as Pinterest: fetch the destination page for rich JSON-LD</td><td>Reddit post body usually describes the link</td></tr>
+<tr><td>Vision AI + Foundation Models</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Lower priority — Reddit classification from subreddit + text is usually 90%+ accurate</td><td>—</td></tr>
+</tbody>
+</table>
+
+<div class="callout green">
+  <span class="callout-label">Reddit is the Easiest Platform</span>
+  Subreddit name in the URL = instant classification with ~90% accuracy. Free .json endpoint = complete post data without any API key. Reddit is the opposite of Instagram — <strong>all text, minimal images, trivially classified</strong>.
+</div>
+
+<!-- SAFARI / WEB -->
+<h3>🌐 Safari / Generic Web</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback</th></tr></thead>
+<tbody>
+<tr><td>Extract URL + page title + selected text</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td>Safari share extension gives: URL, page title (via JS preprocessing), and any text the user selected before sharing. Richest share sheet data of any source</td><td>—</td></tr>
+<tr><td>Keyword classification from title + selection</td><td><span class="zone-badge z1">Zone 1</span></td><td>10ms</td><td>If user selected a recipe name, a product description, or highlighted a travel section — that selected text is the strongest signal</td><td>—</td></tr>
+<tr><td>Write save, start BG downloads</td><td><span class="zone-badge z1">Zone 1</span></td><td>50ms</td><td>Kick off full page HEAD fetch</td><td>—</td></tr>
+<tr><td>OG tags + JSON-LD fetch</td><td><span class="zone-badge z2">Zone 2</span></td><td>~500ms</td><td><strong>This is where the magic happens.</strong> JSON-LD from web pages is the richest structured data source. Recipe blogs: full Recipe schema. Product pages: Product schema with price. Articles: Article schema</td><td>Zone 3</td></tr>
+<tr><td>og:image download</td><td><span class="zone-badge z2">Zone 2</span></td><td>~1s</td><td>Hero image for the page. Cache locally</td><td>Zone 3</td></tr>
+<tr><td>Parse JSON-LD schema type</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Detect <code>@type</code>: Recipe, Product, Article, LocalBusiness, Hotel, Event, VideoObject. Each schema type maps directly to a stack with ~95% confidence</td><td>OG tags give ~80%</td></tr>
+<tr><td>Extract structured fields from JSON-LD</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Recipe: ingredients, cookTime, nutrition. Product: price, brand, availability. Article: author, datePublished</td><td>—</td></tr>
+<tr><td>Vision AI on og:image</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Supporting signal. Most useful for pages without JSON-LD — Vision helps classify generic articles</td><td>Zone 5</td></tr>
+<tr><td>Foundation Models final classification</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>JSON-LD type + fields + page title + selected text + Vision → highest possible confidence</td><td>—</td></tr>
+</tbody>
+</table>
+
+<!-- PHOTOS / SCREENSHOTS -->
+<h3>📱 Photos App / Screenshots</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback</th></tr></thead>
+<tbody>
+<tr><td>Receive full image + EXIF metadata</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td>Photos share sheet gives actual image (as <code>kUTTypeImage</code>) + EXIF: GPS coordinates, date taken, camera info. <strong>Only source that gives us the actual image directly</strong></td><td>—</td></tr>
+<tr><td>Read EXIF GPS → location</td><td><span class="zone-badge z1">Zone 1</span></td><td>10ms</td><td>If location available: reverse geocode → city/country. "Photo taken in Lisbon, Portugal" → Travel stack</td><td>No location = rely on Vision</td></tr>
+<tr><td>Save image to App Group</td><td><span class="zone-badge z1">Zone 1</span></td><td>100ms</td><td>Copy full-res image to shared container for Vision processing later</td><td>—</td></tr>
+<tr><td>Detect if screenshot</td><td><span class="zone-badge z1">Zone 1</span></td><td>120ms</td><td>Check image dimensions (exact screen resolution), EXIF for "Screenshot" UserComment, or image size (screenshots are typically smaller files)</td><td>Vision detects app chrome in Zone 3</td></tr>
+<tr><td>Show ✓, dismiss</td><td><span class="zone-badge z1">Zone 1</span></td><td>200ms</td><td>No network requests needed — all data is local</td><td>—</td></tr>
+<tr><td>Vision AI: scene + objects + OCR</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td><strong>Vision is the ONLY classification engine here.</strong> No URL to fetch, no text metadata. Scene classification + object detection + OCR on any visible text. If screenshot: detect source app chrome, OCR captions/usernames</td><td>Zone 5 for batch processing</td></tr>
+<tr><td>Foundation Models classification</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Vision results + EXIF location + Foundation Models reasoning → stack assignment + AI description</td><td>—</td></tr>
+<tr><td>Reverse image context (if screenshot)</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>If OCR detects Instagram username or URL in screenshot → treat as Instagram save, run Instagram enrichment pipeline</td><td>Classify from visual content alone</td></tr>
+</tbody>
+</table>
+
+<!-- WHATSAPP / MESSAGES -->
+<h3>💬 WhatsApp / iMessage / Messaging Apps</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback</th></tr></thead>
+<tbody>
+<tr><td>Detect shared content type</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td>Could be URL, image, or video. Check <code>NSItemProvider</code> type identifiers: <code>kUTTypeURL</code>, <code>kUTTypeImage</code>, <code>kUTTypeVideo</code></td><td>—</td></tr>
+<tr><td>If URL → route to appropriate platform pipeline</td><td><span class="zone-badge z1">Zone 1</span></td><td>5ms</td><td>Someone sends you an Instagram link in WhatsApp → detect Instagram domain → run Instagram pipeline</td><td>—</td></tr>
+<tr><td>If image → save like Photos pipeline</td><td><span class="zone-badge z1">Zone 1</span></td><td>100ms</td><td>Save image to App Group, detect screenshot, check EXIF</td><td>—</td></tr>
+<tr><td>If text-only → save as note/bookmark</td><td><span class="zone-badge z1">Zone 1</span></td><td>10ms</td><td>Pure text saves (address, recommendation, note). Foundation Models classify in Zone 3</td><td>—</td></tr>
+<tr><td>Platform-specific enrichment</td><td><span class="zone-badge z2">Zone 2</span>/<span class="zone-badge z3">Zone 3</span></td><td>Varies</td><td>Follow the URL-based pipeline for whichever platform the shared link belongs to</td><td>—</td></tr>
+</tbody>
+</table>
+
+<!-- GOOGLE MAPS -->
+<h3>📍 Google Maps / Apple Maps</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback</th></tr></thead>
+<tbody>
+<tr><td>Extract URL + place name</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td>Google Maps share: URL contains place ID + name in text. Apple Maps: URL + place name</td><td>—</td></tr>
+<tr><td>Classify as Travel / Places</td><td><span class="zone-badge z1">Zone 1</span></td><td>5ms</td><td>Any Maps share → auto-classify to Travel or Food (restaurants) or Ideas (stores/services)</td><td>—</td></tr>
+<tr><td>Save + show ✓ "Saved to Travel"</td><td><span class="zone-badge z1">Zone 1</span></td><td>50ms</td><td>Maps shares are trivially classified</td><td>—</td></tr>
+<tr><td>Fetch place page OG tags</td><td><span class="zone-badge z2">Zone 2</span></td><td>~500ms</td><td>Google Maps pages have: place name, address, rating, category, thumbnail image</td><td>Zone 3</td></tr>
+<tr><td>Fetch JSON-LD (LocalBusiness schema)</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>If the Maps URL resolves to a business with a website → follow to website → check for LocalBusiness/Restaurant schema</td><td>Maps data sufficient</td></tr>
+</tbody>
+</table>
+
+<!-- AMAZON / SHOPPING -->
+<h3>🛒 Amazon / Flipkart / Shopping Apps</h3>
+<table class="platform-table">
+<thead><tr><th>Task</th><th>Zone</th><th>Time</th><th>Details</th><th>Fallback</th></tr></thead>
+<tbody>
+<tr><td>Extract URL + product title + price text</td><td><span class="zone-badge z1">Zone 1</span></td><td>0ms</td><td>Amazon share sheet gives: URL + title + price in share text. Very generous</td><td>—</td></tr>
+<tr><td>Parse price from text</td><td><span class="zone-badge z1">Zone 1</span></td><td>5ms</td><td>Regex: <code>/[$€£₹]\s*[\d,.]+/</code> → extract exact price. Auto-classify to Shopping stack</td><td>Zone 2</td></tr>
+<tr><td>Extract ASIN from URL</td><td><span class="zone-badge z1">Zone 1</span></td><td>5ms</td><td><code>/dp/{ASIN}</code> or <code>/gp/product/{ASIN}</code> → product identifier for future price tracking</td><td>—</td></tr>
+<tr><td>Save + "✓ Saved to Shopping"</td><td><span class="zone-badge z1">Zone 1</span></td><td>50ms</td><td>Shopping saves are the easiest to classify instantly</td><td>—</td></tr>
+<tr><td>Product page OG + JSON-LD fetch</td><td><span class="zone-badge z2">Zone 2</span></td><td>~600ms</td><td>Amazon has Product schema: name, brand, price, availability, rating, image. Complete structured data</td><td>Zone 3</td></tr>
+<tr><td>Product image download</td><td><span class="zone-badge z2">Zone 2</span></td><td>~1s</td><td>High-res product image for display</td><td>Zone 3</td></tr>
+<tr><td>Price tracking setup</td><td><span class="zone-badge z3">Zone 3</span></td><td>Next open</td><td>Store ASIN + current price. Set up periodic price check (Zone 4 or Zone 5) for deal detection</td><td>—</td></tr>
+<tr><td>Periodic price check</td><td><span class="zone-badge z4">Zone 4</span></td><td>Periodic</td><td>BGAppRefreshTask: quick price lookup for saved shopping items. Badge: "💰 Price dropped!"</td><td>Zone 5</td></tr>
+</tbody>
+</table>
+
+</div>
+
+<!-- ============================================ -->
+<!-- ZONE 1 BUDGET -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Share Extension Time Budget (Zone 1 — The Critical 30 Seconds)</h2>
+
+<p>The extension has ~30 seconds but we want to dismiss in <strong>under 1 second</strong> for user experience. Here's the exact time budget:</p>
+
+<pre>
+<span class="h">T+0ms</span>       viewDidLoad / extensionContext.inputItems received
+<span class="h">T+5ms</span>       Extract NSExtensionItem → get URL, text, attachments
+<span class="h">T+10ms</span>      Parse URL → detect platform (domain matching)
+<span class="h">T+15ms</span>      Platform-specific quick parse:
+              ├─ Instagram: extract shortcode from /reel/{code}/ or /p/{code}/
+              ├─ YouTube: extract video ID from ?v= or youtu.be/
+              ├─ TikTok: extract caption text (available in share text!)
+              ├─ Reddit: extract /r/{subreddit}/ from URL path
+              ├─ X: extract full tweet text from share text
+              ├─ Amazon: extract ASIN from /dp/{asin}/
+              └─ Safari: extract page title + selected text
+<span class="h">T+20ms</span>      Quick classification (no ML, pure rule-based):
+              ├─ Hashtag taxonomy lookup (TikTok, Instagram)
+              ├─ Subreddit → stack mapping (Reddit)
+              ├─ Price detection → Shopping (Amazon)
+              ├─ Maps domain → Travel (Google/Apple Maps)
+              └─ Keyword scan on title/text
+<span class="h">T+25ms</span>      Write save record to App Group shared container (SwiftData)
+              ├─ URL
+              ├─ Platform identifier
+              ├─ Any extracted text (caption, title, tweet)
+              ├─ Preliminary stack assignment + confidence
+              └─ Status: "saved, pending enrichment"
+
+<span class="e">T+50ms</span>      <span class="e">DISMISS EXTENSION → USER SEES "✓ SAVED"</span>
+              extensionContext.completeRequest(returningItems: [])
+              <span class="d">User returns to source app in &lt;100ms from tap</span>
+
+<span class="w">T+100ms</span>     Still alive — kick off background URLSession tasks:
+              ├─ Download 1: Page HTML HEAD (OG tags + JSON-LD)
+              ├─ Download 2: Thumbnail image (if URL known)
+              └─ These use background URLSession = survive extension kill
+
+<span class="d">T+~30s</span>      <span class="d">System kills extension process</span>
+              <span class="d">Background URLSession downloads continue via nsurlsessiond</span>
+</pre>
+
+<div class="callout orange">
+  <span class="callout-label">Critical: User sees confirmation in under 100ms</span>
+  The extension dismisses at T+50ms. Everything after that is invisible to the user. The background URLSession tasks continue running even after the extension process is killed. When they complete, the system wakes the main app briefly to process results.
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- ZONE 2 DESIGN -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Background URLSession Design (Zone 2)</h2>
+
+<h3>Architecture</h3>
+<pre>
+<span class="h">Share Extension Process</span>                <span class="h">System Daemon</span>              <span class="h">Main App Process</span>
+                                        (nsurlsessiond)
+         │                                     │                          │
+         ├─ Create background session ─────────►│                          │
+         │  (shared identifier via App Group)   │                          │
+         │                                     │                          │
+         ├─ Start DownloadTask: OG tags ──────►│                          │
+         ├─ Start DownloadTask: thumbnail ────►│                          │
+         │                                     │                          │
+         ├─ completeRequest() → dismiss        │                          │
+         │                                     │                          │
+         X  <span class="d">(extension killed by system)</span>       │                          │
+                                               │                          │
+                                               ├─ OG tags download done ─►│ <span class="h">Wakes app</span>
+                                               │                          ├─ Parse OG tags
+                                               │                          ├─ Extract og:image URL
+                                               │                          ├─ <span class="w">Start new download</span>
+                                               │                          │  <span class="w">(thumbnail if not</span>
+                                               │                          │  <span class="w"> already started)</span>
+                                               │                          │
+                                               ├─ thumbnail download ────►│ <span class="h">Wakes app</span>
+                                               │                          ├─ Cache image locally
+                                               │                          ├─ Quick hashtag classify
+                                               │                          ├─ Update save record
+                                               │                          └─ Invalidate session
+</pre>
+
+<h3>Key Implementation Details</h3>
+<ul>
+  <li><strong>Session identifier:</strong> <code>"{bundleId}.share.background"</code> — unique per extension type</li>
+  <li><strong>Shared container:</strong> Both extension and app use same <code>sharedContainerIdentifier</code> in URLSessionConfiguration</li>
+  <li><strong><code>isDiscretionary = false</code></strong> — these are user-initiated saves, download immediately</li>
+  <li><strong>Only DownloadTasks:</strong> DataTasks don't work in background sessions. Download the HTML HEAD response as a file, then parse the file</li>
+  <li><strong>Small payloads:</strong> HTML HEAD is ~5-15KB, thumbnails ~200KB. These complete in seconds</li>
+  <li><strong>One session per extension invocation:</strong> Prevents <code>NSURLErrorBackgroundSessionInUseByAnotherProcess</code> conflicts</li>
+</ul>
+</div>
+
+<!-- ============================================ -->
+<!-- ZONE 3 PROCESSING QUEUE -->
+<!-- ============================================ -->
+<div class="section">
+<h2>App Foreground Processing Queue (Zone 3)</h2>
+
+<p>When the user opens the app, a processing queue runs through all saves that need enrichment:</p>
+
+<pre>
+<span class="h">func processEnrichmentQueue()</span> {
+    let pendingSaves = fetchSaves(where: status != .fullyEnriched)
+    
+    for save in pendingSaves.<span class="e">sortedByPriority</span> {  <span class="d">// newest first, most-viewed stacks first</span>
+        
+        <span class="d">// Step 1: If Zone 2 didn't complete (no OG tags yet)</span>
+        if save.ogTags == nil {
+            await fetchOGTags(save.url)           <span class="d">// ~500ms</span>
+            await downloadThumbnail(save.ogImage)  <span class="d">// ~1s</span>
+        }
+        
+        <span class="d">// Step 2: Vision AI (if thumbnail cached but not yet analyzed)</span>
+        if save.thumbnail != nil && save.visionResult == nil {
+            save.visionResult = await runVisionAI(save.thumbnail)  <span class="d">// ~500-2000ms</span>
+            <span class="d">// scene classification + object detection + OCR</span>
+        }
+        
+        <span class="d">// Step 3: Platform-specific enrichment</span>
+        switch save.platform {
+        case .instagram:
+            if save.graphQLData == nil {
+                save.graphQLData = await fetchInstagramGraphQL(save.shortcode)
+            }
+        case .youtube:
+            if save.dataAPIResult == nil {
+                save.dataAPIResult = await fetchYouTubeDataAPI(save.videoId)
+            }
+            if save.transcript == nil && <span class="w">isOnWiFi</span> {
+                save.transcript = await fetchYouTubeTranscript(save.videoId)
+            }
+        case .pinterest:
+            if save.sourceURL != nil && save.sourcePageData == nil {
+                save.sourcePageData = await fetchSourcePage(save.sourceURL)
+            }
+        case .reddit:
+            <span class="d">// Usually already well-classified from subreddit</span>
+            if save.linkedURL != nil && save.linkedPageData == nil {
+                save.linkedPageData = await fetchLinkedPage(save.linkedURL)
+            }
+        }
+        
+        <span class="d">// Step 4: Foundation Models final classification</span>
+        save.classification = await classifyWithFoundationModels(
+            text: save.allTextSignals,
+            vision: save.visionResult,
+            schema: save.jsonLD,
+            platform: save.platform
+        )
+        
+        <span class="d">// Step 5: Generate AI summary</span>
+        save.summary = await generateSummary(save)
+        
+        save.status = .fullyEnriched
+    }
+}
+</pre>
+
+<div class="callout green">
+  <span class="callout-label">Processing Priority</span>
+  Process saves in this order: <strong>(1)</strong> Currently visible saves (user is looking at them), <strong>(2)</strong> Most recent saves, <strong>(3)</strong> Saves in frequently-viewed stacks, <strong>(4)</strong> Older saves. This ensures the user sees enrichment happening for the items they care about first.
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- ZONE 5 BATCH JOBS -->
+<!-- ============================================ -->
+<div class="section">
+<h2>BGProcessingTask Jobs (Zone 5 — Overnight Batch)</h2>
+
+<pre>
+<span class="h">Registered BGProcessingTasks:</span>
+
+<span class="e">1. "com.app.videoTranscripts"</span>
+   requiresExternalPower: true
+   requiresNetworkConnectivity: true
+   ├─ Find Reel/TikTok saves where transcript == nil AND caption is sparse
+   ├─ Download video (~8MB each, WiFi only)
+   ├─ Run Apple Speech framework → transcript text
+   ├─ Run Foundation Models on transcript → extract entities
+   └─ Update save with entities + enhanced summary
+
+<span class="e">2. "com.app.batchVisionAI"</span>
+   requiresExternalPower: true
+   requiresNetworkConnectivity: false  <span class="d">// Vision runs offline</span>
+   ├─ Find saves where visionResult == nil AND thumbnail exists
+   ├─ Batch process up to 50 images
+   └─ Update classifications where Vision changes confidence
+
+<span class="e">3. "com.app.priceTracking"</span>
+   requiresExternalPower: false
+   requiresNetworkConnectivity: true
+   ├─ Find Shopping saves with product identifiers (ASIN, SKU)
+   ├─ Fetch current prices from product pages
+   ├─ Compare with saved prices
+   └─ If price dropped &gt; 10%: queue local notification "💰 Price drop!"
+
+<span class="e">4. "com.app.deadLinkCheck"</span>
+   requiresExternalPower: true
+   requiresNetworkConnectivity: true
+   ├─ Check oldest 100 saves for dead links (HTTP HEAD → 404?)
+   ├─ Mark dead links in UI: "⚠️ This content may no longer be available"
+   └─ Don't delete — user's cached data (thumbnail, summary) still valuable
+
+<span class="e">5. "com.app.searchIndexRebuild"</span>
+   requiresExternalPower: true
+   requiresNetworkConnectivity: false
+   ├─ Rebuild full-text search index
+   ├─ Update vector embeddings for semantic search
+   └─ Optimize Core Data indices
+</pre>
+</div>
+
+<!-- ============================================ -->
+<!-- WHAT USER SEES -->
+<!-- ============================================ -->
+<div class="section">
+<h2>What the User Sees — Progressive Enhancement</h2>
+
+<p>The user experience must be excellent at every stage, even before enrichment completes:</p>
+
+<table class="platform-table">
+<thead><tr><th>State</th><th>When</th><th>What user sees in app</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>Just saved</strong></td>
+  <td>Immediately after share</td>
+  <td>Card with: platform icon, URL domain, any share text (title/caption). Placeholder thumbnail (platform-colored gradient). Stack: preliminary guess or "Inbox"</td>
+</tr>
+<tr>
+  <td><strong>Zone 2 complete</strong></td>
+  <td>Seconds after save (bg downloads done)</td>
+  <td>Card now shows: actual thumbnail (blurhash → real image), extracted title, engagement metrics, hashtag tags visible. Stack: hashtag-based classification with medium confidence</td>
+</tr>
+<tr>
+  <td><strong>Zone 3 complete</strong></td>
+  <td>Next time user opens app</td>
+  <td>Fully enriched card: AI summary, proper classification with high confidence, all extracted entities (locations, prices, brands), source attribution. Stack: final classification. If GraphQL succeeded: full caption, creator info, location pin</td>
+</tr>
+<tr>
+  <td><strong>Zone 5 complete</strong></td>
+  <td>Next morning (after overnight charging)</td>
+  <td>Premium enrichment: transcript-derived entities (venue names, prices mentioned verbally), deeper AI summary, price tracking status for shopping items. These feel like bonus intelligence — the save was already great before this</td>
+</tr>
+</tbody>
+</table>
+
+<div class="callout blue">
+  <span class="callout-label">Design Principle: Never Show Loading</span>
+  Each zone adds to the save — it never looks broken or empty. After Zone 1 (50ms), the user already has a recognizable save with platform + title + preliminary stack. Zone 2 adds the thumbnail (the biggest visual improvement). Zone 3 adds intelligence. Zone 5 adds magic. The save gets better over time but is always usable.
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SUMMARY TABLE -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Platform Summary — Classification Speed</h2>
+
+<p>How quickly can we classify each platform, and which zone gives us confident classification?</p>
+
+<table class="platform-table">
+<thead><tr>
+  <th>Platform</th>
+  <th>Zone 1 (share ext)</th>
+  <th>Zone 2 (bg download)</th>
+  <th>Zone 3 (app open)</th>
+  <th>Confident classify at</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td><strong>📸 Instagram</strong></td>
+  <td>URL + shortcode only</td>
+  <td>OG caption + thumbnail</td>
+  <td>Vision + GraphQL + Foundation Models</td>
+  <td><span class="zone-badge z3">Zone 3</span> <span class="tag maybe">~85-92%</span></td>
+</tr>
+<tr>
+  <td><strong>📺 YouTube</strong></td>
+  <td>URL + video ID + title</td>
+  <td>JSON-LD + thumbnail</td>
+  <td>Data API + transcript</td>
+  <td><span class="zone-badge z2">Zone 2</span> <span class="tag yes">~90%</span></td>
+</tr>
+<tr>
+  <td><strong>🎵 TikTok</strong></td>
+  <td>URL + <strong>full caption + hashtags!</strong></td>
+  <td>oEmbed + thumbnail</td>
+  <td>Vision + embedded JSON</td>
+  <td><span class="zone-badge z1">Zone 1</span> <span class="tag yes">~85%</span></td>
+</tr>
+<tr>
+  <td><strong>𝕏 X (Twitter)</strong></td>
+  <td>URL + <strong>full tweet text</strong></td>
+  <td>OG tags + linked URL data</td>
+  <td>Vision + Foundation Models</td>
+  <td><span class="zone-badge z1">Zone 1</span> <span class="tag yes">~80%</span></td>
+</tr>
+<tr>
+  <td><strong>📌 Pinterest</strong></td>
+  <td>URL + sometimes description</td>
+  <td>Pin OG + image</td>
+  <td>Source page JSON-LD + Vision</td>
+  <td><span class="zone-badge z3">Zone 3</span> <span class="tag yes">~90%</span></td>
+</tr>
+<tr>
+  <td><strong>🤖 Reddit</strong></td>
+  <td>URL + title + <strong>subreddit name!</strong></td>
+  <td>.json full post data</td>
+  <td>Linked URL data</td>
+  <td><span class="zone-badge z1">Zone 1</span> <span class="tag yes">~90%</span></td>
+</tr>
+<tr>
+  <td><strong>🌐 Safari/Web</strong></td>
+  <td>URL + title + selected text</td>
+  <td>OG + JSON-LD schemas</td>
+  <td>Vision + Foundation Models</td>
+  <td><span class="zone-badge z2">Zone 2</span> <span class="tag yes">~85-95%</span></td>
+</tr>
+<tr>
+  <td><strong>📱 Photos/Screenshot</strong></td>
+  <td>Full image + EXIF GPS</td>
+  <td>—</td>
+  <td>Vision + OCR + Foundation Models</td>
+  <td><span class="zone-badge z3">Zone 3</span> <span class="tag maybe">~70-80%</span></td>
+</tr>
+<tr>
+  <td><strong>🛒 Amazon/Shopping</strong></td>
+  <td>URL + title + <strong>price text</strong></td>
+  <td>Product JSON-LD</td>
+  <td>Price tracking setup</td>
+  <td><span class="zone-badge z1">Zone 1</span> <span class="tag yes">~95%</span></td>
+</tr>
+<tr>
+  <td><strong>📍 Google Maps</strong></td>
+  <td>URL + place name</td>
+  <td>Place page OG tags</td>
+  <td>LocalBusiness schema</td>
+  <td><span class="zone-badge z1">Zone 1</span> <span class="tag yes">~95%</span></td>
+</tr>
+</tbody>
+</table>
+
+<div class="callout green">
+  <span class="callout-label">The Beautiful Result</span>
+  <strong>6 out of 10 platforms can be classified in Zone 1</strong> (within the share extension, before the user even returns to the source app). TikTok, X, Reddit, Amazon, and Maps give us enough text data immediately. YouTube and Safari reach high confidence at Zone 2 (seconds later). Only Instagram, Pinterest, and Photos/Screenshots need Zone 3 (app foreground) for confident classification — and these are the visual-first platforms where Vision AI is the primary engine.
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- FOOTER -->
+<!-- ============================================ -->
+<hr>
+<div style="text-align: center; color: var(--muted); font-size: 0.76rem; margin-top: 24px;">
+  <p>iOS Execution Plan — Background Processing Architecture</p>
+  <p style="font-family: var(--mono); font-size: 0.62rem;">100% On-Device · Zero Server Dependency · February 2026</p>
+</div>
+
+</div>
+</body>
+</html>

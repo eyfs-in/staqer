@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Deep Dive — Data Extraction & Enrichment for the Primary Save Source</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ef; --card: #fff; --ink: #1a1a1a; --muted: #8a8279;
+    --border: #e0dbd3; --accent: #c45d2c; --teal: #1a7a65; --blue: #2b6cb0;
+    --purple: #6b46a3; --gold: #b8860b; --rose: #be185d; --ig-gradient-1: #833ab4;
+    --ig-gradient-2: #fd1d1d; --ig-gradient-3: #fcb045;
+    --soft-green: #edf7f2; --soft-blue: #eef4fb; --soft-orange: #fdf3ec;
+    --soft-purple: #f5f0fa; --soft-rose: #fdf2f8; --soft-gold: #fdf8e8;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.7; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 48px 28px 120px; }
+
+  /* Header */
+  .eyebrow { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  h1 { font-family: 'Fraunces', serif; font-size: 2.1rem; line-height: 1.18; font-weight: 700; margin-bottom: 14px; }
+  .sub { font-size: 0.92rem; color: var(--muted); max-width: 750px; margin-bottom: 48px; }
+  h2 { font-family: 'Fraunces', serif; font-size: 1.4rem; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); display: inline-block; }
+  h3 { font-size: 1rem; font-weight: 700; margin: 18px 0 8px; }
+  h4 { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 28px 0 12px; }
+  p, li { font-size: 0.88rem; margin-bottom: 8px; }
+  ul { margin-left: 18px; margin-bottom: 12px; }
+  .section { margin-bottom: 56px; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 50px 0; }
+  code { font-family: var(--mono); font-size: 0.78rem; background: rgba(0,0,0,0.04); padding: 1px 5px; border-radius: 3px; }
+  pre { font-family: var(--mono); font-size: 0.72rem; background: #1a1a1a; color: #e0dbd3; padding: 18px 22px; border-radius: 6px; overflow-x: auto; margin: 12px 0 16px; line-height: 1.6; }
+  pre .key { color: #7dd3fc; }
+  pre .str { color: #86efac; }
+  pre .comment { color: #6b7280; font-style: italic; }
+  pre .num { color: #fbbf24; }
+
+  /* Callouts */
+  .callout { padding: 18px 22px; border-radius: 5px; margin: 16px 0; font-size: 0.86rem; }
+  .callout.green { background: var(--soft-green); border-left: 4px solid var(--teal); }
+  .callout.orange { background: var(--soft-orange); border-left: 4px solid var(--accent); }
+  .callout.blue { background: var(--soft-blue); border-left: 4px solid var(--blue); }
+  .callout.purple { background: var(--soft-purple); border-left: 4px solid var(--purple); }
+  .callout.rose { background: var(--soft-rose); border-left: 4px solid var(--rose); }
+  .callout.gold { background: var(--soft-gold); border-left: 4px solid var(--gold); }
+  .callout strong { font-weight: 700; }
+  .callout-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; display: block; }
+
+  /* Instagram gradient banner */
+  .ig-banner { background: linear-gradient(135deg, var(--ig-gradient-1) 0%, var(--ig-gradient-2) 50%, var(--ig-gradient-3) 100%); color: white; padding: 28px 32px; border-radius: 10px; margin-bottom: 40px; }
+  .ig-banner h2 { color: white; border-bottom-color: rgba(255,255,255,0.4); }
+  .ig-banner .stat { font-family: var(--mono); font-size: 2rem; font-weight: 700; }
+  .ig-banner .stat-label { font-size: 0.72rem; opacity: 0.85; margin-top: -2px; }
+  .stats-row { display: flex; gap: 40px; margin-top: 18px; flex-wrap: wrap; }
+
+  /* Layer cards */
+  .layer-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
+  .layer-header { padding: 14px 22px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+  .layer-num { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; font-weight: 700; }
+  .layer-num.l1 { background: #d1fae5; color: #065f46; }
+  .layer-num.l2 { background: #dbeafe; color: #1e40af; }
+  .layer-num.l3 { background: #fef3c7; color: #92400e; }
+  .layer-num.l4 { background: #ede9fe; color: #5b21b6; }
+  .layer-num.l5 { background: #fce7f3; color: #9d174d; }
+  .layer-title { font-weight: 700; font-size: 0.95rem; }
+  .layer-time { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-left: auto; }
+  .layer-body { padding: 20px 22px; }
+
+  /* Data table */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 12px 0; }
+  .data-table th { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; text-align: left; padding: 8px 12px; background: rgba(0,0,0,0.03); border-bottom: 2px solid var(--border); color: var(--muted); }
+  .data-table td { padding: 8px 12px; border-bottom: 1px solid rgba(0,0,0,0.05); vertical-align: top; }
+  .data-table tr:last-child td { border-bottom: none; }
+
+  /* Tags */
+  .tag { display: inline-block; font-family: var(--mono); font-size: 0.58rem; padding: 2px 7px; border-radius: 3px; margin: 1px 2px; font-weight: 500; }
+  .tag.yes { background: #d1fae5; color: #065f46; }
+  .tag.no { background: #fee2e2; color: #991b1b; }
+  .tag.partial { background: #fef3c7; color: #92400e; }
+  .tag.rich { background: #dbeafe; color: #1e40af; }
+  .tag.free { background: #d1fae5; color: #065f46; }
+  .tag.paid { background: #fce7f3; color: #9d174d; }
+  .tag.critical { background: #fee2e2; color: #991b1b; font-weight: 700; }
+
+  /* Content type grid */
+  .type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 16px 0; }
+  .type-card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 18px; }
+  .type-card .type-icon { font-size: 1.5rem; margin-bottom: 8px; }
+  .type-card .type-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; }
+  .type-card .type-desc { font-size: 0.78rem; color: var(--muted); }
+
+  /* Flow diagram */
+  .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 16px 0; }
+  .flow-step { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 16px; font-size: 0.78rem; font-weight: 500; }
+  .flow-step.highlight { background: var(--soft-green); border-color: var(--teal); }
+  .flow-arrow { color: var(--muted); font-family: var(--mono); font-size: 0.7rem; }
+
+  /* Comparison table */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .compare-col { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 18px; }
+  .compare-col.good { border-left: 4px solid var(--teal); }
+  .compare-col.bad { border-left: 4px solid #ef4444; }
+  .compare-header { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+  .compare-col.good .compare-header { color: var(--teal); }
+  .compare-col.bad .compare-header { color: #ef4444; }
+
+  /* Example blocks */
+  .example { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; }
+  .example-header { padding: 10px 18px; background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .example-body { padding: 18px; font-size: 0.82rem; }
+
+  /* Signal strength meter */
+  .signal-meter { display: flex; gap: 3px; align-items: center; margin: 4px 0; }
+  .signal-bar { width: 6px; height: 16px; border-radius: 2px; background: #e0dbd3; }
+  .signal-bar.active { background: var(--teal); }
+  .signal-bar.active.warn { background: var(--gold); }
+  .signal-bar.active.weak { background: #ef4444; }
+  .signal-label { font-family: var(--mono); font-size: 0.6rem; margin-left: 6px; color: var(--muted); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    h1 { font-size: 1.6rem; }
+    .stats-row { gap: 20px; }
+    .ig-banner .stat { font-size: 1.5rem; }
+    .compare { grid-template-columns: 1fr; }
+    .type-grid { grid-template-columns: 1fr; }
+    pre { font-size: 0.65rem; padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ============================================ -->
+<!-- HEADER -->
+<!-- ============================================ -->
+<div class="eyebrow">Platform Intelligence · Deep Dive</div>
+<h1>📸 Instagram: Cracking the Primary Save Source</h1>
+<p class="sub">Instagram will account for 40–60% of all saves in our app, yet it gives us the <em>least</em> structured data of any major platform. This document maps every byte of data we can extract — and the strategies that turn Instagram's scraps into rich, classified saves.</p>
+
+<div class="ig-banner">
+  <div class="stats-row">
+    <div><div class="stat">40–60%</div><div class="stat-label">Est. share of all saves</div></div>
+    <div><div class="stat">#1</div><div class="stat-label">Most-shared platform</div></div>
+    <div><div class="stat">5 types</div><div class="stat-label">Posts · Reels · Stories · Carousel · Live</div></div>
+    <div><div class="stat">~85%</div><div class="stat-label">Target classification accuracy</div></div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- THE INSTAGRAM PROBLEM -->
+<!-- ============================================ -->
+<div class="section">
+<h2>The Instagram Problem</h2>
+<p>Unlike YouTube (rich transcripts, Data API, JSON-LD VideoObject), TikTok (generous share sheet text + free oEmbed), or recipe blogs (complete JSON-LD schemas) — Meta has <strong>progressively locked down</strong> every data channel over the past 3 years.</p>
+
+<div class="compare">
+  <div class="compare-col bad">
+    <div class="compare-header">🔒 What Instagram blocks</div>
+    <ul>
+      <li>iOS share sheet gives <strong>URL only</strong> — no caption, no image, no metadata</li>
+      <li>Page HTML increasingly behind <strong>login wall</strong> for unauthenticated fetches</li>
+      <li>Legacy <code>window._sharedData</code> JSON largely <strong>stripped out</strong></li>
+      <li>Meta oEmbed Read removed <code>thumbnail_url</code> field (April 2025)</li>
+      <li>Graph API requires <strong>content owner OAuth</strong> — useless for saving others' posts</li>
+      <li>Basic Display API deprecated</li>
+      <li>Rate limiting + anti-bot on all endpoints</li>
+    </ul>
+  </div>
+  <div class="compare-col good">
+    <div class="compare-header">✅ What we CAN still get</div>
+    <ul>
+      <li><strong>OG tags</strong> still served in HTML <code>&lt;head&gt;</code> for public posts (pre-login-wall)</li>
+      <li><code>og:image</code> delivers <strong>high-quality thumbnail</strong></li>
+      <li><code>og:description</code> contains <strong>partial caption + hashtags + engagement metrics</strong></li>
+      <li>Internal GraphQL endpoint <code>xdt_api__v1__media__shortcode__web_info</code> returns <strong>full post JSON</strong></li>
+      <li>Reels have <strong>auto-generated transcripts</strong> extractable via third-party tools</li>
+      <li><strong>Vision AI</strong> on thumbnail = strongest signal for this visual-first platform</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout orange">
+  <span class="callout-label">Key Insight</span>
+  <strong>Instagram inverts our pipeline.</strong> For YouTube, text is king (transcripts, descriptions, tags). For Instagram, the <strong>image IS the data</strong>. Our Vision AI pipeline is the primary classification engine, with text (hashtags, caption snippets) as supporting signals.
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- CONTENT TYPES -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Instagram Content Types Users Will Save</h2>
+<p>Each content type delivers slightly different data through different channels. Understanding this is critical for routing extraction logic.</p>
+
+<div class="type-grid">
+  <div class="type-card">
+    <div class="type-icon">🖼️</div>
+    <div class="type-name">Static Posts (Single Image)</div>
+    <div class="type-desc">URL format: <code>instagram.com/p/{shortcode}/</code><br>Best data: OG image (the actual photo), OG description (caption extract). Easiest to classify — one clear image, usually descriptive caption with hashtags.</div>
+  </div>
+  <div class="type-card">
+    <div class="type-icon">🎠</div>
+    <div class="type-name">Carousel Posts</div>
+    <div class="type-desc">URL format: <code>instagram.com/p/{shortcode}/</code> (same as single)<br>OG image = <strong>first slide only</strong>. Caption usually describes the collection. Challenge: other slides may have different content. GraphQL returns all image URLs.</div>
+  </div>
+  <div class="type-card">
+    <div class="type-icon">🎬</div>
+    <div class="type-name">Reels (Video)</div>
+    <div class="type-desc">URL format: <code>instagram.com/reel/{shortcode}/</code><br><strong>Highest save volume.</strong> OG image = video thumbnail. Captions tend to be more descriptive (optimized for Explore). Music/audio track metadata available via GraphQL. Transcripts extractable.</div>
+  </div>
+  <div class="type-card">
+    <div class="type-icon">⏱️</div>
+    <div class="type-name">Stories (Shared Links)</div>
+    <div class="type-desc">URL format: <code>instagram.com/stories/{username}/{storyId}/</code><br><strong>Expire in 24 hours.</strong> OG image may work temporarily. Critical to cache thumbnail immediately — our app preserves what Instagram deletes. Very limited metadata.</div>
+  </div>
+  <div class="type-card">
+    <div class="type-icon">📺</div>
+    <div class="type-name">Live (Saved Replays)</div>
+    <div class="type-desc">URL format: varies<br>Rare save case. Treated similarly to Reels. Usually shared after-the-fact as a Reel clip.</div>
+  </div>
+  <div class="type-card">
+    <div class="type-icon">🏪</div>
+    <div class="type-name">Shopping / Product Posts</div>
+    <div class="type-desc">URL format: <code>instagram.com/p/{shortcode}/</code> with product tags<br>Product names, prices may appear in caption or embedded metadata. High-value for Shopping stack auto-classification.</div>
+  </div>
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- LAYER 1: iOS SHARE SHEET -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Data Extraction: Layer by Layer</h2>
+
+<div class="layer-card">
+<div class="layer-header">
+  <span class="layer-num l1">Layer 1</span>
+  <span class="layer-title">iOS Share Sheet</span>
+  <span class="layer-time">0ms · on-device · instant</span>
+</div>
+<div class="layer-body">
+
+<p>When a user taps the share button in the Instagram app and selects our share extension, the <code>NSExtensionItem</code> delivers:</p>
+
+<table class="data-table">
+<thead><tr><th>Field</th><th>What we get</th><th>Reliability</th><th>Value</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>URL</code></td>
+  <td><code>https://www.instagram.com/reel/ABC123/</code> or <code>/p/ABC123/</code></td>
+  <td><span class="tag yes">Always</span></td>
+  <td><span class="tag rich">High</span> — tells us platform + content type (reel vs post) + shortcode for API lookup</td>
+</tr>
+<tr>
+  <td><code>Text / attributedContentText</code></td>
+  <td>Sometimes a brief snippet — typically the URL itself, occasionally a truncated caption</td>
+  <td><span class="tag partial">Inconsistent</span></td>
+  <td>Low — usually just the URL repeated. Cannot rely on this for caption data.</td>
+</tr>
+<tr>
+  <td><code>Image attachment</code></td>
+  <td>None</td>
+  <td><span class="tag no">Never</span></td>
+  <td>Instagram app does NOT pass image/video data through the share sheet</td>
+</tr>
+<tr>
+  <td><code>Detected content type</code></td>
+  <td><code>kUTTypeURL</code></td>
+  <td><span class="tag yes">Always</span></td>
+  <td>Used by our extension to match activation rules</td>
+</tr>
+</tbody>
+</table>
+
+<h4>What we can extract from the URL alone (zero-cost parsing)</h4>
+<table class="data-table">
+<thead><tr><th>URL Pattern</th><th>Signal</th><th>Stack Hint</th></tr></thead>
+<tbody>
+<tr><td><code>/reel/{code}/</code></td><td>Video content — Reel</td><td>Higher chance of Travel, Recipe, Fitness, Tutorial content</td></tr>
+<tr><td><code>/p/{code}/</code></td><td>Static post or carousel</td><td>Could be anything — Fashion, Food, Home Decor, Shopping</td></tr>
+<tr><td><code>/stories/{username}/{id}/</code></td><td>Ephemeral story</td><td>Flag as time-sensitive → must cache thumbnail immediately</td></tr>
+<tr><td><code>{shortcode}</code> extracted</td><td>11-char base64 ID</td><td>Used as key for GraphQL lookup and deduplication</td></tr>
+</tbody>
+</table>
+
+<div class="callout green">
+  <span class="callout-label">Implementation</span>
+  <strong>Instant action on share:</strong> Parse URL → detect Instagram → extract shortcode → show spinner "Saving to Instagram saves..." → immediately fire Layer 2 fetch in background → confirm "✓ Saved" within 1–2 seconds.
+</div>
+
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- LAYER 2: OG TAGS -->
+<!-- ============================================ -->
+<div class="layer-card">
+<div class="layer-header">
+  <span class="layer-num l2">Layer 2</span>
+  <span class="layer-title">OG Tags & HTML Metadata</span>
+  <span class="layer-time">200–800ms · network fetch</span>
+</div>
+<div class="layer-body">
+
+<p>Fetching the Instagram URL's HTML <code>&lt;head&gt;</code> section gives us Open Graph tags. These are <strong>the most reliable structured data</strong> Instagram provides for public posts — they exist because Instagram wants rich link previews on Facebook, Twitter, Slack, WhatsApp, iMessage, etc.</p>
+
+<div class="callout orange">
+  <span class="callout-label">Login Wall Risk</span>
+  Instagram increasingly shows login walls for unauthenticated page loads. The OG tags are served in the <strong>initial HTML response</strong> (before JS renders the login wall), so a simple HTTP fetch of the <code>&lt;head&gt;</code> section typically still works. But this is fragile — Instagram could change this at any time. Our fetcher should grab only the <code>&lt;head&gt;</code> (stop reading at <code>&lt;/head&gt;</code>) for speed and to avoid triggering anti-bot detection.
+</div>
+
+<h3>Exact OG Tags Returned by Instagram</h3>
+
+<div class="example">
+<div class="example-header">Example: Instagram Reel — Travel Food Content</div>
+<div class="example-body">
+<pre><span class="comment">&lt;!-- What Instagram actually puts in the &lt;head&gt; --&gt;</span>
+
+&lt;meta property="<span class="key">og:site_name</span>"  content="<span class="str">Instagram</span>" /&gt;
+&lt;meta property="<span class="key">og:type</span>"       content="<span class="str">video</span>" /&gt;
+&lt;meta property="<span class="key">og:title</span>"      content="<span class="str">@lisbonfoodie on Instagram: "Best hidden gems in Lisbon 🇵🇹✨ 
+Save this for your next trip! 
+
+📍 Time Out Market
+📍 Pastéis de Belém 
+📍 A Cevicheria 
+📍 Cervejaria Ramiro
+
+#lisbon #portugal #lisbonfood #travelfood #hiddengemslisbon"</span>" /&gt;
+
+&lt;meta property="<span class="key">og:description</span>" content="<span class="str">24.3K likes, 847 comments - lisbonfoodie on 
+January 15, 2026: "Best hidden gems in Lisbon 🇵🇹✨ 
+Save this for your next trip! 
+
+📍 Time Out Market
+📍 Pastéis de Belém
+📍 A Cevicheria
+📍 Cervejaria Ramiro
+
+#lisbon #portugal #lisbonfood #travelfood #hiddengemslisbon"</span>" /&gt;
+
+&lt;meta property="<span class="key">og:image</span>"       content="<span class="str">https://scontent-iad3-1.cdninstagram.com/v/
+t51.2885-15/e35/s1080x1080/...</span>" /&gt;
+&lt;meta property="<span class="key">og:image:width</span>"  content="<span class="num">1080</span>" /&gt;
+&lt;meta property="<span class="key">og:image:height</span>" content="<span class="num">1080</span>" /&gt;
+&lt;meta property="<span class="key">og:url</span>"        content="<span class="str">https://www.instagram.com/reel/ABC123xyz/</span>" /&gt;
+
+&lt;meta property="<span class="key">al:ios:url</span>"     content="<span class="str">instagram://media?id=3012345678901234567</span>" /&gt;
+&lt;meta property="<span class="key">al:ios:app_name</span>" content="<span class="str">Instagram</span>" /&gt;</pre>
+</div>
+</div>
+
+<h3>What Each OG Field Gives Us for Classification</h3>
+
+<table class="data-table">
+<thead><tr><th>OG Tag</th><th>Raw Value</th><th>Extractable Intelligence</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>og:title</code></td>
+  <td>Format: <code>@{username} on Instagram: "{caption_first_chunk}"</code></td>
+  <td>
+    <strong>Username</strong> — can be used to detect known creator categories (food bloggers, travel accounts, fashion influencers).<br>
+    <strong>Caption start</strong> — first ~200 chars including hashtags, locations, mentions. Often the most information-dense part of the caption.
+  </td>
+</tr>
+<tr>
+  <td><code>og:description</code></td>
+  <td>Format: <code>{likes}K likes, {comments} comments - {username} on {date}: "{extended_caption}"</code></td>
+  <td>
+    <strong>Engagement metrics</strong> — likes count, comment count (useful for sorting by popularity later).<br>
+    <strong>Date</strong> — publication date for temporal context.<br>
+    <strong>Extended caption</strong> — usually ~300-500 chars, often includes the <strong>complete caption</strong> for shorter posts.<br>
+    <strong>Hashtags</strong> — almost always included, this is our #1 text classification signal.
+  </td>
+</tr>
+<tr>
+  <td><code>og:image</code></td>
+  <td>CDN URL to full-resolution post image or video thumbnail</td>
+  <td>
+    <strong>THE most valuable field.</strong> This is the actual visual content. Must be cached immediately (CDN URLs expire). Used for:<br>
+    — Vision AI scene classification<br>
+    — Object detection<br>
+    — OCR (for screenshots, text overlays, product info)<br>
+    — Thumbnail display in our app
+  </td>
+</tr>
+<tr>
+  <td><code>og:type</code></td>
+  <td><code>video</code> or <code>instapp:photo</code></td>
+  <td>Content type disambiguation — Reel vs static post</td>
+</tr>
+<tr>
+  <td><code>al:ios:url</code></td>
+  <td><code>instagram://media?id={numeric_id}</code></td>
+  <td>Numeric media ID — can be used for internal GraphQL queries. Also useful as deep-link to jump user back into Instagram app when they tap the saved item.</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Parsing the OG Description — Our Text Intelligence Pipeline</h3>
+
+<p>The <code>og:description</code> is a semi-structured string. Here's how we parse it systematically:</p>
+
+<div class="example">
+<div class="example-header">Example Parser Output</div>
+<div class="example-body">
+<pre><span class="comment">// Input (raw og:description):</span>
+"<span class="str">24.3K likes, 847 comments - lisbonfoodie on January 15, 2026: 
+"Best hidden gems in Lisbon 🇵🇹✨ Save this for your next trip! 
+📍 Time Out Market 📍 Pastéis de Belém 📍 A Cevicheria 📍 Cervejaria Ramiro 
+#lisbon #portugal #lisbonfood #travelfood #hiddengemslisbon"</span>"
+
+<span class="comment">// Parsed output:</span>
+{
+  "<span class="key">likes</span>": <span class="num">24300</span>,
+  "<span class="key">comments</span>": <span class="num">847</span>,
+  "<span class="key">username</span>": "<span class="str">lisbonfoodie</span>",
+  "<span class="key">date</span>": "<span class="str">2026-01-15</span>",
+  "<span class="key">caption_text</span>": "<span class="str">Best hidden gems in Lisbon Save this for your next trip!</span>",
+  "<span class="key">hashtags</span>": ["<span class="str">lisbon</span>", "<span class="str">portugal</span>", "<span class="str">lisbonfood</span>", "<span class="str">travelfood</span>", "<span class="str">hiddengemslisbon</span>"],
+  "<span class="key">locations_mentioned</span>": ["<span class="str">Time Out Market</span>", "<span class="str">Pastéis de Belém</span>", "<span class="str">A Cevicheria</span>", "<span class="str">Cervejaria Ramiro</span>"],
+  "<span class="key">emojis</span>": ["<span class="str">🇵🇹</span>", "<span class="str">✨</span>", "<span class="str">📍</span>"],
+  "<span class="key">mentions</span>": [],
+  "<span class="key">country_flag</span>": "<span class="str">Portugal</span>"
+}
+
+<span class="comment">// Classification result:</span>
+{
+  "<span class="key">primary_stack</span>": "<span class="str">Travel</span>",
+  "<span class="key">confidence</span>": <span class="num">0.94</span>,
+  "<span class="key">sub_stack</span>": "<span class="str">Travel › Food › Lisbon</span>",
+  "<span class="key">signals_used</span>": ["<span class="str">hashtag:travelfood</span>", "<span class="str">hashtag:lisbon</span>", "<span class="str">location_pins</span>", "<span class="str">country_flag:PT</span>"]
+}</pre>
+</div>
+</div>
+
+<h3>OG Description Parsing Rules</h3>
+
+<table class="data-table">
+<thead><tr><th>Pattern</th><th>Regex / Logic</th><th>Extraction</th></tr></thead>
+<tbody>
+<tr>
+  <td>Engagement</td>
+  <td><code>/^([\d.]+[KMB]?)\s*likes?,\s*([\d,]+)\s*comments?/</code></td>
+  <td>Normalize to integers (24.3K → 24300)</td>
+</tr>
+<tr>
+  <td>Username</td>
+  <td><code>/comments?\s*-\s*(\w+)\s+on\s/</code></td>
+  <td>Creator handle for attribution</td>
+</tr>
+<tr>
+  <td>Date</td>
+  <td><code>/on\s+(\w+\s+\d{1,2},?\s+\d{4})/</code></td>
+  <td>Publication date → recency signal</td>
+</tr>
+<tr>
+  <td>Hashtags</td>
+  <td><code>/#(\w+)/g</code></td>
+  <td>Array of tags — <strong>primary classification signal</strong></td>
+</tr>
+<tr>
+  <td>@Mentions</td>
+  <td><code>/@(\w+)/g</code></td>
+  <td>Tagged accounts — collaboration/brand signals</td>
+</tr>
+<tr>
+  <td>Location pins</td>
+  <td><code>/📍\s*([^📍\n#@]+)/g</code></td>
+  <td>Named places — restaurant, landmark, venue names</td>
+</tr>
+<tr>
+  <td>Country flags</td>
+  <td>Unicode flag emoji → ISO country code mapping</td>
+  <td>Location context (🇵🇹→Portugal, 🇯🇵→Japan, 🇮🇳→India)</td>
+</tr>
+<tr>
+  <td>Price mentions</td>
+  <td><code>/[$€£₹]\s*[\d,.]+|[\d,.]+\s*(?:USD|INR|EUR)/g</code></td>
+  <td>Product prices → Shopping stack signal</td>
+</tr>
+</tbody>
+</table>
+
+<div class="callout green">
+  <span class="callout-label">Caption Truncation Reality</span>
+  Instagram captions can be up to <strong>2,200 characters</strong>. The <code>og:description</code> typically contains <strong>300–500 characters</strong> of caption. For many posts this is the <strong>complete caption</strong>, since most Instagram captions are short. For longer captions (listicles, recipes, stories), the truncation cuts off the tail — but hashtags and key info are usually front-loaded by creators for discoverability, so we get the richest part.
+</div>
+
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- LAYER 3: VISION AI -->
+<!-- ============================================ -->
+<div class="layer-card">
+<div class="layer-header">
+  <span class="layer-num l3">Layer 3</span>
+  <span class="layer-title">Vision AI on Cached Image — The Instagram Superpower</span>
+  <span class="layer-time">500–2000ms · on-device · Neural Engine</span>
+</div>
+<div class="layer-body">
+
+<p>For Instagram more than any other platform, the <strong>image is the primary data source</strong>. Instagram is a visual-first platform — creators invest heavily in imagery, and the visual content often communicates more than the caption.</p>
+
+<h3>Vision Pipeline for Instagram Images</h3>
+
+<table class="data-table">
+<thead><tr><th>Vision Task</th><th>Technology</th><th>What It Extracts</th><th>Stack Classification Signal</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>Scene Classification</strong></td>
+  <td>Apple Vision Framework + Foundation Models</td>
+  <td>Beach, restaurant interior, kitchen, gym, bedroom, mountain trail, cityscape, street style, runway</td>
+  <td>Travel (landscapes, landmarks), Food (plated dishes, kitchens), Home Decor (interiors), Fitness (gyms, outdoor exercise)</td>
+</tr>
+<tr>
+  <td><strong>Object Detection</strong></td>
+  <td>Core ML + YOLO / Vision</td>
+  <td>Sneakers, handbag, sofa, sushi, cocktail glass, yoga mat, houseplant, laptop, book</td>
+  <td>Shopping (specific products), Home Decor (furniture), Food (dishes/ingredients), Fitness (equipment)</td>
+</tr>
+<tr>
+  <td><strong>OCR / Text Recognition</strong></td>
+  <td>Vision VNRecognizeTextRequest</td>
+  <td>Brand names on packaging, restaurant signs, price tags, recipe text overlays, product names, menu text</td>
+  <td>Shopping (brand + price detection), Food (restaurant names, menu items), Travel (venue signage)</td>
+</tr>
+<tr>
+  <td><strong>Face / People Analysis</strong></td>
+  <td>Vision VNDetectFaceRectanglesRequest</td>
+  <td>Number of people, selfie vs group shot, fashion outfit focus</td>
+  <td>Fashion (outfit-focused shots), Social (group activities)</td>
+</tr>
+<tr>
+  <td><strong>Color Palette</strong></td>
+  <td>Core Image dominant color extraction</td>
+  <td>Warm earth tones, Scandinavian whites, bold neon, pastels</td>
+  <td>Home Decor (design style), Fashion (seasonal palette), Food (warm = cooked meal, green = healthy)</td>
+</tr>
+<tr>
+  <td><strong>Image Style</strong></td>
+  <td>Foundation Models visual reasoning</td>
+  <td>Professional photography, screenshot, flat-lay, POV shot, infographic, meme</td>
+  <td>Screenshot → OCR route. Infographic → extract text. Meme → Entertainment stack.</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Vision Classification by Instagram Content Category</h3>
+
+<div class="type-grid">
+  <div class="type-card">
+    <div class="type-icon">🍕</div>
+    <div class="type-name">Food & Recipes</div>
+    <div class="type-desc"><strong>Vision signals:</strong> Plated dish, ingredients layout, kitchen setting, overhead food shot, restaurant table. <strong>Confidence boost:</strong> Combine with hashtags (#recipe, #foodie, #homecooking) + 📍 location pins with restaurant names.</div>
+  </div>
+  <div class="type-card">
+    <div class="type-icon">✈️</div>
+    <div class="type-name">Travel & Places</div>
+    <div class="type-desc"><strong>Vision signals:</strong> Landscape/cityscape, famous landmarks, aerial views, beach/mountain, hotel room. <strong>Confidence boost:</strong> Country flag emojis + location hashtags (#bali, #tokyo) + 📍 pins.</div>
+  </div>
+  <div class="type-card">
+    <div class="type-icon">👗</div>
+    <div class="type-name">Fashion & Style</div>
+    <div class="type-desc"><strong>Vision signals:</strong> Outfit shot (full-body, mirror selfie), flat-lay clothing, close-up accessories, runway/editorial. <strong>Confidence boost:</strong> Brand mentions (@zara, @nike) + product-style hashtags (#ootd, #streetwear).</div>
+  </div>
+  <div class="type-card">
+    <div class="type-icon">🏠</div>
+    <div class="type-name">Home Decor & Interior</div>
+    <div class="type-desc"><strong>Vision signals:</strong> Room interior, furniture arrangement, shelf styling, bathroom/kitchen renovation, plant corners. <strong>Confidence boost:</strong> Hashtags (#homedecor, #scandinavian, #midcenturymodern) + color palette analysis.</div>
+  </div>
+  <div class="type-card">
+    <div class="type-icon">🛍️</div>
+    <div class="type-name">Shopping & Products</div>
+    <div class="type-desc"><strong>Vision signals:</strong> Product on white background, unboxing, swatches/samples, comparison layouts, price visible. <strong>Confidence boost:</strong> OCR detects brand name + price. Shopping tags if present in metadata.</div>
+  </div>
+  <div class="type-card">
+    <div class="type-icon">💪</div>
+    <div class="type-name">Fitness & Wellness</div>
+    <div class="type-desc"><strong>Vision signals:</strong> Gym environment, exercise demonstration, yoga pose, meal prep, supplement bottles. <strong>Confidence boost:</strong> Hashtags (#fitness, #workout, #mealprep) + body composition / active pose detection.</div>
+  </div>
+</div>
+
+<div class="callout purple">
+  <span class="callout-label">Screenshot Detection — The Recovery Strategy</span>
+  Many users save Instagram content by <strong>taking a screenshot</strong> and sharing from Photos app. In this case we get the actual image (not a URL). Vision detects "screenshot" pattern (status bar, Instagram UI chrome, like/comment icons). We then: 
+  <strong>(1)</strong> OCR the caption text visible in the screenshot, 
+  <strong>(2)</strong> OCR the username, 
+  <strong>(3)</strong> Run scene classification on the actual content portion of the image. This reconstructs ~70% of what the URL pipeline would have given us, from a screenshot alone.
+</div>
+
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- LAYER 4: GRAPHQL / INTERNAL API -->
+<!-- ============================================ -->
+<div class="layer-card">
+<div class="layer-header">
+  <span class="layer-num l4">Layer 4</span>
+  <span class="layer-title">Instagram Internal GraphQL API</span>
+  <span class="layer-time">1–3s · server-side · background</span>
+</div>
+<div class="layer-body">
+
+<p>Instagram's web frontend makes GraphQL requests to an internal API endpoint. This returns <strong>the richest data available</strong> — far beyond what OG tags provide. The key endpoint is:</p>
+
+<pre><span class="comment">// Instagram's internal GraphQL web endpoint</span>
+POST https://www.instagram.com/graphql/query/
+
+<span class="comment">// Response structure (via xdt_api__v1__media__shortcode__web_info)</span>
+{
+  "<span class="key">data</span>": {
+    "<span class="key">xdt_api__v1__media__shortcode__web_info</span>": {
+      "<span class="key">items</span>": [{
+        "<span class="key">code</span>": "<span class="str">ABC123xyz</span>",
+        "<span class="key">like_count</span>": <span class="num">24300</span>,
+        "<span class="key">comment_count</span>": <span class="num">847</span>,
+        "<span class="key">caption</span>": {
+          "<span class="key">text</span>": "<span class="str">[FULL CAPTION — no truncation, all 2200 chars]</span>"
+        },
+        "<span class="key">video_versions</span>": [{
+          "<span class="key">width</span>": <span class="num">1080</span>,
+          "<span class="key">height</span>": <span class="num">1920</span>,
+          "<span class="key">url</span>": "<span class="str">https://instagram.f*.fna.fbcdn.net/...</span>"
+        }],
+        "<span class="key">image_versions2</span>": { <span class="comment">/* multiple resolution thumbnails */</span> },
+        "<span class="key">user</span>": {
+          "<span class="key">username</span>": "<span class="str">lisbonfoodie</span>",
+          "<span class="key">full_name</span>": "<span class="str">Lisbon Food Guide</span>",
+          "<span class="key">is_verified</span>": <span class="num">true</span>,
+          "<span class="key">category</span>": "<span class="str">Food & Beverage</span>"  <span class="comment">// ← GOLD: creator category</span>
+        },
+        "<span class="key">location</span>": {
+          "<span class="key">name</span>": "<span class="str">Time Out Market Lisboa</span>",
+          "<span class="key">lat</span>": <span class="num">38.7069</span>,
+          "<span class="key">lng</span>": <span class="num">-9.1455</span>,
+          "<span class="key">city</span>": "<span class="str">Lisbon</span>"
+        },
+        "<span class="key">music_metadata</span>": {
+          "<span class="key">music_info</span>": {
+            "<span class="key">music_asset_info</span>": {
+              "<span class="key">title</span>": "<span class="str">Bossa Nova Vibes</span>",
+              "<span class="key">display_artist</span>": "<span class="str">LoFi Records</span>"
+            }
+          }
+        },
+        "<span class="key">product_tags</span>": [ <span class="comment">/* if shoppable post */</span> ],
+        "<span class="key">coauthor_producers</span>": [ <span class="comment">/* collaboration partners */</span> ],
+        "<span class="key">usertags</span>": { "<span class="key">in</span>": [{ "<span class="key">user</span>": { "<span class="key">username</span>": "<span class="str">timeoutmarket</span>" }}]},
+        "<span class="key">taken_at</span>": <span class="num">1736956800</span>,
+        "<span class="key">video_duration</span>": <span class="num">34.5</span>,
+        "<span class="key">media_type</span>": <span class="num">2</span>  <span class="comment">// 1=photo, 2=video, 8=carousel</span>
+      }]
+    }
+  }
+}</pre>
+
+<h3>GraphQL Data Value Assessment</h3>
+
+<table class="data-table">
+<thead><tr><th>Field</th><th>Classification Value</th><th>Signal Strength</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>caption.text</code></td>
+  <td><strong>COMPLETE caption</strong> — no truncation. Full hashtag set, all mentions, complete description. This is the single most valuable text field.</td>
+  <td>
+    <div class="signal-meter">
+      <div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div>
+      <span class="signal-label">Critical</span>
+    </div>
+  </td>
+</tr>
+<tr>
+  <td><code>location</code></td>
+  <td>Geo-tagged place name + lat/lng coordinates. Directly maps to Travel stack. Restaurant/venue names for Food stack.</td>
+  <td>
+    <div class="signal-meter">
+      <div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div>
+      <span class="signal-label">Critical</span>
+    </div>
+  </td>
+</tr>
+<tr>
+  <td><code>user.category</code></td>
+  <td>Instagram's own creator category: "Food & Beverage", "Fashion", "Travel", "Health/Beauty", "Shopping & Retail". <strong>Free classification from Instagram itself.</strong></td>
+  <td>
+    <div class="signal-meter">
+      <div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar"></div>
+      <span class="signal-label">Very High</span>
+    </div>
+  </td>
+</tr>
+<tr>
+  <td><code>music_metadata</code></td>
+  <td>Track name + artist for Reels. "Original Audio" vs commercial tracks indicates content style. Cooking/travel/tutorial Reels often use specific music genres.</td>
+  <td>
+    <div class="signal-meter">
+      <div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div>
+      <span class="signal-label">Medium</span>
+    </div>
+  </td>
+</tr>
+<tr>
+  <td><code>product_tags</code></td>
+  <td>Product names, prices, brand names. Directly maps to Shopping stack. Contains product URLs for price tracking.</td>
+  <td>
+    <div class="signal-meter">
+      <div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div>
+      <span class="signal-label">Critical (when present)</span>
+    </div>
+  </td>
+</tr>
+<tr>
+  <td><code>usertags.in</code></td>
+  <td>Accounts tagged in the image — brands, venues, collaborators. Known brand tags → Shopping. Venue tags → Travel/Food.</td>
+  <td>
+    <div class="signal-meter">
+      <div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar"></div><div class="signal-bar"></div>
+      <span class="signal-label">High</span>
+    </div>
+  </td>
+</tr>
+<tr>
+  <td><code>video_duration</code></td>
+  <td>Short (&lt;15s) = quick tip/meme. Medium (15-60s) = tutorial/recipe/review. Long (60-90s) = detailed walkthrough.</td>
+  <td>
+    <div class="signal-meter">
+      <div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div>
+      <span class="signal-label">Low-Med</span>
+    </div>
+  </td>
+</tr>
+<tr>
+  <td><code>like_count</code> / <code>comment_count</code></td>
+  <td>Not for classification but for <strong>quality ranking</strong> within a stack. Higher engagement = surface higher in collections.</td>
+  <td>
+    <div class="signal-meter">
+      <div class="signal-bar active"></div><div class="signal-bar active"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div>
+      <span class="signal-label">Ranking</span>
+    </div>
+  </td>
+</tr>
+</tbody>
+</table>
+
+<div class="callout rose">
+  <span class="callout-label">⚠️ Reliability Warning</span>
+  This endpoint is <strong>undocumented and unofficial</strong>. Instagram can change it at any time, add authentication requirements, or block server-side requests. Our architecture must treat this as <strong>best-effort enrichment</strong> — never as a dependency for basic functionality. If GraphQL fails, we fall back to OG tags + Vision AI, which together still provide ~80% classification accuracy. The GraphQL layer pushes it to ~92%.
+</div>
+
+<div class="callout gold">
+  <span class="callout-label">Rate Limiting Strategy</span>
+  To avoid Instagram blocking our server:
+  <strong>(1)</strong> Delay GraphQL calls by 3-5 seconds after save (not blocking UX),
+  <strong>(2)</strong> Rotate through residential proxy IPs,
+  <strong>(3)</strong> Rate limit to ~60 requests/hour per IP,
+  <strong>(4)</strong> Cache responses aggressively (same shortcode = same data),
+  <strong>(5)</strong> Add jitter to request timing,
+  <strong>(6)</strong> Mimick browser headers (User-Agent, Accept-Language, x-ig-app-id).
+</div>
+
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- LAYER 5: DEEP ENRICHMENT -->
+<!-- ============================================ -->
+<div class="layer-card">
+<div class="layer-header">
+  <span class="layer-num l5">Layer 5</span>
+  <span class="layer-title">Deep Enrichment (Async, Background)</span>
+  <span class="layer-time">5–30s · server-side · async</span>
+</div>
+<div class="layer-body">
+
+<h3>5a. Reel Transcript Extraction</h3>
+<p>Instagram Reels with speech (tutorials, reviews, travel vlogs, recipe walkthroughs) contain spoken content that's far richer than any caption. Techniques to extract:</p>
+<ul>
+  <li><strong>On-device speech-to-text:</strong> If we cache the Reel video (from <code>video_versions[0].url</code> in GraphQL), we can run Apple's Speech framework for transcription. Works offline, no API costs.</li>
+  <li><strong>Auto-captions:</strong> Instagram generates auto-captions for Reels. These are embedded in the video player but not easily extractable via metadata. Third-party scrapers (Apify's Reel Scraper) can extract transcript text.</li>
+  <li><strong>Server-side Whisper:</strong> Download video → run OpenAI Whisper (self-hosted) → timestamped transcript. Most accurate but requires compute.</li>
+</ul>
+
+<div class="callout green">
+  <span class="callout-label">Transcript Value — Example</span>
+  A 45-second Reel about a Lisbon food market, caption is just "🇵🇹😍🔥 #lisbon #food". But the <strong>spoken transcript</strong> reveals: "So this is Time Out Market in Cais do Sodré, they have about 30 stalls from the best chefs in Portugal. You absolutely have to try the ceviche from A Cevicheria, it's about 12 euros, and the pastéis de nata from Manteigaria are only 1.50 each..."
+  <br><br>
+  From this transcript alone: 4 venue names, 2 price points, a neighborhood name, a country, and specific food items. The caption gave us nothing. <strong>The transcript is the killer feature for Reels.</strong>
+</div>
+
+<h3>5b. Creator Profile Intelligence</h3>
+<p>When we encounter a creator for the first time, we can fetch their profile once and cache it:</p>
+<ul>
+  <li><strong>Bio text:</strong> "🍕 Lisbon Food Guide | 📍 Portugal | 📧 collab@..." → confirms food + travel niche</li>
+  <li><strong>Category:</strong> "Food & Beverage" or "Travel" (from Instagram's business category)</li>
+  <li><strong>Previous posts from same creator:</strong> If user saves multiple posts from @lisbonfoodie, the second save can be auto-classified with higher confidence</li>
+</ul>
+
+<h3>5c. Shoppable Post Expansion</h3>
+<p>When <code>product_tags</code> are present in GraphQL response:</p>
+<ul>
+  <li>Extract product name + price + merchant name</li>
+  <li>If product has external URL → follow to merchant's website → extract JSON-LD Product schema (full price, availability, reviews, brand)</li>
+  <li>Set up price tracking for saved products</li>
+  <li>Auto-classify to Shopping stack with product details pre-populated</li>
+</ul>
+
+<h3>5d. Story Archive</h3>
+<p>For Stories shared as links: immediately cache the <code>og:image</code> and any caption data. Stories expire in 24 hours — our app becomes the <strong>permanent record</strong> of ephemeral content the user wanted to remember. This is a unique value proposition.</p>
+
+</div>
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- HASHTAG TAXONOMY -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Hashtag → Stack Mapping (The Classification Engine)</h2>
+
+<p>Instagram hashtags are <strong>the most reliable text signal for classification</strong>. Creators use them deliberately to categorize their own content. We build a weighted hashtag taxonomy that maps to our stacks.</p>
+
+<table class="data-table">
+<thead><tr><th>Stack</th><th>High-Confidence Hashtags</th><th>Medium-Confidence (Needs Vision Confirmation)</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>🍳 Food & Recipes</strong></td>
+  <td><code>#recipe</code> <code>#cooking</code> <code>#homemade</code> <code>#baking</code> <code>#mealprep</code> <code>#foodporn</code> <code>#instafood</code> <code>#whatiate</code> <code>#dinnerinspo</code></td>
+  <td><code>#foodie</code> <code>#yummy</code> <code>#delicious</code> (could be restaurant review → Travel)</td>
+</tr>
+<tr>
+  <td><strong>✈️ Travel</strong></td>
+  <td><code>#travel</code> <code>#wanderlust</code> <code>#travelgram</code> <code>#instatravel</code> <code>#explore</code> + any <code>#{cityname}</code> or <code>#{countryname}</code></td>
+  <td><code>#adventure</code> <code>#nature</code> <code>#sunset</code> (could be local, not travel)</td>
+</tr>
+<tr>
+  <td><strong>👗 Fashion</strong></td>
+  <td><code>#ootd</code> <code>#streetwear</code> <code>#fashioninspo</code> <code>#styleinspo</code> <code>#outfitoftheday</code> <code>#thrifted</code></td>
+  <td><code>#style</code> <code>#look</code> (ambiguous without outfit photo)</td>
+</tr>
+<tr>
+  <td><strong>🏠 Home Decor</strong></td>
+  <td><code>#homedecor</code> <code>#interiordesign</code> <code>#scandinavian</code> <code>#midcenturymodern</code> <code>#minimalism</code> <code>#homerenovation</code></td>
+  <td><code>#aesthetic</code> <code>#cozy</code> <code>#design</code> (broad)</td>
+</tr>
+<tr>
+  <td><strong>🛍️ Shopping</strong></td>
+  <td><code>#haul</code> <code>#unboxing</code> <code>#amazonfinds</code> <code>#tiktokmademebuyit</code> <code>#shopsmall</code> <code>#salealert</code> <code>#dealoftheday</code></td>
+  <td><code>#musthave</code> <code>#obsessed</code> (could be non-shopping appreciation)</td>
+</tr>
+<tr>
+  <td><strong>💪 Fitness</strong></td>
+  <td><code>#workout</code> <code>#fitnessmotivation</code> <code>#gymlife</code> <code>#yoga</code> <code>#running</code> <code>#gains</code> <code>#legday</code></td>
+  <td><code>#healthy</code> <code>#wellness</code> (could be food or mental health)</td>
+</tr>
+<tr>
+  <td><strong>💡 Ideas / Inspo</strong></td>
+  <td><code>#diy</code> <code>#lifehack</code> <code>#productivity</code> <code>#organization</code> <code>#parenting</code> <code>#studytips</code></td>
+  <td><code>#inspo</code> <code>#motivation</code> <code>#tips</code> (generic)</td>
+</tr>
+</tbody>
+</table>
+
+<div class="callout blue">
+  <span class="callout-label">Hashtag Limit Update (Dec 2025)</span>
+  Adam Mosseri announced Instagram now caps hashtags at <strong>5 per post</strong> (down from 30). This actually <em>helps us</em> — fewer, more intentional hashtags means each one is a stronger classification signal. No more hashtag spam to filter through.
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- COMPLETE PROCESSING SEQUENCE -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Complete Instagram Processing Sequence</h2>
+
+<p>Here's the exact timeline of what happens when a user shares an Instagram Reel to our app:</p>
+
+<div class="example">
+<div class="example-header">Timeline: User shares an Instagram Reel about a Lisbon restaurant</div>
+<div class="example-body">
+<pre><span class="comment">T+0ms      SHARE SHEET OPENS</span>
+           ├─ Extract URL: instagram.com/reel/ABC123/
+           ├─ Detect platform: Instagram (domain match)
+           ├─ Detect content type: Reel (URL path /reel/)
+           └─ Extract shortcode: ABC123
+
+<span class="comment">T+50ms     INSTANT SAVE CONFIRMATION</span>
+           └─ Show user: "✓ Saved" with Instagram icon
+           └─ Share sheet dismisses — user returns to Instagram in &lt;1s
+
+<span class="comment">T+200ms    BACKGROUND: OG TAG FETCH (HEAD only)</span>
+           ├─ HTTP GET instagram.com/reel/ABC123/
+           ├─ Stop reading at &lt;/head&gt; (fast, low bandwidth)
+           ├─ Parse og:title → username: "lisbonfoodie"
+           ├─ Parse og:description → extract:
+           │   ├─ likes: 24,300
+           │   ├─ comments: 847
+           │   ├─ hashtags: [lisbon, portugal, travelfood, lisbonfood]
+           │   ├─ locations: [Time Out Market, Pastéis de Belém, ...]
+           │   └─ caption text (partial)
+           ├─ Parse og:image → CDN URL for thumbnail
+           └─ Parse og:type → "video" (confirms Reel)
+
+<span class="comment">T+400ms    CACHE THUMBNAIL</span>
+           ├─ Download og:image to local storage
+           ├─ Generate blurhash for instant display
+           └─ Image now persists even if Instagram CDN URL expires
+
+<span class="comment">T+500ms    ON-DEVICE TEXT CLASSIFICATION</span>
+           ├─ Input: hashtags + caption text + username
+           ├─ Foundation Models classify → Travel (confidence: 0.88)
+           ├─ Sub-classification → Travel › Food › Portugal
+           └─ Update saved item: stack = Travel
+
+<span class="comment">T+800ms    ON-DEVICE VISION AI</span>
+           ├─ Input: cached thumbnail image
+           ├─ Scene classification → restaurant/food market interior
+           ├─ Object detection → food dishes, people dining
+           ├─ OCR → "TIME OUT MARKET" signage detected
+           ├─ Vision confirms Travel/Food classification
+           └─ Boost confidence → 0.94
+
+<span class="comment">T+1200ms   ITEM FULLY CLASSIFIED (user-visible)</span>
+           ├─ Title: "Best hidden gems in Lisbon"
+           ├─ Source: "📸 Instagram · @lisbonfoodie · Reel"
+           ├─ Stack: Travel › Food › Lisbon
+           ├─ Thumbnail: cached, with blurhash
+           ├─ Tags: lisbon, portugal, food, restaurants
+           └─ Status: ✓ Classified
+
+<span class="comment">T+3000ms   BACKGROUND: GRAPHQL ENRICHMENT</span>
+           ├─ Fetch xdt_api via server proxy
+           ├─ Get FULL caption (no truncation)
+           ├─ Get location: "Time Out Market Lisboa" (38.71°N, 9.15°W)
+           ├─ Get user.category: "Food & Beverage" → confirms
+           ├─ Get music: "Bossa Nova Vibes" by LoFi Records
+           ├─ Get video_duration: 34.5 seconds
+           ├─ Get usertags: [@timeoutmarket, @acevicheria]
+           └─ Update saved item with enriched data
+
+<span class="comment">T+8000ms   BACKGROUND: TRANSCRIPT EXTRACTION</span>
+           ├─ Download Reel video (34s, ~8MB)
+           ├─ Run speech-to-text (Whisper or Apple Speech)
+           ├─ Transcript: "So this is Time Out Market in Cais do Sodré..."
+           ├─ Foundation Models on transcript → extract entities:
+           │   ├─ Venues: [Time Out Market, A Cevicheria, Manteigaria]
+           │   ├─ Neighborhood: Cais do Sodré
+           │   ├─ Prices: [€12 ceviche, €1.50 pastéis de nata]
+           │   └─ Activities: [eating, market tour]
+           └─ Generate AI summary:
+              "Indoor food hall in Lisbon's Cais do Sodré with 30+ stalls.
+               Top picks: ceviche at A Cevicheria (~€12), pastéis de nata
+               at Manteigaria (~€1.50). From @lisbonfoodie."
+
+<span class="comment">T+10000ms  FULLY ENRICHED SAVE (background complete)</span>
+           ├─ Rich summary: auto-generated
+           ├─ All entities extracted and indexed
+           ├─ Location: mapped with coordinates
+           ├─ Searchable by: "lisbon restaurant", "pastéis de nata", "food hall"
+           └─ Grouped with other Lisbon saves if any</pre>
+</div>
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- CONFIDENCE MATRIX -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Classification Confidence by Data Availability</h2>
+
+<p>Not every save will have all layers. Here's how classification accuracy degrades gracefully:</p>
+
+<table class="data-table">
+<thead>
+  <tr>
+    <th>Scenario</th>
+    <th>Available Data</th>
+    <th>Est. Accuracy</th>
+    <th>Coverage</th>
+  </tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Best case</strong></td>
+  <td>OG tags + Vision + GraphQL + Transcript</td>
+  <td><span class="tag yes">~95%</span></td>
+  <td>~40% of Reel saves (public, speech-heavy)</td>
+</tr>
+<tr>
+  <td><strong>Good case</strong></td>
+  <td>OG tags + Vision + GraphQL (no transcript)</td>
+  <td><span class="tag yes">~92%</span></td>
+  <td>~30% of all saves (public posts + non-speech Reels)</td>
+</tr>
+<tr>
+  <td><strong>Standard case</strong></td>
+  <td>OG tags + Vision (GraphQL blocked/failed)</td>
+  <td><span class="tag partial">~85%</span></td>
+  <td>~60% of all saves (our reliable baseline)</td>
+</tr>
+<tr>
+  <td><strong>Minimal case</strong></td>
+  <td>OG tags only (Vision model loading)</td>
+  <td><span class="tag partial">~75%</span></td>
+  <td>First-time cold start, low-end devices</td>
+</tr>
+<tr>
+  <td><strong>Worst case</strong></td>
+  <td>URL only (OG fetch failed, login wall)</td>
+  <td><span class="tag no">~40%</span></td>
+  <td>~5% of saves (private accounts, Instagram outage)</td>
+</tr>
+<tr>
+  <td><strong>Screenshot share</strong></td>
+  <td>Image only (no URL), Vision + OCR</td>
+  <td><span class="tag partial">~70%</span></td>
+  <td>~10% of saves (screenshot workflow users)</td>
+</tr>
+</tbody>
+</table>
+
+<div class="callout green">
+  <span class="callout-label">Graceful Degradation</span>
+  The architecture ensures <strong>every save gets at least Stack-level classification</strong> (Travel, Food, Fashion, etc.), even in worst-case scenarios. The enrichment layers improve sub-classification (Travel → Lisbon → Restaurants) and generate richer metadata, but the basic save is never broken.
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- EDGE CASES -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Instagram-Specific Edge Cases</h2>
+
+<table class="data-table">
+<thead><tr><th>Edge Case</th><th>Challenge</th><th>Solution</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>Private account post</strong></td>
+  <td>OG fetch returns login wall. No metadata extractable.</td>
+  <td>Detect login wall response → store URL only → prompt user: "This is from a private account — tap to add a note or photo." User can screenshot and attach manually.</td>
+</tr>
+<tr>
+  <td><strong>Story link (expires in 24h)</strong></td>
+  <td>og:image CDN URL will 404 after Story expires</td>
+  <td>Detect <code>/stories/</code> URL pattern → flag URGENT → cache og:image immediately with high priority → store local copy. Our app becomes the permanent archive.</td>
+</tr>
+<tr>
+  <td><strong>Carousel post</strong></td>
+  <td>og:image = first slide only. Other slides may be different content.</td>
+  <td>GraphQL returns all <code>carousel_media</code> items. Cache all images. Vision AI on first image for primary classification, note "carousel" for richer display.</td>
+</tr>
+<tr>
+  <td><strong>Meme / text-heavy image</strong></td>
+  <td>Vision scene classification fails (not a real-world scene)</td>
+  <td>Detect "text-heavy image" pattern → OCR pipeline → classify based on text content → likely Entertainment or Ideas stack.</td>
+</tr>
+<tr>
+  <td><strong>Reshared Reel (repost)</strong></td>
+  <td>URL may point to the resharer, not original creator</td>
+  <td>GraphQL <code>original_media_id</code> field links to original → fetch original's metadata for richer data</td>
+</tr>
+<tr>
+  <td><strong>Shopping Reel without product tags</strong></td>
+  <td>Creator mentions products verbally but no tags in metadata</td>
+  <td>Transcript extraction → entity extraction → detect product names, brands, prices from speech</td>
+</tr>
+<tr>
+  <td><strong>Multi-language captions</strong></td>
+  <td>Caption in Hindi, Spanish, Portuguese — hashtags may be in local language</td>
+  <td>Foundation Models handles multilingual text. Maintain hashtag taxonomy across top 10 languages. Country flag emojis are universal signals.</td>
+</tr>
+<tr>
+  <td><strong>Caption is just emojis</strong></td>
+  <td><code>😍🔥✨</code> — no text to classify</td>
+  <td>Vision AI becomes sole classifier. Emoji sentiment analysis as weak supporting signal. This is where image-first pipeline pays off.</td>
+</tr>
+<tr>
+  <td><strong>CDN URL expiration</strong></td>
+  <td>Instagram CDN URLs for images expire after a few days/weeks</td>
+  <td>Cache image to local storage on first fetch. Store local path, not CDN URL. Never depend on remote image availability.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ============================================ -->
+<!-- COST ANALYSIS -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Cost Analysis — Instagram Pipeline</h2>
+
+<table class="data-table">
+<thead><tr><th>Component</th><th>Cost</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>iOS Share Sheet parsing</td><td><span class="tag free">Free</span></td><td>On-device, instant</td></tr>
+<tr><td>OG tag fetch (HTML HEAD)</td><td><span class="tag free">Free</span></td><td>Standard HTTP request, ~2KB response</td></tr>
+<tr><td>Image caching</td><td><span class="tag free">Free</span></td><td>~200KB per image, stored locally</td></tr>
+<tr><td>On-device Vision AI</td><td><span class="tag free">Free</span></td><td>Apple Neural Engine, no API calls</td></tr>
+<tr><td>On-device Foundation Models</td><td><span class="tag free">Free</span></td><td>Apple Foundation Models (iOS 26+), no API calls</td></tr>
+<tr><td>GraphQL enrichment</td><td><span class="tag partial">~Free</span></td><td>Standard HTTP request. Proxy costs if using rotating IPs (~$20-50/mo for residential proxy service at scale)</td></tr>
+<tr><td>Transcript (on-device Speech)</td><td><span class="tag free">Free</span></td><td>Apple Speech framework, on-device</td></tr>
+<tr><td>Transcript (server Whisper)</td><td><span class="tag paid">~$0.001/save</span></td><td>Self-hosted Whisper on GPU. Only for Reels with speech. ~$30/mo for 30K transcriptions</td></tr>
+<tr><td>Video download (for transcript)</td><td><span class="tag partial">Bandwidth</span></td><td>~8MB per 30s Reel. Selective — only for speech-heavy Reels</td></tr>
+</tbody>
+</table>
+
+<div class="callout green">
+  <span class="callout-label">Bottom Line</span>
+  The Instagram enrichment pipeline runs at <strong>near-zero marginal cost</strong> for Layers 1–3 (share sheet + OG tags + Vision). Layer 4 (GraphQL) adds proxy costs at scale. Layer 5 (transcripts) adds modest compute costs but only for Reels with speech content. <strong>Total cost: ~$50-80/month at 30K saves/month.</strong>
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- INSTAGRAM vs OTHERS -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Instagram vs Other Platforms — Signal Comparison</h2>
+
+<table class="data-table">
+<thead><tr><th>Signal Type</th><th>Instagram</th><th>YouTube</th><th>TikTok</th><th>Pinterest</th><th>Safari/Web</th></tr></thead>
+<tbody>
+<tr>
+  <td>Share sheet text</td>
+  <td><span class="tag no">URL only</span></td>
+  <td><span class="tag partial">URL + title</span></td>
+  <td><span class="tag yes">URL + full caption</span></td>
+  <td><span class="tag partial">URL + sometimes desc</span></td>
+  <td><span class="tag yes">URL + title + selection</span></td>
+</tr>
+<tr>
+  <td>OG/meta tags</td>
+  <td><span class="tag partial">Truncated caption</span></td>
+  <td><span class="tag yes">Title + desc + thumb</span></td>
+  <td><span class="tag partial">Caption + thumb</span></td>
+  <td><span class="tag yes">Title + desc + image</span></td>
+  <td><span class="tag yes">Full OG suite</span></td>
+</tr>
+<tr>
+  <td>JSON-LD schema</td>
+  <td><span class="tag no">None</span></td>
+  <td><span class="tag yes">VideoObject</span></td>
+  <td><span class="tag no">None</span></td>
+  <td><span class="tag partial">From source site</span></td>
+  <td><span class="tag yes">Recipe/Product/Article</span></td>
+</tr>
+<tr>
+  <td>Free API</td>
+  <td><span class="tag no">Blocked</span></td>
+  <td><span class="tag yes">Data API (10K/day)</span></td>
+  <td><span class="tag yes">oEmbed (free)</span></td>
+  <td><span class="tag no">Requires OAuth</span></td>
+  <td>N/A</td>
+</tr>
+<tr>
+  <td>Transcript / full text</td>
+  <td><span class="tag partial">Via speech-to-text</span></td>
+  <td><span class="tag yes">95% have captions</span></td>
+  <td><span class="tag partial">Via speech-to-text</span></td>
+  <td>N/A</td>
+  <td><span class="tag yes">Full page content</span></td>
+</tr>
+<tr>
+  <td>Image quality</td>
+  <td><span class="tag yes">1080px — THE content</span></td>
+  <td><span class="tag partial">Thumbnail (clickbait)</span></td>
+  <td><span class="tag partial">Thumbnail</span></td>
+  <td><span class="tag yes">High-res pins</span></td>
+  <td><span class="tag partial">Varies</span></td>
+</tr>
+<tr>
+  <td>Location data</td>
+  <td><span class="tag yes">Via GraphQL geo tag</span></td>
+  <td><span class="tag no">Rarely</span></td>
+  <td><span class="tag no">Not in metadata</span></td>
+  <td><span class="tag no">Rarely</span></td>
+  <td><span class="tag partial">If LocalBusiness schema</span></td>
+</tr>
+<tr>
+  <td>Vision AI value</td>
+  <td><span class="tag yes">HIGHEST — visual platform</span></td>
+  <td><span class="tag partial">Thumbnails generic</span></td>
+  <td><span class="tag partial">Thumbnails vary</span></td>
+  <td><span class="tag yes">High — visual platform</span></td>
+  <td><span class="tag partial">Varies</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ============================================ -->
+<!-- STRATEGIC RECOMMENDATIONS -->
+<!-- ============================================ -->
+<div class="section">
+<h2>Strategic Recommendations</h2>
+
+<div class="callout green">
+  <span class="callout-label">1. Build Vision AI as the Primary Engine</span>
+  Since Instagram is our #1 save source and provides the weakest text data, our <strong>Vision AI pipeline must be best-in-class</strong>. Invest in fine-tuning scene classifiers for the top 10 save categories. Use Apple Foundation Models' visual reasoning capabilities to describe images in natural language, then classify from the description. This makes Vision the primary classifier, not a backup.
+</div>
+
+<div class="callout blue">
+  <span class="callout-label">2. Cache Everything Immediately</span>
+  Instagram CDN URLs expire. Stories expire. Posts get deleted. The moment a user saves something, we must <strong>cache the thumbnail, caption data, and any extractable metadata locally</strong>. Our app becomes the permanent record. This is both a reliability requirement and a key user value proposition: "I saved it in [App], so I'll always have it — even if the original is gone."
+</div>
+
+<div class="callout purple">
+  <span class="callout-label">3. Treat GraphQL as Best-Effort Enrichment</span>
+  The internal GraphQL API gives us the richest data (full caption, location, creator category, product tags, user tags) but it's <strong>unofficial and fragile</strong>. Architecture must ensure Layers 1-3 (share sheet + OG tags + Vision) provide a complete, classified save without any dependency on GraphQL. When GraphQL works, it upgrades the save from good to great. When it doesn't, the save still works.
+</div>
+
+<div class="callout gold">
+  <span class="callout-label">4. Invest in Reel Transcripts</span>
+  Reels are the highest-volume Instagram content type. A 30-60 second Reel contains spoken information equivalent to a full paragraph — venue names, prices, recommendations, opinions. Transcript extraction (even via on-device Speech framework) transforms sparse Instagram metadata into YouTube-level richness. <strong>Prioritize this for travel, recipe, and review Reels.</strong>
+</div>
+
+<div class="callout rose">
+  <span class="callout-label">5. Build a Hashtag Intelligence Layer</span>
+  With Instagram's new 5-hashtag limit, every hashtag is a <strong>deliberate, high-signal classification tag</strong>. Build and maintain a continuously-updated hashtag-to-stack taxonomy. Weight recent saves' hashtag patterns to detect emerging categories. Over time, the system learns which hashtags correlate with which stacks for <em>this specific user</em>.
+</div>
+
+<div class="callout orange">
+  <span class="callout-label">6. Screenshot Recovery Pipeline</span>
+  Many users screenshot Instagram content instead of sharing URLs. Build a dedicated "Instagram screenshot" detector (Vision identifies the IG app chrome, like/comment icons, story ring, etc.). When detected: OCR the username, caption text, and any visible hashtags. Run Vision on the actual content portion of the screenshot. This serves the ~10% of saves that come via screenshot.
+</div>
+
+</div>
+
+<!-- ============================================ -->
+<!-- FOOTER -->
+<!-- ============================================ -->
+<hr>
+<div style="text-align: center; color: var(--muted); font-size: 0.76rem; margin-top: 24px;">
+  <p>Instagram Deep Dive — Data Extraction & Enrichment Pipeline</p>
+  <p style="font-family: var(--mono); font-size: 0.62rem;">Part of Platform Intelligence Series · Companion to Platform Data Matrix · February 2026</p>
+</div>
+
+</div>
+</body>
+</html>

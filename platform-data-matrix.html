@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform Data Matrix — What You Get & How to Enrich</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ef; --card: #fff; --ink: #1a1a1a; --muted: #8a8279;
+    --border: #e0dbd3; --accent: #c45d2c; --teal: #1a7a65; --blue: #2b6cb0;
+    --purple: #6b46a3; --gold: #b8860b; --soft-green: #edf7f2;
+    --soft-blue: #eef4fb; --soft-orange: #fdf3ec; --soft-purple: #f5f0fa;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.7; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 48px 28px 120px; }
+  .eyebrow { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  h1 { font-family: 'Fraunces', serif; font-size: 2.1rem; line-height: 1.18; font-weight: 700; margin-bottom: 14px; }
+  .sub { font-size: 0.92rem; color: var(--muted); max-width: 750px; margin-bottom: 48px; }
+  h2 { font-family: 'Fraunces', serif; font-size: 1.4rem; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); display: inline-block; }
+  h3 { font-size: 1rem; font-weight: 700; margin: 18px 0 8px; }
+  h4 { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 28px 0 12px; }
+  p, li { font-size: 0.88rem; margin-bottom: 8px; }
+  .section { margin-bottom: 56px; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 50px 0; }
+  code { font-family: var(--mono); font-size: 0.78rem; background: rgba(0,0,0,0.04); padding: 1px 5px; border-radius: 3px; }
+  .callout { padding: 18px 22px; border-radius: 5px; margin: 16px 0; font-size: 0.86rem; }
+  .callout.green { background: var(--soft-green); border-left: 4px solid var(--teal); }
+  .callout.orange { background: var(--soft-orange); border-left: 4px solid var(--accent); }
+  .callout.blue { background: var(--soft-blue); border-left: 4px solid var(--blue); }
+  .callout.purple { background: var(--soft-purple); border-left: 4px solid var(--purple); }
+
+  /* Platform cards */
+  .platform { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 24px; overflow: hidden; }
+  .platform-header { padding: 16px 22px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+  .platform-icon { font-size: 1.6rem; }
+  .platform-name { font-weight: 700; font-size: 1.05rem; }
+  .platform-url { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); }
+  .platform-body { padding: 20px 22px; }
+
+  /* Data layers */
+  .layer { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+  .layer:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .layer-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; display: inline-block; margin-bottom: 6px; font-weight: 700; }
+  .layer-label.l1 { background: #d1fae5; color: #065f46; }
+  .layer-label.l2 { background: #dbeafe; color: #1e40af; }
+  .layer-label.l3 { background: #fef3c7; color: #92400e; }
+  .layer-label.l4 { background: #ede9fe; color: #5b21b6; }
+  .layer-label.l5 { background: #fce7f3; color: #9d174d; }
+
+  .data-grid { display: grid; grid-template-columns: 140px 1fr; gap: 4px 12px; font-size: 0.82rem; }
+  .data-grid dt { font-weight: 700; color: var(--muted); font-size: 0.78rem; padding-top: 2px; }
+  .data-grid dd { margin: 0; padding-bottom: 4px; }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 0.58rem; padding: 1px 6px; border-radius: 3px; margin: 1px 2px; }
+  .tag.yes { background: #d1fae5; color: #065f46; }
+  .tag.no { background: #fee2e2; color: #991b1b; }
+  .tag.partial { background: #fef3c7; color: #92400e; }
+  .tag.rich { background: #dbeafe; color: #1e40af; }
+  .tag.gold { background: #fdf3ec; color: var(--accent); }
+
+  /* Pipeline diagram */
+  .pipeline { display: flex; align-items: stretch; gap: 0; margin: 20px 0; overflow-x: auto; }
+  .pipe-stage { flex: 1; min-width: 160px; padding: 14px; text-align: center; position: relative; }
+  .pipe-stage::after { content: '→'; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; color: var(--muted); z-index: 1; }
+  .pipe-stage:last-child::after { display: none; }
+  .pipe-num { font-family: var(--mono); font-size: 0.6rem; color: var(--accent); }
+  .pipe-title { font-weight: 700; font-size: 0.82rem; margin: 2px 0; }
+  .pipe-desc { font-size: 0.7rem; color: var(--muted); }
+  .pipe-where { font-family: var(--mono); font-size: 0.58rem; margin-top: 4px; padding: 2px 6px; border-radius: 3px; display: inline-block; }
+  .pipe-where.device { background: #d1fae5; color: #065f46; }
+  .pipe-where.server { background: #dbeafe; color: #1e40af; }
+  .pipe-where.both { background: #fef3c7; color: #92400e; }
+
+  /* Comparison table */
+  table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin: 16px 0; }
+  th { background: var(--ink); color: #fff; padding: 8px 10px; text-align: left; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: rgba(0,0,0,0.015); }
+  .check { color: var(--teal); font-weight: 700; }
+  .cross { color: #dc2626; }
+  .maybe { color: var(--gold); }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="eyebrow">Platform Intelligence Reference</div>
+<h1>What Every Platform Gives You — And How to Get More</h1>
+<div class="sub">A complete map of the data available at each layer: what comes through the iOS share sheet, what you can fetch from the URL, what APIs provide, and what on-device AI can extract — all without asking the user a single question.</div>
+
+<!-- ============================== -->
+<!-- LAYER OVERVIEW                  -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>The Five Intelligence Layers</h2>
+<p>When a user shares content to our app, we have 5 progressive layers of data extraction — each adding more understanding. Layers 1-3 happen instantly. Layers 4-5 happen in background within seconds.</p>
+
+<div class="pipeline">
+  <div class="pipe-stage" style="background:#d1fae5;">
+    <div class="pipe-num">LAYER 1</div>
+    <div class="pipe-title">Share Sheet</div>
+    <div class="pipe-desc">What iOS gives us instantly at share time</div>
+    <div class="pipe-where device">On-device · 0ms</div>
+  </div>
+  <div class="pipe-stage" style="background:#dbeafe;">
+    <div class="pipe-num">LAYER 2</div>
+    <div class="pipe-title">URL Metadata</div>
+    <div class="pipe-desc">Fetch the page, parse OG tags + JSON-LD</div>
+    <div class="pipe-where both">Network · 200-800ms</div>
+  </div>
+  <div class="pipe-stage" style="background:#fef3c7;">
+    <div class="pipe-num">LAYER 3</div>
+    <div class="pipe-title">On-Device AI</div>
+    <div class="pipe-desc">Foundation Models + Vision on all collected data</div>
+    <div class="pipe-where device">On-device · 500-2000ms</div>
+  </div>
+  <div class="pipe-stage" style="background:#ede9fe;">
+    <div class="pipe-num">LAYER 4</div>
+    <div class="pipe-title">Platform APIs</div>
+    <div class="pipe-desc">Official APIs for richer data where available</div>
+    <div class="pipe-where server">Server · 1-3s</div>
+  </div>
+  <div class="pipe-stage" style="background:#fce7f3;">
+    <div class="pipe-num">LAYER 5</div>
+    <div class="pipe-title">Background Enrich</div>
+    <div class="pipe-desc">Transcripts, price tracking, deal finding</div>
+    <div class="pipe-where server">Server · async</div>
+  </div>
+</div>
+
+<div class="callout green">
+<strong>Key insight:</strong> Layers 1-3 are enough for the user to see "✓ Saved to Travel" instantly. They never wait for Layers 4-5. Those run in background and silently enrich the saved item over the next few seconds/minutes. The user opens their stack later and finds rich metadata they never entered.
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- LAYER 1: SHARE SHEET            -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Layer 1: What the iOS Share Sheet Gives Us</h2>
+<p>When a user taps Share → our app, iOS delivers an <code>NSExtensionItem</code> with attachments. What's inside depends entirely on the source app.</p>
+
+<table>
+  <tr>
+    <th>Source App</th>
+    <th>URL</th>
+    <th>Text / Caption</th>
+    <th>Image</th>
+    <th>Video</th>
+    <th>Page Title</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td><strong>Safari</strong></td>
+    <td class="check">✓ Full URL</td>
+    <td class="check">✓ Selected text (if any)</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td class="check">✓ via JS preprocessing</td>
+    <td>Richest share source. Can run custom JS to extract page title, favicon, and even selected text via <code>NSExtensionJavaScriptPreprocessingFile</code></td>
+  </tr>
+  <tr>
+    <td><strong>Instagram</strong></td>
+    <td class="check">✓ Post URL</td>
+    <td class="maybe">~ Sometimes caption snippet</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td>Feed posts share the permalink URL. Stories/Reels share a URL too but it's time-limited for Stories. No image comes through share sheet — must fetch separately.</td>
+  </tr>
+  <tr>
+    <td><strong>TikTok</strong></td>
+    <td class="check">✓ Video URL</td>
+    <td class="check">✓ Caption text included</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td>TikTok is generous — the caption text with hashtags comes along with the URL. Great for immediate AI classification.</td>
+  </tr>
+  <tr>
+    <td><strong>YouTube</strong></td>
+    <td class="check">✓ Video URL</td>
+    <td class="check">✓ Video title as text</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td>Shares <code>https://youtu.be/VIDEO_ID</code>. Title text is usually included. Video ID extractable from URL with regex.</td>
+  </tr>
+  <tr>
+    <td><strong>X (Twitter)</strong></td>
+    <td class="check">✓ Tweet URL</td>
+    <td class="check">✓ Tweet text</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td>Full tweet text + URL. Excellent for immediate classification. Format: <code>https://x.com/user/status/ID</code></td>
+  </tr>
+  <tr>
+    <td><strong>Pinterest</strong></td>
+    <td class="check">✓ Pin URL</td>
+    <td class="maybe">~ Pin description sometimes</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td>Pin URL. Description may be included as text. Original source link is embedded in the pin.</td>
+  </tr>
+  <tr>
+    <td><strong>Reddit</strong></td>
+    <td class="check">✓ Post URL</td>
+    <td class="check">✓ Post title</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td>Reddit shares the post URL + title. Subreddit name is in the URL path, useful for classification.</td>
+  </tr>
+  <tr>
+    <td><strong>WhatsApp / Messages</strong></td>
+    <td class="check">✓ URL (if link)</td>
+    <td class="check">✓ Full text (if text)</td>
+    <td class="check">✓ If sharing image</td>
+    <td class="check">✓ If sharing video</td>
+    <td class="cross">✗</td>
+    <td>User might share a link OR an image. Images come as actual attachments via <code>kUTTypeImage</code>. Best case for screenshot-based saves.</td>
+  </tr>
+  <tr>
+    <td><strong>Photos app</strong></td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td class="check">✓ Full image</td>
+    <td class="check">✓ Full video</td>
+    <td class="cross">✗</td>
+    <td>Pure image/video with EXIF metadata (location, date, camera). For screenshots, we run OCR + Vision. For photos, we analyze the visual content.</td>
+  </tr>
+  <tr>
+    <td><strong>Amazon / Shopping</strong></td>
+    <td class="check">✓ Product URL</td>
+    <td class="check">✓ Product title + price</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td>Amazon shares include product title and price in the text. URL contains ASIN for API lookup. Other shopping apps vary.</td>
+  </tr>
+  <tr>
+    <td><strong>Google Maps</strong></td>
+    <td class="check">✓ Place URL</td>
+    <td class="check">✓ Place name</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td class="cross">✗</td>
+    <td>Clean place URL + name. Lat/long extractable from URL. Perfect for restaurant/travel saves.</td>
+  </tr>
+</table>
+
+<div class="callout orange">
+<strong>Bottom line for Layer 1:</strong> We almost always get a URL. We often get text (caption, title, or tweet). We rarely get images or video through the share sheet — those need to be fetched from the URL. The exception is Photos app and WhatsApp image shares, where the actual image comes through.
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- LAYER 2: URL METADATA           -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Layer 2: What the URL Page Contains</h2>
+<p>Once we have the URL, we fetch the page HTML and extract 3 types of structured data. This is the richest data source for most saves and doesn't require any API key.</p>
+
+<h3>2A. Open Graph Tags (og:*)</h3>
+<p>Nearly every website has these. They're the same data social platforms use to generate link previews.</p>
+<div class="data-grid">
+  <dt>og:title</dt><dd>Page/post title — the most reliable field across all platforms</dd>
+  <dt>og:description</dt><dd>Summary text — often the caption, product description, or article excerpt</dd>
+  <dt>og:image</dt><dd>Thumbnail URL — this is how we get the image without platform APIs</dd>
+  <dt>og:type</dt><dd>Content type: article, video.other, product, music.song, etc.</dd>
+  <dt>og:site_name</dt><dd>Platform name: "Instagram", "YouTube", "Amazon" — tells us the source</dd>
+  <dt>og:url</dt><dd>Canonical URL — resolves redirects and shortened links</dd>
+  <dt>og:video</dt><dd>Video URL (for video content) — present on YouTube, TikTok</dd>
+  <dt>og:locale</dt><dd>Language/region — useful for multi-language content</dd>
+  <dt>article:author</dt><dd>Content creator name (on articles/blogs)</dd>
+  <dt>article:tag</dt><dd>Topic tags (on articles/blogs) — direct classification signal</dd>
+  <dt>product:price</dt><dd>Price + currency (on e-commerce pages) — critical for Shopping stack</dd>
+</div>
+
+<h3>2B. Twitter Card Tags (twitter:*)</h3>
+<p>X/Twitter-specific meta tags — often contain slightly different (sometimes better) data than OG tags.</p>
+<div class="data-grid">
+  <dt>twitter:title</dt><dd>Often same as og:title but occasionally more descriptive</dd>
+  <dt>twitter:description</dt><dd>May differ from og:description — capture both</dd>
+  <dt>twitter:image</dt><dd>Sometimes higher resolution than og:image</dd>
+  <dt>twitter:card</dt><dd>Card type: summary, summary_large_image, player (video), app</dd>
+  <dt>twitter:creator</dt><dd>Creator's @handle — useful for attribution</dd>
+  <dt>twitter:player</dt><dd>Embedded video player URL</dd>
+</div>
+
+<h3>2C. JSON-LD / Schema.org Structured Data (THE GOLD MINE)</h3>
+<p>This is the most underutilized data source. Embedded in <code>&lt;script type="application/ld+json"&gt;</code> tags. When present, it gives you structured, machine-readable data that's far richer than OG tags.</p>
+
+<div class="callout green">
+<strong>Why this matters:</strong> A recipe page's OG tags give you a title and image. Its JSON-LD gives you the complete ingredient list, cook time, prep time, calories, cuisine type, servings, step-by-step instructions, and ratings. A product page's JSON-LD gives you exact price, currency, availability, brand, SKU, and aggregate reviews. This is the difference between "saved a recipe" and "saved a 45-min Italian pasta recipe with 8 ingredients, 320 calories."
+</div>
+
+<h4>Recipe Schema (schema.org/Recipe)</h4>
+<div class="data-grid">
+  <dt>name</dt><dd>Recipe name</dd>
+  <dt>recipeIngredient</dt><dd>Complete ingredient list — array of strings</dd>
+  <dt>recipeInstructions</dt><dd>Step-by-step cooking instructions</dd>
+  <dt>cookTime / prepTime</dt><dd>ISO 8601 duration (PT1H = 1 hour, PT15M = 15 min)</dd>
+  <dt>recipeYield</dt><dd>Number of servings</dd>
+  <dt>recipeCategory</dt><dd>"Dinner", "Dessert", "Drink" etc.</dd>
+  <dt>recipeCuisine</dt><dd>"Italian", "Indian", "Japanese" etc.</dd>
+  <dt>nutrition</dt><dd>Calories, fat, protein, carbs per serving</dd>
+  <dt>aggregateRating</dt><dd>Average rating + number of reviews</dd>
+  <dt>author</dt><dd>Recipe creator name</dd>
+  <dt>image</dt><dd>High-res recipe photo(s)</dd>
+</div>
+<p><strong>Where present:</strong> AllRecipes, BBC Good Food, Food Network, Bon Appétit, Smitten Kitchen, any WordPress recipe blog using WP Recipe Maker or similar plugins. Coverage: ~80-90% of dedicated recipe sites.</p>
+
+<h4>Product Schema (schema.org/Product)</h4>
+<div class="data-grid">
+  <dt>name</dt><dd>Product name</dd>
+  <dt>brand</dt><dd>Brand name</dd>
+  <dt>offers.price</dt><dd>Exact price as number</dd>
+  <dt>offers.currency</dt><dd>Currency code (USD, INR, GBP)</dd>
+  <dt>offers.availability</dt><dd>InStock / OutOfStock / PreOrder</dd>
+  <dt>sku / gtin</dt><dd>Product identifiers — for cross-platform price comparison</dd>
+  <dt>aggregateRating</dt><dd>Average rating + review count</dd>
+  <dt>description</dt><dd>Product description</dd>
+  <dt>image</dt><dd>Product image(s)</dd>
+  <dt>category</dt><dd>Product category</dd>
+</div>
+<p><strong>Where present:</strong> Amazon, Shopify stores, Walmart, Target, Best Buy, most e-commerce platforms. Coverage: ~70-80% of product pages.</p>
+
+<h4>Other Useful Schema Types</h4>
+<div class="data-grid">
+  <dt>Article</dt><dd>headline, author, datePublished, articleSection — news/blog posts</dd>
+  <dt>VideoObject</dt><dd>name, description, duration, thumbnailUrl, uploadDate — video pages</dd>
+  <dt>LocalBusiness</dt><dd>name, address, geo (lat/long), telephone, openingHours, priceRange — restaurants, shops</dd>
+  <dt>Hotel</dt><dd>name, address, starRating, priceRange, amenities</dd>
+  <dt>Event</dt><dd>name, startDate, endDate, location, performer, offers (ticket prices)</dd>
+  <dt>Book</dt><dd>name, author, isbn, numberOfPages, genre</dd>
+  <dt>Movie</dt><dd>name, director, actor, genre, duration, aggregateRating</dd>
+  <dt>Course</dt><dd>name, provider, description — online learning content</dd>
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- PLATFORM BY PLATFORM            -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Layer 2+3+4: Platform-by-Platform Deep Dive</h2>
+<p>Here's exactly what each major platform gives you at each layer, and the optimal enrichment strategy for each.</p>
+
+<!-- INSTAGRAM -->
+<div class="platform">
+  <div class="platform-header">
+    <div class="platform-icon">📷</div>
+    <div>
+      <div class="platform-name">Instagram</div>
+      <div class="platform-url">instagram.com/p/*, instagram.com/reel/*</div>
+    </div>
+  </div>
+  <div class="platform-body">
+    <div class="layer">
+      <div class="layer-label l1">Layer 1 — Share Sheet</div>
+      <div class="data-grid">
+        <dt>URL</dt><dd><span class="tag yes">✓</span> Post permalink: <code>instagram.com/p/ABC123/</code> or <code>instagram.com/reel/ABC123/</code></dd>
+        <dt>Text</dt><dd><span class="tag partial">~</span> Sometimes includes a caption snippet. Varies by iOS version and content type.</dd>
+        <dt>Image</dt><dd><span class="tag no">✗</span> Never. Must fetch from URL.</dd>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label l2">Layer 2 — URL Fetch (OG Tags)</div>
+      <div class="data-grid">
+        <dt>og:title</dt><dd><span class="tag yes">✓</span> Usually: "Creator Name on Instagram: 'Caption preview...'"</dd>
+        <dt>og:description</dt><dd><span class="tag yes">✓</span> Extended caption text (first ~200 chars) — often contains hashtags</dd>
+        <dt>og:image</dt><dd><span class="tag yes">✓</span> Post thumbnail URL — high quality, downloadable for caching</dd>
+        <dt>og:type</dt><dd><span class="tag yes">✓</span> "instapp:photo" or "video"</dd>
+        <dt>og:video</dt><dd><span class="tag partial">~</span> For Reels/Video posts, sometimes present</dd>
+      </div>
+      <p style="margin-top:8px; font-size:0.82rem;"><strong>JSON-LD:</strong> <span class="tag no">✗</span> Instagram does not embed schema.org structured data. OG tags are the primary source.</p>
+    </div>
+    <div class="layer">
+      <div class="layer-label l3">Layer 3 — On-Device AI</div>
+      <p>Parse the OG description for hashtags (#travel, #recipe, #ootd) → strong classification signals. Run Vision on the OG image → scene understanding (beach, food, clothing, interior). Foundation Models text classification on caption → extract entities (locations, brands, product names).</p>
+    </div>
+    <div class="layer">
+      <div class="layer-label l4">Layer 4 — API Enrichment</div>
+      <div class="data-grid">
+        <dt>Meta oEmbed Read</dt><dd><span class="tag partial">Limited</span> Requires registered Facebook app + app review. Returns embed HTML but no thumbnail since Apr 2025. Only public posts. Rate limit: 5M req/day with app token.</dd>
+        <dt>Instagram Graph API</dt><dd><span class="tag no">Not usable</span> Requires OAuth — only works for the post owner's own content. Not viable for third-party saves.</dd>
+        <dt>Best approach</dt><dd><span class="tag gold">OG scraping</span> The OG tags from the URL give you everything you practically need. No API required.</dd>
+      </div>
+    </div>
+    <div class="callout blue" style="margin-top:12px;">
+      <strong>Instagram Enrichment Strategy:</strong> URL fetch + OG parse gives you title, caption, image, and hashtags. That's enough. Run on-device AI on the caption (hashtag extraction, entity recognition) and the image (scene classification). For Reels, the caption usually describes the video content. For Stories (shared as links), the content may expire — cache the OG image immediately.
+    </div>
+  </div>
+</div>
+
+<!-- YOUTUBE -->
+<div class="platform">
+  <div class="platform-header">
+    <div class="platform-icon">▶️</div>
+    <div>
+      <div class="platform-name">YouTube</div>
+      <div class="platform-url">youtube.com/watch?v=*, youtu.be/*</div>
+    </div>
+  </div>
+  <div class="platform-body">
+    <div class="layer">
+      <div class="layer-label l1">Layer 1 — Share Sheet</div>
+      <div class="data-grid">
+        <dt>URL</dt><dd><span class="tag yes">✓</span> Short link: <code>youtu.be/VIDEO_ID</code> — video ID extractable with regex</dd>
+        <dt>Text</dt><dd><span class="tag yes">✓</span> Video title included as text</dd>
+        <dt>Image</dt><dd><span class="tag no">✗</span></dd>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label l2">Layer 2 — URL Fetch</div>
+      <div class="data-grid">
+        <dt>og:title</dt><dd><span class="tag yes">✓</span> Full video title</dd>
+        <dt>og:description</dt><dd><span class="tag yes">✓</span> Video description (first ~160 chars)</dd>
+        <dt>og:image</dt><dd><span class="tag yes">✓</span> High-quality thumbnail (maxresdefault available at <code>img.youtube.com/vi/ID/maxresdefault.jpg</code>)</dd>
+        <dt>og:type</dt><dd><span class="tag yes">✓</span> "video.other"</dd>
+        <dt>og:video:duration</dt><dd><span class="tag yes">✓</span> Video duration in seconds</dd>
+      </div>
+      <p style="margin-top:8px;"><strong>JSON-LD:</strong> <span class="tag yes">✓ Rich</span> YouTube embeds <code>VideoObject</code> schema with name, description, thumbnailUrl, uploadDate, duration, interactionStatistic (view count), and embedUrl.</p>
+    </div>
+    <div class="layer">
+      <div class="layer-label l4">Layer 4 — API Enrichment (YouTube Data API v3)</div>
+      <div class="data-grid">
+        <dt>snippet</dt><dd><span class="tag rich">Rich</span> Full title, complete description (not truncated), channel name, channel ID, publishedAt, tags array, category ID, default language, thumbnails at multiple resolutions</dd>
+        <dt>contentDetails</dt><dd><span class="tag yes">✓</span> Exact duration (ISO 8601), video definition (HD/SD), licensed content flag</dd>
+        <dt>statistics</dt><dd><span class="tag yes">✓</span> View count, like count, comment count</dd>
+        <dt>topicDetails</dt><dd><span class="tag rich">Rich</span> Wikipedia-linked topic IDs — tells you if video is about Cooking, Travel, Fitness, etc. Extremely useful for classification.</dd>
+        <dt>Cost</dt><dd>Free tier: 10,000 units/day. A video lookup = 1-3 units. ~3,000-10,000 lookups/day for free.</dd>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label l5">Layer 5 — Transcript (Background)</div>
+      <div class="data-grid">
+        <dt>Auto-captions</dt><dd><span class="tag rich">GOLD</span> ~95% of YouTube videos have auto-generated captions. Can be fetched via third-party API (youtube-transcript-api) without YouTube API key. Returns timestamped text.</dd>
+        <dt>Use case</dt><dd>The transcript is the single richest signal for video content. A travel vlog's caption is "My trip to Bali!" — the transcript contains every place name, restaurant, hotel, and activity mentioned in the 15-minute video. Run Foundation Models on the transcript to extract structured entities.</dd>
+        <dt>Cost</dt><dd>youtube-transcript-api is free (no API key). Self-hosted. Lightweight edge function call.</dd>
+      </div>
+    </div>
+    <div class="callout green" style="margin-top:12px;">
+      <strong>YouTube is the richest platform for our app.</strong> OG + JSON-LD gives immediate metadata. YouTube Data API gives tags and topic categories (free, high quota). And the transcript is pure gold — it's the full spoken content of the video, available on 95% of videos, for free. A 10-minute travel video contains 1,500+ words describing exactly what the user would want to save about destinations, restaurants, hotels. Run Foundation Models on a summary of this transcript and you can extract: locations visited, restaurants mentioned, activities described, prices quoted. No other platform offers this depth.
+    </div>
+  </div>
+</div>
+
+<!-- TIKTOK -->
+<div class="platform">
+  <div class="platform-header">
+    <div class="platform-icon">🎵</div>
+    <div>
+      <div class="platform-name">TikTok</div>
+      <div class="platform-url">tiktok.com/@user/video/*</div>
+    </div>
+  </div>
+  <div class="platform-body">
+    <div class="layer">
+      <div class="layer-label l1">Layer 1 — Share Sheet</div>
+      <div class="data-grid">
+        <dt>URL</dt><dd><span class="tag yes">✓</span> Full video URL: <code>tiktok.com/@user/video/ID</code></dd>
+        <dt>Text</dt><dd><span class="tag yes">✓</span> Caption text WITH hashtags included — TikTok is generous here</dd>
+        <dt>Image</dt><dd><span class="tag no">✗</span></dd>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label l2">Layer 2 — URL Fetch</div>
+      <div class="data-grid">
+        <dt>og:title</dt><dd><span class="tag yes">✓</span> Caption text (which IS the title on TikTok)</dd>
+        <dt>og:description</dt><dd><span class="tag yes">✓</span> Caption + hashtags + creator handle</dd>
+        <dt>og:image</dt><dd><span class="tag yes">✓</span> Video thumbnail</dd>
+        <dt>og:video</dt><dd><span class="tag partial">~</span> Sometimes present. CDN URL that may expire.</dd>
+      </div>
+      <p style="margin-top:8px;"><strong>Embedded JSON:</strong> <span class="tag rich">Rich</span> TikTok embeds video metadata in <code>&lt;script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"&gt;</code> tags. Contains: description, hashtags, video duration, music metadata (song name, artist), play count, like count, comment count, share count, bookmark count, creator info (username, nickname, follower count).</p>
+    </div>
+    <div class="layer">
+      <div class="layer-label l4">Layer 4 — API Enrichment</div>
+      <div class="data-grid">
+        <dt>oEmbed</dt><dd><span class="tag yes">✓ Free</span> <code>tiktok.com/oembed?url=VIDEO_URL</code> — No API key needed! Returns: title (caption), author_name, author_url, thumbnail_url, thumbnail_width/height. This is the easiest enrichment path.</dd>
+        <dt>Official TikTok API</dt><dd><span class="tag no">Not viable</span> Research API requires academic application. Content API requires business partnership. Not accessible for our use case.</dd>
+        <dt>Embedded JSON</dt><dd><span class="tag gold">Best path</span> Parse the hydration JSON from the HTML page — contains everything: description, hashtags, music, engagement metrics, creator info, video duration.</dd>
+      </div>
+    </div>
+    <div class="callout blue" style="margin-top:12px;">
+      <strong>TikTok Strategy:</strong> Caption with hashtags arrives in share sheet — enough for instant classification. oEmbed (free, no auth) gives thumbnail + creator name. Parse the embedded hydration JSON from the page for full metadata including the music track, engagement stats, and hashtags array. Run on-device AI on the caption for entity extraction. TikTok captions are short and hashtag-heavy, making classification highly accurate. Music metadata is a bonus signal — "original sound - FoodWithAnkit" tells you it's a food creator.
+    </div>
+  </div>
+</div>
+
+<!-- X/TWITTER -->
+<div class="platform">
+  <div class="platform-header">
+    <div class="platform-icon">𝕏</div>
+    <div>
+      <div class="platform-name">X (Twitter)</div>
+      <div class="platform-url">x.com/user/status/*</div>
+    </div>
+  </div>
+  <div class="platform-body">
+    <div class="layer">
+      <div class="layer-label l1">Layer 1 — Share Sheet</div>
+      <div class="data-grid">
+        <dt>URL</dt><dd><span class="tag yes">✓</span> Tweet URL: <code>x.com/user/status/TWEET_ID</code></dd>
+        <dt>Text</dt><dd><span class="tag yes">✓</span> Full tweet text — often includes the complete post</dd>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label l2">Layer 2 — URL Fetch</div>
+      <div class="data-grid">
+        <dt>og:title</dt><dd><span class="tag yes">✓</span> "Username on X" </dd>
+        <dt>og:description</dt><dd><span class="tag yes">✓</span> Full tweet text</dd>
+        <dt>og:image</dt><dd><span class="tag yes">✓</span> Attached image or a generic X card image</dd>
+        <dt>twitter:card</dt><dd><span class="tag yes">✓</span> summary, summary_large_image, or player</dd>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label l4">Layer 4 — X API v2</div>
+      <div class="data-grid">
+        <dt>tweet.fields</dt><dd><span class="tag rich">Very Rich</span> text, created_at, conversation_id, entities (hashtags, mentions, URLs, annotations), context_annotations (topic categories!), public_metrics (likes, retweets, replies), lang, source, possibly_sensitive</dd>
+        <dt>entities.annotations</dt><dd><span class="tag gold">GOLD</span> NLP-extracted entities with types: Person, Place, Product, Organization — with probability scores. X has already done entity extraction for you!</dd>
+        <dt>context_annotations</dt><dd><span class="tag gold">GOLD</span> Topic classification domains: Brand, TV Show, Athlete, Musician, Sport, Technology, etc. — free classification signal</dd>
+        <dt>media.fields</dt><dd><span class="tag yes">✓</span> type, url, preview_image_url, duration_ms, width, height, alt_text</dd>
+        <dt>Cost</dt><dd>Free tier: 100 tweet reads/month (very limited). Basic ($100/mo): 10K reads/month. Pro ($5K/mo): 1M reads/month.</dd>
+        <dt>Verdict</dt><dd><span class="tag partial">Skip for MVP</span> The free tier is too limited. OG tags + share sheet text gives us 90% of what we need. Consider API only at scale if budget allows.</dd>
+      </div>
+    </div>
+    <div class="callout orange" style="margin-top:12px;">
+      <strong>X Strategy:</strong> The share sheet gives full tweet text — that's enough for classification. OG tags give the image. X API is expensive and rate-limited for our use case. Skip it for MVP. The tweet text alone is usually sufficient for entity extraction via on-device AI. If the tweet contains a link to an article/product, fetch THAT URL's OG tags for additional metadata — this is often more valuable than the tweet itself.
+    </div>
+  </div>
+</div>
+
+<!-- PINTEREST -->
+<div class="platform">
+  <div class="platform-header">
+    <div class="platform-icon">📌</div>
+    <div>
+      <div class="platform-name">Pinterest</div>
+      <div class="platform-url">pinterest.com/pin/*</div>
+    </div>
+  </div>
+  <div class="platform-body">
+    <div class="layer">
+      <div class="layer-label l2">Layer 2 — URL Fetch</div>
+      <div class="data-grid">
+        <dt>og:title</dt><dd><span class="tag yes">✓</span> Pin title</dd>
+        <dt>og:description</dt><dd><span class="tag yes">✓</span> Pin description — often detailed with keywords</dd>
+        <dt>og:image</dt><dd><span class="tag yes">✓</span> Full pin image at high resolution (pinimg.com)</dd>
+        <dt>og:type</dt><dd><span class="tag yes">✓</span> "pinterestapp:pin"</dd>
+        <dt>Source link</dt><dd><span class="tag rich">Key</span> Most pins link to an original source (recipe blog, product page, article). This source URL is extractable and leads to richer metadata.</dd>
+      </div>
+      <p style="margin-top:8px;"><strong>JSON-LD/Embedded data:</strong> <span class="tag rich">Rich</span> Pinterest embeds detailed pin data in page JSON including: title, description, full-size image URL, original source link+domain, board name, creator info, recipe metadata (if recipe pin), product pricing (if product pin), SEO alt text.</p>
+    </div>
+    <div class="callout green" style="margin-top:12px;">
+      <strong>Pinterest is a double-enrichment opportunity.</strong> Fetch the pin page for the pin's metadata (image, description, board name). Then follow the pin's SOURCE link to the original page (often a recipe blog, product page, or article) and fetch THAT page's JSON-LD for the complete structured data. A Pinterest recipe pin → source link → AllRecipes page → full JSON-LD recipe schema with ingredients, cook time, nutrition. Two hops, maximum data.
+    </div>
+  </div>
+</div>
+
+<!-- REDDIT -->
+<div class="platform">
+  <div class="platform-header">
+    <div class="platform-icon">🔴</div>
+    <div>
+      <div class="platform-name">Reddit</div>
+      <div class="platform-url">reddit.com/r/*/comments/*</div>
+    </div>
+  </div>
+  <div class="platform-body">
+    <div class="layer">
+      <div class="layer-label l1">Layer 1+2</div>
+      <div class="data-grid">
+        <dt>Share Sheet</dt><dd><span class="tag yes">✓</span> URL + post title</dd>
+        <dt>og:title</dt><dd><span class="tag yes">✓</span> Post title</dd>
+        <dt>og:description</dt><dd><span class="tag yes">✓</span> Post text preview</dd>
+        <dt>Subreddit</dt><dd><span class="tag gold">Key</span> Extractable from URL path: <code>/r/travel/</code>, <code>/r/cooking/</code>, <code>/r/malefashionadvice/</code> — subreddit name IS a classification signal</dd>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label l4">Layer 4 — Reddit JSON API</div>
+      <div class="data-grid">
+        <dt>Approach</dt><dd><span class="tag yes">Free</span> Append <code>.json</code> to any Reddit URL → full post data. No API key needed for public posts.</dd>
+        <dt>Returns</dt><dd>Title, selftext (full post body), subreddit, author, score, upvote_ratio, num_comments, created_utc, link_flair_text (post category), url (if link post), preview images, media metadata</dd>
+        <dt>Link posts</dt><dd>Reddit link posts contain a destination URL (article, product, video) — follow that URL for additional metadata, same as Pinterest double-hop strategy.</dd>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GENERIC WEB -->
+<div class="platform">
+  <div class="platform-header">
+    <div class="platform-icon">🌐</div>
+    <div>
+      <div class="platform-name">Safari / Generic Web Pages</div>
+      <div class="platform-url">Any website URL shared from Safari or Chrome</div>
+    </div>
+  </div>
+  <div class="platform-body">
+    <div class="layer">
+      <div class="layer-label l1">Layer 1 — Share Sheet (RICHEST)</div>
+      <div class="data-grid">
+        <dt>URL</dt><dd><span class="tag yes">✓</span> Full page URL</dd>
+        <dt>Page title</dt><dd><span class="tag yes">✓</span> Via JavaScript preprocessing file — can extract <code>document.title</code>, <code>document.location.hostname</code>, favicon URL, and even selected text from the page</dd>
+        <dt>Selected text</dt><dd><span class="tag partial">~</span> If user selected text before sharing, it comes through as <code>attributedContentText</code></dd>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label l2">Layer 2 — URL Fetch (Full Spectrum)</div>
+      <p>Generic web pages are the most varied but also the richest source. The fetch strategy should try each data source in order of reliability:</p>
+      <div class="data-grid">
+        <dt>1. JSON-LD</dt><dd>Check for <code>&lt;script type="application/ld+json"&gt;</code> — if present, this is the most structured data (Recipe, Product, Article, LocalBusiness, Event, etc.)</dd>
+        <dt>2. OG Tags</dt><dd>Parse all <code>og:*</code> meta tags — present on ~90% of modern websites</dd>
+        <dt>3. Twitter Cards</dt><dd>Parse <code>twitter:*</code> meta tags — may have different/additional info</dd>
+        <dt>4. Standard meta</dt><dd>Fallback to <code>&lt;title&gt;</code>, <code>&lt;meta name="description"&gt;</code>, first <code>&lt;img&gt;</code></dd>
+        <dt>5. Microdata</dt><dd>Check for <code>itemprop</code> attributes in HTML — older but still used on some sites</dd>
+      </div>
+    </div>
+    <div class="callout purple" style="margin-top:12px;">
+      <strong>Safari is a superpower for recipe and product saves.</strong> When users share from a recipe blog, we get the FULL JSON-LD recipe schema — every ingredient, cook time, nutrition. When they share from Amazon/Shopify, we get full product schema — exact price, brand, availability. The URL fetch for generic web is potentially richer than any social platform save, because the source websites have the most detailed structured data.
+    </div>
+  </div>
+</div>
+
+<!-- SCREENSHOTS/IMAGES -->
+<div class="platform">
+  <div class="platform-header">
+    <div class="platform-icon">📸</div>
+    <div>
+      <div class="platform-name">Screenshots & Photos</div>
+      <div class="platform-url">Photos app, WhatsApp image shares, Screenshots</div>
+    </div>
+  </div>
+  <div class="platform-body">
+    <div class="layer">
+      <div class="layer-label l1">Layer 1 — Share Sheet</div>
+      <div class="data-grid">
+        <dt>Image</dt><dd><span class="tag yes">✓</span> Full resolution image arrives as <code>kUTTypeImage</code> attachment</dd>
+        <dt>EXIF</dt><dd><span class="tag partial">~</span> GPS coordinates (if photo, not screenshot), date taken, device info</dd>
+        <dt>URL</dt><dd><span class="tag no">✗</span> No URL. This is the one case where we have no link to fetch.</dd>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label l3">Layer 3 — On-Device AI (PRIMARY DATA SOURCE)</div>
+      <div class="data-grid">
+        <dt>Vision Framework</dt><dd><span class="tag rich">Critical</span> Image classification (scene: beach, restaurant, clothing, interior design), object detection (shoes, bag, sofa), face detection, text recognition (OCR)</dd>
+        <dt>OCR / Text Recognition</dt><dd><span class="tag gold">Key for screenshots</span> Screenshots of Instagram posts, product pages, or recipes contain visible text. OCR extracts: product names, prices, captions, usernames, hashtags — essentially reconstructing what the URL would have given us.</dd>
+        <dt>Foundation Models</dt><dd><span class="tag rich">Rich</span> Feed the OCR text + Vision labels into Foundation Models for classification: "Screenshot of Instagram post by @foodie about pasta recipe with mushrooms → Recipes stack"</dd>
+      </div>
+    </div>
+    <div class="callout orange" style="margin-top:12px;">
+      <strong>Screenshots are the hardest but most valuable.</strong> Users screenshot things that can't be shared — Instagram Stories, Snapchat, app-only content. On-device AI is the ONLY data source here. The pipeline: Vision (scene classification + object detection) → OCR (extract all visible text) → Foundation Models (classify text + visual cues into a stack + generate summary). This is where the on-device AI truly shines over competitors.
+    </div>
+  </div>
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- ENRICHMENT PIPELINE             -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>The Complete Enrichment Pipeline</h2>
+<p>Here's the exact processing sequence when a user shares any content:</p>
+
+<h3>Phase A: Instant (0-2 seconds) — Happens during share sheet display</h3>
+<p><strong>1.</strong> Extract URL + text from <code>NSExtensionItem</code></p>
+<p><strong>2.</strong> Detect platform from URL domain (instagram.com → Instagram, youtu.be → YouTube, etc.)</p>
+<p><strong>3.</strong> If text present (TikTok caption, tweet, YouTube title) → run Foundation Models text classification → generate stack assignment + confidence score</p>
+<p><strong>4.</strong> Show user: "✓ Saved to [Stack]" — the confirmation appears before the URL is even fetched</p>
+
+<h3>Phase B: Quick Fetch (0.5-3 seconds) — Happens immediately after save confirmation</h3>
+<p><strong>5.</strong> Fetch URL HTML (lightweight — just the <code>&lt;head&gt;</code> section is enough)</p>
+<p><strong>6.</strong> Parse in priority order: JSON-LD → OG tags → Twitter Cards → standard meta → fallback</p>
+<p><strong>7.</strong> Download og:image and cache locally (thumbnail for the card in stack view)</p>
+<p><strong>8.</strong> If JSON-LD found with specific schema (Recipe, Product, etc.) → extract all structured fields</p>
+<p><strong>9.</strong> If classification confidence was low in step 3, re-run with new metadata → may upgrade classification and move out of Inbox</p>
+
+<h3>Phase C: Deep Enrichment (3-30 seconds) — Background, async</h3>
+<p><strong>10.</strong> Platform-specific enrichment:</p>
+<p style="padding-left:20px;">• <strong>YouTube:</strong> Fetch transcript via youtube-transcript-api → run Foundation Models on transcript summary → extract entities (places, restaurants, products mentioned)</p>
+<p style="padding-left:20px;">• <strong>TikTok:</strong> Parse embedded hydration JSON for music metadata, engagement stats</p>
+<p style="padding-left:20px;">• <strong>Pinterest:</strong> Follow source link → fetch source page → extract JSON-LD from original (recipe/product)</p>
+<p style="padding-left:20px;">• <strong>Reddit:</strong> Fetch .json endpoint → extract full post body + flair + linked URL</p>
+<p style="padding-left:20px;">• <strong>Shopping URLs:</strong> Extract product identifiers (ASIN, SKU) → background price comparison via Amazon Creators API</p>
+<p><strong>11.</strong> Run Vision on cached image → generate visual tags (scene, objects, colors, style)</p>
+<p><strong>12.</strong> Combine all metadata → run Foundation Models to generate 1-2 sentence summary</p>
+<p><strong>13.</strong> Store enriched entity to local database. Index all tags + summary for search.</p>
+
+<h3>Phase D: Ongoing (hours/days) — Optional, async</h3>
+<p><strong>14.</strong> Price tracking: For shopping items, periodic price checks via affiliate APIs</p>
+<p><strong>15.</strong> Dead link detection: Periodic check if source URL is still alive</p>
+<p><strong>16.</strong> Sub-stack clustering: After N saves in a stack, detect location/topic clusters → generate filter chips</p>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- COST AND FEASIBILITY            -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Cost & Feasibility Summary</h2>
+
+<table>
+  <tr>
+    <th>Data Source</th>
+    <th>Cost</th>
+    <th>Auth Required</th>
+    <th>Rate Limit</th>
+    <th>Runs Where</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>iOS Share Sheet</td>
+    <td>Free</td>
+    <td>None</td>
+    <td>None</td>
+    <td>On-device</td>
+    <td class="check">High</td>
+  </tr>
+  <tr>
+    <td>URL Fetch (OG + JSON-LD)</td>
+    <td>Free</td>
+    <td>None</td>
+    <td>Target site throttling</td>
+    <td>Device (URLSession)</td>
+    <td class="check">Very High</td>
+  </tr>
+  <tr>
+    <td>On-Device AI (Foundation Models + Vision)</td>
+    <td>Free</td>
+    <td>None</td>
+    <td>None</td>
+    <td>Neural Engine</td>
+    <td class="check">Critical</td>
+  </tr>
+  <tr>
+    <td>TikTok oEmbed</td>
+    <td>Free</td>
+    <td>None</td>
+    <td>Generous</td>
+    <td>Device</td>
+    <td class="check">Good</td>
+  </tr>
+  <tr>
+    <td>YouTube Data API v3</td>
+    <td>Free (10K units/day)</td>
+    <td>API Key</td>
+    <td>~3K lookups/day</td>
+    <td>Server/Device</td>
+    <td class="check">High</td>
+  </tr>
+  <tr>
+    <td>YouTube Transcript</td>
+    <td>Free (self-hosted)</td>
+    <td>None</td>
+    <td>Self-managed</td>
+    <td>Edge function</td>
+    <td class="check">Extremely High</td>
+  </tr>
+  <tr>
+    <td>Reddit JSON</td>
+    <td>Free</td>
+    <td>None</td>
+    <td>~60 req/min</td>
+    <td>Device</td>
+    <td class="check">Good</td>
+  </tr>
+  <tr>
+    <td>Meta oEmbed Read</td>
+    <td>Free</td>
+    <td>Facebook App + Review</td>
+    <td>5M/day (app token)</td>
+    <td>Server</td>
+    <td class="maybe">Low (no thumbnail since Apr 2025)</td>
+  </tr>
+  <tr>
+    <td>X API v2</td>
+    <td>$100+/mo for useful tier</td>
+    <td>OAuth 2.0</td>
+    <td>100 reads/mo free</td>
+    <td>Server</td>
+    <td class="cross">Skip for MVP</td>
+  </tr>
+  <tr>
+    <td>Pinterest API v5</td>
+    <td>Free but restricted</td>
+    <td>Business account + OAuth</td>
+    <td>Limited</td>
+    <td>Server</td>
+    <td class="cross">Skip — OG scraping is better</td>
+  </tr>
+  <tr>
+    <td>Amazon Product API</td>
+    <td>Free (Associates)</td>
+    <td>Associates account</td>
+    <td>1 req/sec</td>
+    <td>Server</td>
+    <td class="check">High (prices + deals)</td>
+  </tr>
+</table>
+
+<div class="callout green">
+<strong>The beautiful conclusion:</strong> The richest data sources — iOS Share Sheet, URL fetching (OG + JSON-LD), on-device AI, TikTok oEmbed, YouTube transcripts, and Reddit JSON — are all <strong>completely free</strong>. The expensive APIs (X, Pinterest official) are the least necessary because OG tag scraping gives you 90% of the same data. The only API worth paying for eventually is YouTube Data API (still free up to 10K units/day) and Amazon Associates (free for affiliates). The entire enrichment pipeline runs at near-zero marginal cost.
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- WHAT MAKES THIS MAGICAL         -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>What Makes This Feel Magical to the User</h2>
+
+<p>The user shares an Instagram Reel of a restaurant in Lisbon. In 2 seconds they see "✓ Saved to Travel." When they open the app an hour later, they see:</p>
+
+<div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin:16px 0; max-width:340px;">
+  <div style="height:120px; background:linear-gradient(135deg,#f6d365,#fda085); border-radius:8px; margin-bottom:12px; display:flex; align-items:center; justify-content:center; font-size:2rem;">🍽️</div>
+  <div style="font-weight:700; font-size:0.95rem;">Time Out Market Lisboa</div>
+  <div style="font-size:0.78rem; color:var(--muted); margin-top:2px;">📷 Instagram · @lisbonfoodie · 2 hours ago</div>
+  <div style="font-size:0.78rem; background:var(--soft-green); padding:8px; border-radius:6px; margin-top:8px; line-height:1.5;">
+    <strong style="font-size:0.66rem; color:var(--teal);">AI SUMMARY</strong><br>
+    Indoor food hall in Lisbon with 30+ stalls from top Portuguese chefs. Highlights: Cevicheria, Honest Burgers, Manteigaria pastéis de nata. Located in Mercado da Ribeira, Cais do Sodré.
+  </div>
+  <div style="display:flex; gap:4px; margin-top:8px; flex-wrap:wrap;">
+    <span style="font-family:var(--mono); font-size:0.58rem; background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px;">lisbon</span>
+    <span style="font-family:var(--mono); font-size:0.58rem; background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px;">food hall</span>
+    <span style="font-family:var(--mono); font-size:0.58rem; background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px;">portugal</span>
+    <span style="font-family:var(--mono); font-size:0.58rem; background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px;">restaurant</span>
+    <span style="font-family:var(--mono); font-size:0.58rem; background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px;">pastéis de nata</span>
+  </div>
+  <div style="font-size:0.72rem; color:var(--muted); margin-top:8px;">📍 Lisbon, Portugal · ✈️ Travel › Lisbon</div>
+</div>
+
+<p>The user typed nothing. They entered no tags. They didn't choose a category. They didn't write a description. All of this came from: Instagram caption (via OG tags) → on-device text analysis (location extraction) → Vision on the thumbnail (food scene) → Foundation Models (summary generation). Five layers of intelligence, completely invisible to the user.</p>
+
+<p>That is the product. Not the UI. Not the screens. The intelligence pipeline IS the product.</p>
+</div>
+
+</div>
+</body>
+</html>

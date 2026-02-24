@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Wireframes & UX Flows</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ef; --card: #fff; --ink: #1a1a1a; --muted: #8a8279;
+    --border: #e0dbd3; --accent: #c45d2c; --teal: #1a7a65; --blue: #2b6cb0;
+    --purple: #6b46a3; --gold: #b8860b; --soft-green: #edf7f2;
+    --soft-blue: #eef4fb; --soft-orange: #fdf3ec; --soft-purple: #f5f0fa;
+    --mono: 'JetBrains Mono', monospace;
+    /* Phone mockup colors */
+    --phone-bg: #fafaf8; --phone-bar: #f2f0ec; --phone-accent: #e8643a;
+    --phone-teal: #1a7a65; --phone-muted: #b5afa5; --phone-card: #ffffff;
+    --phone-text: #1a1a1a; --phone-subtext: #8a8279;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.7; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 48px 28px 120px; }
+
+  .eyebrow { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  h1 { font-family: 'Fraunces', serif; font-size: 2.2rem; line-height: 1.18; font-weight: 700; margin-bottom: 14px; }
+  .sub { font-size: 0.95rem; color: var(--muted); max-width: 700px; margin-bottom: 48px; }
+  h2 { font-family: 'Fraunces', serif; font-size: 1.45rem; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); display: inline-block; }
+  h3 { font-size: 1rem; font-weight: 700; margin: 18px 0 6px; }
+  h4 { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 28px 0 12px; }
+  p { font-size: 0.9rem; margin-bottom: 12px; }
+  .section { margin-bottom: 64px; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 56px 0; }
+
+  .callout { padding: 18px 22px; border-radius: 5px; margin: 16px 0; font-size: 0.88rem; }
+  .callout.green { background: var(--soft-green); border-left: 4px solid var(--teal); }
+  .callout.orange { background: var(--soft-orange); border-left: 4px solid var(--accent); }
+  .callout.blue { background: var(--soft-blue); border-left: 4px solid var(--blue); }
+  .callout.purple { background: var(--soft-purple); border-left: 4px solid var(--purple); }
+
+  /* ===== PHONE MOCKUP ===== */
+  .phone-row { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; justify-content: center; margin: 28px 0 36px; }
+  .phone-col { display: flex; flex-direction: column; align-items: center; max-width: 320px; }
+  .phone-label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; text-align: center; }
+  .phone { width: 280px; min-height: 540px; background: var(--phone-bg); border-radius: 36px; border: 3px solid #d5d0c8; box-shadow: 0 8px 40px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.5); overflow: hidden; position: relative; }
+  .phone-status { height: 44px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 0.6rem; color: var(--phone-subtext); position: relative; }
+  .phone-status .notch { width: 80px; height: 22px; background: var(--ink); border-radius: 0 0 14px 14px; position: absolute; top: 0; }
+  .phone-status .time { position: absolute; left: 20px; top: 14px; font-weight: 700; font-size: 0.7rem; color: var(--phone-text); }
+  .phone-status .icons { position: absolute; right: 16px; top: 14px; font-size: 0.6rem; }
+  .phone-content { padding: 0 14px 16px; }
+  .phone-home { height: 4px; width: 100px; background: var(--ink); border-radius: 2px; margin: 8px auto 6px; opacity: 0.2; }
+
+  /* Phone internal elements */
+  .ph-header { padding: 4px 0 10px; }
+  .ph-header h2 { font-family: 'Fraunces', serif; font-size: 1.35rem; border: none; padding: 0; margin: 0; display: block; line-height: 1.2; }
+  .ph-header .ph-sub { font-size: 0.62rem; color: var(--phone-subtext); margin-top: 1px; }
+  .ph-search { background: var(--phone-bar); border-radius: 10px; padding: 9px 12px; font-size: 0.68rem; color: var(--phone-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+  .ph-search .lens { opacity: 0.4; }
+
+  /* Bucket cards on home */
+  .ph-bucket { background: var(--phone-card); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+  .ph-bucket-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+  .ph-bucket-info { flex: 1; min-width: 0; }
+  .ph-bucket-name { font-weight: 700; font-size: 0.78rem; line-height: 1.2; }
+  .ph-bucket-meta { font-size: 0.6rem; color: var(--phone-subtext); }
+  .ph-bucket-count { font-family: var(--mono); font-size: 0.65rem; color: var(--phone-muted); }
+  .ph-bucket-new { font-family: var(--mono); font-size: 0.52rem; background: var(--phone-accent); color: #fff; padding: 1px 5px; border-radius: 6px; margin-left: 4px; }
+
+  /* Item cards in bucket view */
+  .ph-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ph-item { background: var(--phone-card); border-radius: 10px; overflow: hidden; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+  .ph-item-img { height: 80px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; position: relative; }
+  .ph-item-body { padding: 8px; }
+  .ph-item-title { font-size: 0.62rem; font-weight: 700; line-height: 1.25; margin-bottom: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ph-item-desc { font-size: 0.52rem; color: var(--phone-subtext); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ph-item-source { font-family: var(--mono); font-size: 0.46rem; color: var(--phone-muted); margin-top: 3px; display: flex; align-items: center; gap: 3px; }
+  .ph-item-badge { position: absolute; top: 5px; right: 5px; font-size: 0.44rem; background: rgba(0,0,0,0.6); color: #fff; padding: 1px 5px; border-radius: 4px; font-family: var(--mono); }
+  .ph-item-deal { position: absolute; bottom: 4px; left: 5px; font-size: 0.44rem; background: var(--phone-teal); color: #fff; padding: 1px 5px; border-radius: 4px; font-family: var(--mono); }
+
+  /* Share extension */
+  .ph-share-overlay { background: rgba(0,0,0,0.4); border-radius: 0 0 33px 33px; padding: 100px 14px 16px; min-height: 480px; display: flex; flex-direction: column; justify-content: flex-end; }
+  .ph-share-sheet { background: var(--phone-card); border-radius: 14px; padding: 16px; }
+  .ph-share-confirm { text-align: center; padding: 10px 0; }
+  .ph-share-confirm .check { font-size: 2rem; margin-bottom: 4px; }
+  .ph-share-confirm .msg { font-weight: 700; font-size: 0.82rem; }
+  .ph-share-confirm .detail { font-size: 0.62rem; color: var(--phone-subtext); margin-top: 2px; }
+  .ph-share-preview { display: flex; gap: 10px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.06); }
+  .ph-share-thumb { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+  .ph-share-info .sp-title { font-size: 0.65rem; font-weight: 700; }
+  .ph-share-info .sp-bucket { font-size: 0.55rem; color: var(--phone-teal); display: flex; align-items: center; gap: 3px; }
+
+  /* Tab bar */
+  .ph-tabbar { display: flex; justify-content: space-around; padding: 8px 0 2px; margin-top: 10px; border-top: 1px solid rgba(0,0,0,0.06); }
+  .ph-tab { text-align: center; font-size: 0.5rem; color: var(--phone-muted); }
+  .ph-tab.active { color: var(--phone-accent); }
+  .ph-tab-icon { font-size: 1rem; margin-bottom: 1px; }
+
+  /* Detail view */
+  .ph-detail-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 3rem; border-radius: 12px; margin-bottom: 12px; position: relative; }
+  .ph-detail-actions { display: flex; gap: 8px; margin: 10px 0; }
+  .ph-detail-btn { flex: 1; padding: 8px; border-radius: 10px; text-align: center; font-size: 0.62rem; font-weight: 700; }
+  .ph-detail-btn.primary { background: var(--phone-accent); color: #fff; }
+  .ph-detail-btn.secondary { background: var(--phone-bar); color: var(--phone-text); }
+  .ph-detail-meta { font-size: 0.58rem; color: var(--phone-subtext); padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+  .ph-detail-meta strong { color: var(--phone-text); }
+  .ph-chip { display: inline-block; font-family: var(--mono); font-size: 0.5rem; background: var(--phone-bar); padding: 2px 7px; border-radius: 4px; margin: 2px 2px 2px 0; }
+
+  /* Onboarding */
+  .ph-onboard { text-align: center; padding: 30px 10px 0; }
+  .ph-onboard-icon { font-size: 3rem; margin-bottom: 10px; }
+  .ph-onboard h3 { font-family: 'Fraunces', serif; font-size: 1.1rem; margin-bottom: 6px; }
+  .ph-onboard p { font-size: 0.68rem; color: var(--phone-subtext); line-height: 1.5; padding: 0 8px; }
+  .ph-onboard-visual { margin: 16px 0; padding: 12px; background: var(--phone-bar); border-radius: 12px; }
+  .ph-onboard-btn { display: block; margin: 16px auto 0; padding: 12px 0; width: 90%; border-radius: 12px; font-weight: 700; font-size: 0.78rem; text-align: center; }
+  .ph-onboard-btn.primary { background: var(--phone-text); color: #fff; }
+  .ph-onboard-btn.text { background: none; color: var(--phone-subtext); font-weight: 500; font-size: 0.68rem; }
+  .ph-dots { display: flex; gap: 6px; justify-content: center; margin-top: 14px; }
+  .ph-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--phone-muted); }
+  .ph-dot.active { background: var(--phone-text); width: 18px; border-radius: 3px; }
+
+  /* Navigation header for bucket view */
+  .ph-nav { display: flex; align-items: center; justify-content: space-between; padding: 4px 0 8px; }
+  .ph-nav-back { font-size: 0.72rem; color: var(--phone-accent); display: flex; align-items: center; gap: 2px; }
+  .ph-nav-title { font-weight: 700; font-size: 0.82rem; }
+  .ph-nav-action { font-size: 0.9rem; }
+
+  /* Filter chips */
+  .ph-filters { display: flex; gap: 5px; margin-bottom: 10px; overflow-x: auto; }
+  .ph-filter { font-size: 0.55rem; padding: 4px 9px; border-radius: 8px; background: var(--phone-bar); color: var(--phone-subtext); white-space: nowrap; }
+  .ph-filter.active { background: var(--phone-text); color: #fff; }
+
+  /* Annotations */
+  .annotation-row { display: flex; gap: 24px; align-items: flex-start; margin: 24px 0; flex-wrap: wrap; }
+  .annotation-row .phone-col { flex-shrink: 0; }
+  .annotations { flex: 1; min-width: 260px; padding-top: 20px; }
+  .ann { margin-bottom: 16px; padding-left: 14px; border-left: 3px solid var(--border); }
+  .ann.highlight { border-left-color: var(--accent); }
+  .ann .ann-label { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
+  .ann p { font-size: 0.84rem; margin-bottom: 4px; }
+  .ann .why { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+
+  /* Workflow cards */
+  .workflow { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 22px; margin-bottom: 16px; }
+  .workflow h3 { margin-top: 0; display: flex; align-items: center; gap: 8px; }
+  .workflow .w-emoji { font-size: 1.2rem; }
+  .workflow .w-scenario { font-size: 0.85rem; color: var(--muted); font-style: italic; margin-bottom: 10px; }
+  .workflow .w-steps { counter-reset: step; padding-left: 0; list-style: none; }
+  .workflow .w-steps li { counter-increment: step; font-size: 0.85rem; padding: 5px 0 5px 32px; position: relative; }
+  .workflow .w-steps li::before { content: counter(step); position: absolute; left: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--soft-orange); color: var(--accent); font-family: var(--mono); font-size: 0.65rem; display: flex; align-items: center; justify-content: center; top: 5px; }
+  .workflow .w-time { font-family: var(--mono); font-size: 0.68rem; color: var(--teal); margin-top: 8px; }
+
+  /* Naming section */
+  .name-option { display: inline-block; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px; margin: 4px 4px 4px 0; font-size: 0.85rem; }
+  .name-option.pick { border-color: var(--teal); background: var(--soft-green); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="eyebrow">Wireframes & UX Flows</div>
+<h1>Every Screen, Every Workflow — Designed Around Real Moments</h1>
+<div class="sub">Starting from where the user actually is and what they're actually doing — then designing the simplest possible path from intention to action.</div>
+
+<!-- ============================== -->
+<!-- PART 0: THE NAME                -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>First: What Do We Call the Categories?</h2>
+
+<p>Before wireframes, naming matters. "Buckets" works but let's consider options:</p>
+
+<div>
+  <span class="name-option">Buckets</span>
+  <span class="name-option">Stashes</span>
+  <span class="name-option pick">Stacks</span>
+  <span class="name-option">Keeps</span>
+  <span class="name-option">Boards</span>
+  <span class="name-option">Shelves</span>
+  <span class="name-option">Spots</span>
+</div>
+
+<div class="callout green" style="margin-top:16px;">
+<strong>Recommendation: "Stacks"</strong> — it's physical and intuitive. You stack things. A stack of travel ideas. A stack of recipes. It's short, works as verb ("stack it") and noun ("my stacks"), feels organized without being rigid. Competitor "Stacks" exists but it's a different product (social curation). "Buckets" is great too — it maps to "bucket list" which is perfect for aspirational content. Either works. I'll use <strong>Stacks</strong> in the wireframes below, but this is easily swapped.
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- PART 1: USER WORKFLOWS          -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Part 1: Real User Workflows</h2>
+<p>Before any screen design, let's map every real-world moment where someone would interact with this app:</p>
+
+<h4>Save Moments — "I need to remember this"</h4>
+
+<div class="workflow">
+  <h3><span class="w-emoji">📱</span> Scrolling Instagram at 11pm</h3>
+  <div class="w-scenario">Priya is lying in bed scrolling Instagram. She sees a gorgeous hotel in Santorini in a travel Reel. She doesn't want to lose it.</div>
+  <ol class="w-steps">
+    <li>Taps the share button on the Instagram Reel</li>
+    <li>Taps our app icon in the share sheet (second or third position after Messages)</li>
+    <li>Sees a brief confirmation: "✓ Saved to Travel" with the thumbnail — appears for 1.5 seconds</li>
+    <li>She's already back to scrolling Instagram. Total interruption: under 2 seconds</li>
+  </ol>
+  <div class="w-time">Total time: &lt;2 seconds. Zero decisions required.</div>
+</div>
+
+<div class="workflow">
+  <h3><span class="w-emoji">🛍️</span> Friend sends a product link on WhatsApp</h3>
+  <div class="w-scenario">Rahul's friend sends him a link to a sneaker on Nike.com via WhatsApp. He's interested but not buying right now.</div>
+  <ol class="w-steps">
+    <li>Long-presses the link in WhatsApp → taps Share</li>
+    <li>Taps our app in share sheet</li>
+    <li>Confirmation: "✓ Saved to Shopping — Nike Air Max 90 · ₹12,999" — AI extracted product name and price</li>
+    <li>Back to WhatsApp chat. Done.</li>
+  </ol>
+  <div class="w-time">Total time: ~2 seconds. AI extracted the product details automatically.</div>
+</div>
+
+<div class="workflow">
+  <h3><span class="w-emoji">🍳</span> Watching a cooking video on YouTube</h3>
+  <div class="w-scenario">Meera is watching a butter chicken recipe on YouTube. She wants to try it this weekend.</div>
+  <ol class="w-steps">
+    <li>Taps Share on the YouTube video</li>
+    <li>Taps our app</li>
+    <li>Confirmation: "✓ Saved to Recipes — Butter Chicken · 45 min · @HomeCookingShow"</li>
+    <li>When she opens the app on Saturday, the item shows cook time, key ingredients extracted from the video description</li>
+  </ol>
+  <div class="w-time">Save: 2 seconds. Browse: whenever she's ready to cook.</div>
+</div>
+
+<div class="workflow">
+  <h3><span class="w-emoji">💬</span> Someone recommends something IRL</h3>
+  <div class="w-scenario">At a dinner party, a friend says: "You HAVE to try Dishoom in London — the black daal is incredible."</div>
+  <ol class="w-steps">
+    <li>Opens our app (already on home screen)</li>
+    <li>Taps the "+" button → Quick Note</li>
+    <li>Types: "Dishoom London — black daal, friend Ankit recommended"</li>
+    <li>AI parses: Restaurant name (Dishoom), Location (London), Item (black daal), Source (Ankit) → Saved to Recipes or a Restaurants stack</li>
+  </ol>
+  <div class="w-time">Total time: ~8 seconds. No link needed — just a quick note.</div>
+</div>
+
+<div class="workflow">
+  <h3><span class="w-emoji">📸</span> Screenshots an Instagram Story before it disappears</h3>
+  <div class="w-scenario">Anika sees a gorgeous living room in an interior designer's Instagram Story. Stories disappear in 24 hours. She screenshots it.</div>
+  <ol class="w-steps">
+    <li>Takes screenshot (standard iOS gesture)</li>
+    <li>The screenshot preview appears in bottom-left corner. She taps the share icon on it.</li>
+    <li>Taps our app in share sheet</li>
+    <li>AI runs Vision on the image: "living room, Scandinavian, white oak, green sofa" → Saved to Home & Decor</li>
+    <li>Even though the Story disappears tomorrow, she has the image + AI description forever</li>
+  </ol>
+  <div class="w-time">Save: ~3 seconds. Content preserved even after source deletion.</div>
+</div>
+
+<h4>Browse & Act Moments — "What did I save?"</h4>
+
+<div class="workflow">
+  <h3><span class="w-emoji">🔍</span> "What was that blue dress?"</h3>
+  <div class="w-scenario">Two weeks later, Priya remembers she saved a dress but can't remember which app or account it was from.</div>
+  <ol class="w-steps">
+    <li>Opens our app → taps search bar (prominent at top of home screen)</li>
+    <li>Types "blue dress" → AI searches across all tags, summaries, and metadata</li>
+    <li>Sees 3 results. The second one is it — a blue floral midi dress from Zara, saved from Instagram 12 days ago</li>
+    <li>Taps it → sees full preview, AI summary, price. Taps "Open original" → goes to Zara site</li>
+  </ol>
+  <div class="w-time">Found it in ~5 seconds. No need to remember which platform she saw it on.</div>
+</div>
+
+<div class="workflow">
+  <h3><span class="w-emoji">✈️</span> Trip planning mode</h3>
+  <div class="w-scenario">Rahul is planning a Japan trip. Over 3 months he's saved 20+ items from various platforms.</div>
+  <ol class="w-steps">
+    <li>Opens app → taps Travel stack</li>
+    <li>AI has auto-grouped: "Tokyo (8 items) · Kyoto (5 items) · Osaka (3 items) · General Japan (6 items)"</li>
+    <li>Taps Tokyo → browses restaurants, temples, neighborhoods he saved</li>
+    <li>Sees a "Search flights to Tokyo" button at bottom → taps → Skyscanner opens (affiliate link)</li>
+    <li>Shares the whole Tokyo sub-group with his girlfriend via a link</li>
+  </ol>
+  <div class="w-time">From 20 scattered saves across 5 platforms → organized trip plan in seconds.</div>
+</div>
+
+<div class="workflow">
+  <h3><span class="w-emoji">🛒</span> Shopping at the mall</h3>
+  <div class="w-scenario">Meera is at a mall and remembers she saved some outfit inspiration from Instagram.</div>
+  <ol class="w-steps">
+    <li>Opens app → taps Shopping stack (works fully offline — all cached locally)</li>
+    <li>Scrolls through saved items. Sees the dress she wanted, with brand and approximate price extracted by AI</li>
+    <li>A "💰 $15 cheaper on Amazon" badge catches her eye on one item</li>
+    <li>Taps it → sees price comparison → decides to order online instead</li>
+  </ol>
+  <div class="w-time">Full Shopping stack available offline. AI found a better deal.</div>
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- PART 2: APP SCREENS             -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Part 2: The Screens</h2>
+<p>Only 6 core screens. That's the entire app. No settings maze, no complex navigation. A child could use it.</p>
+
+<!-- SCREEN 1: ONBOARDING -->
+<h4>Screen 1 · Onboarding (3 panels, shown only once)</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">Onboarding — Panel 1 of 3</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-onboard">
+          <div class="ph-onboard-icon">📥</div>
+          <h3>Save anything.<br>From anywhere.</h3>
+          <p>See something you love on Instagram, TikTok, YouTube, or anywhere else? Just tap Share → and we'll catch it.</p>
+          <div class="ph-onboard-visual" style="text-align:left;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+              <span style="font-size:1rem;">📤</span>
+              <span style="font-size:0.65rem; color:var(--phone-subtext);">Share from any app...</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:1rem;">✨</span>
+              <span style="font-size:0.65rem; font-weight:700;">AI sorts it instantly</span>
+            </div>
+          </div>
+          <div class="ph-onboard-btn primary">Get Started</div>
+          <div class="ph-dots"><div class="ph-dot active"></div><div class="ph-dot"></div><div class="ph-dot"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-col">
+    <div class="phone-label">Panel 2 — The "Aha" Moment</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-onboard">
+          <div class="ph-onboard-icon">🧠</div>
+          <h3>Your phone's AI<br>does the thinking.</h3>
+          <p>The intelligence chip in your phone reads the content, understands it, and files it into the right stack. Travel goes to Travel. Recipes go to Recipes. Automatically.</p>
+          <div class="ph-onboard-visual" style="font-size:0.62rem; text-align:left; line-height:1.8;">
+            <div>🏖️ Bali sunset reel → <strong style="color:var(--phone-teal)">Travel</strong></div>
+            <div>👗 Zara floral dress → <strong style="color:var(--phone-teal)">Shopping</strong></div>
+            <div>🍝 Pasta recipe video → <strong style="color:var(--phone-teal)">Recipes</strong></div>
+            <div>💪 HIIT workout → <strong style="color:var(--phone-teal)">Fitness</strong></div>
+          </div>
+          <div style="font-size:0.58rem; color:var(--phone-teal); margin-top:8px; font-weight:700;">🔒 100% on your device. Nothing leaves your phone.</div>
+          <div class="ph-onboard-btn primary">Next</div>
+          <div class="ph-dots"><div class="ph-dot"></div><div class="ph-dot active"></div><div class="ph-dot"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-col">
+    <div class="phone-label">Panel 3 — Try It Now</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-onboard">
+          <div class="ph-onboard-icon">🚀</div>
+          <h3>Try it right now.</h3>
+          <p>Go to Instagram, YouTube, or any app. Find something you like. Tap Share → tap our icon. We'll show you the magic.</p>
+          <div class="ph-onboard-visual" style="text-align:center;">
+            <div style="font-size:2rem; margin-bottom:4px;">📤 → ✨ → 📂</div>
+            <div style="font-size:0.6rem; color:var(--phone-subtext);">Share → AI classifies → Stacked</div>
+          </div>
+          <div class="ph-onboard-btn primary">Open Share Sheet Guide</div>
+          <div class="ph-onboard-btn text">Skip, I'll explore on my own</div>
+          <div class="ph-dots"><div class="ph-dot"></div><div class="ph-dot"></div><div class="ph-dot active"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="annotations">
+  <div class="ann highlight">
+    <div class="ann-label">Key Design Decision</div>
+    <p><strong>Onboarding is 3 screens max.</strong> No account creation. No permissions dialogs. No tutorial carousel. Just: what it does → how it works → try it now.</p>
+    <p class="why">The "your phone's AI does the thinking" message is the hook. It positions the app as using something the user already owns (their expensive phone) in a way they didn't know was possible.</p>
+  </div>
+  <div class="ann">
+    <div class="ann-label">Panel 3 — Critical</div>
+    <p>We push them to save their first item immediately. The onboarding isn't complete until they experience the magic of auto-classification. "Open Share Sheet Guide" shows a brief animation of how to share from Instagram/TikTok.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- SCREEN 2: HOME -->
+<h4>Screen 2 · Home — Your Stacks</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">Home — Stacks Overview</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-header">
+          <h2>Your Stacks</h2>
+          <div class="ph-sub">43 items · 6 this week</div>
+        </div>
+        <div class="ph-search">
+          <span class="lens">🔍</span> Search everything you saved...
+        </div>
+
+        <div class="ph-bucket" style="border-left: 3px solid var(--phone-accent);">
+          <div class="ph-bucket-icon" style="background:#fde8d0;">📥</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Inbox <span class="ph-bucket-new">3 new</span></div>
+            <div class="ph-bucket-meta">Items AI isn't sure about</div>
+          </div>
+          <div class="ph-bucket-count">3</div>
+        </div>
+
+        <div class="ph-bucket">
+          <div class="ph-bucket-icon" style="background:#dbeafe;">✈️</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Travel</div>
+            <div class="ph-bucket-meta">Bali · Japan · Italy · +2</div>
+          </div>
+          <div class="ph-bucket-count">14</div>
+        </div>
+
+        <div class="ph-bucket">
+          <div class="ph-bucket-icon" style="background:#fce7f3;">🛍️</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Shopping</div>
+            <div class="ph-bucket-meta">3 deals found 💰</div>
+          </div>
+          <div class="ph-bucket-count">11</div>
+        </div>
+
+        <div class="ph-bucket">
+          <div class="ph-bucket-icon" style="background:#fef3c7;">🍳</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Recipes</div>
+            <div class="ph-bucket-meta">Last saved 2 days ago</div>
+          </div>
+          <div class="ph-bucket-count">8</div>
+        </div>
+
+        <div class="ph-bucket">
+          <div class="ph-bucket-icon" style="background:#d1fae5;">💪</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Fitness</div>
+            <div class="ph-bucket-meta">HIIT · Yoga · Running</div>
+          </div>
+          <div class="ph-bucket-count">5</div>
+        </div>
+
+        <div class="ph-bucket">
+          <div class="ph-bucket-icon" style="background:#ede9fe;">📚</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Learning</div>
+            <div class="ph-bucket-meta">Python · Design</div>
+          </div>
+          <div class="ph-bucket-count">3</div>
+        </div>
+
+        <div style="text-align:center; padding:10px 0 4px;">
+          <span style="font-size:0.65rem; color:var(--phone-accent); font-weight:700;">+ Create Stack</span>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="ann highlight">
+      <div class="ann-label">Home Screen Philosophy</div>
+      <p><strong>The home screen IS the app.</strong> No dashboard, no feed, no complexity. Just your stacks with at-a-glance info. Tap any stack to see its contents. That's it.</p>
+      <p class="why">Every extra screen is a reason to quit. The user's mental model is simple: "I have stacks of things I saved. I tap one to browse." Like opening a drawer.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Inbox Stack</div>
+      <p>Items where AI confidence was low land here with an orange accent. User taps in, swipes to assign to the correct stack. Teaches the AI over time. Keeps other stacks clean and trustworthy.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Sub-Stack Hints</div>
+      <p>Under Travel: "Bali · Japan · Italy" — these are AI-detected destination clusters, not user-created folders. Shows the user the AI is working without requiring any setup. Tapping Travel shows these as filter chips.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Deals Badge</div>
+      <p>"3 deals found 💰" under Shopping — proactive value. The app found better prices on 3 saved items. Pulls users into the Shopping stack to see the deals → affiliate revenue.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Tab Bar — Just 3 Tabs</div>
+      <p><strong>Stacks</strong> (home), <strong>Search</strong> (find anything), <strong>Save</strong> (manual save via URL paste or quick note). That's the entire navigation. Three tabs. No settings tab — settings accessible from a small icon in the header.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">"+ Create Stack"</div>
+      <p>Free users get 3 custom stacks. Pro gets unlimited. But the 8 default AI-powered stacks cover 90% of use cases — most users never need custom ones.</p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- SCREEN 3: SHARE EXTENSION -->
+<h4>Screen 3 · Share Extension — The &lt;100ms Save</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">Zone 1 — What User Actually Sees</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="ph-share-overlay">
+        <div class="ph-share-sheet">
+          <div class="ph-share-confirm">
+            <div class="check">✓</div>
+            <div class="msg">Saved to Travel</div>
+            <div class="detail">Tap to change</div>
+          </div>
+          <div class="ph-share-preview">
+            <div class="ph-share-thumb" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe); display:flex; align-items:center; justify-content:center;">
+              <span style="font-size:0.9rem;">✈️</span>
+            </div>
+            <div class="ph-share-info">
+              <div class="sp-title" style="color:var(--phone-subtext); font-weight:500;">instagram.com</div>
+              <div class="sp-bucket">✈️ Travel · Enriching...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="phone-col">
+    <div class="phone-label">If User Taps "Change"</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="ph-share-overlay">
+        <div class="ph-share-sheet">
+          <div style="font-weight:700; font-size:0.82rem; margin-bottom:10px; text-align:center;">Move to different stack?</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:14px;">
+            <span style="background:var(--phone-text); color:#fff; padding:6px 12px; border-radius:8px; font-size:0.68rem;">✈️ Travel</span>
+            <span style="background:var(--phone-bar); padding:6px 12px; border-radius:8px; font-size:0.68rem;">🛍️ Shopping</span>
+            <span style="background:var(--phone-bar); padding:6px 12px; border-radius:8px; font-size:0.68rem;">🍳 Recipes</span>
+            <span style="background:var(--phone-bar); padding:6px 12px; border-radius:8px; font-size:0.68rem;">💪 Fitness</span>
+            <span style="background:var(--phone-bar); padding:6px 12px; border-radius:8px; font-size:0.68rem;">🏠 Home</span>
+            <span style="background:var(--phone-bar); padding:6px 12px; border-radius:8px; font-size:0.68rem;">🎬 Watch</span>
+            <span style="background:var(--phone-bar); padding:6px 12px; border-radius:8px; font-size:0.68rem;">📚 Learning</span>
+            <span style="background:var(--phone-bar); padding:6px 12px; border-radius:8px; font-size:0.68rem;">📥 Inbox</span>
+          </div>
+          <div style="text-align:center; font-size:0.62rem; color:var(--phone-subtext);">This trains the AI for next time</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="ann highlight">
+      <div class="ann-label">Honest Zone 1 — No Fake Promises</div>
+      <p><strong>This screen appears for ~1.5 seconds, then auto-dismisses.</strong> At this point we only have the URL and share-sheet text. No thumbnail, no extracted title, no price. The user sees a stack icon, the domain name, and "Enriching..." — then they're back in their app. Zero decisions required.</p>
+      <p class="why">The previous wireframe showed rich metadata (title, price, location) in the share sheet — but Zone 1 executes in &lt;100ms. We can't fetch OG tags that fast. The enriched card appears later when the user opens the app. Being honest about timing builds trust.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">What Happens Beneath</div>
+      <p>While the user is already back in Instagram, Zone 2 fires: URL fetch → OG tags → thumbnail cached → JSON-LD parsed. Zone 3: Foundation Models classify + Vision runs on the image. By the time the user opens the app (minutes or hours later), the item is fully enriched with title, summary, tags, and price.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Correction Flow (Unchanged)</div>
+      <p>If user taps "change" before auto-dismiss, they see all stacks as tappable chips. AI's best guess is pre-selected (highlighted). One tap to reassign. This correction is stored and improves future classification. Total interaction still under 5 seconds.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Auto-Dismiss Design</div>
+      <p>A subtle progress arc around the checkmark shows the auto-dismiss countdown. User can tap anywhere to dismiss immediately. No "Done" button — the sheet disappears and they're back in Instagram/TikTok. The save is guaranteed regardless of enrichment status.</p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- SCREEN 4: STACK VIEW -->
+<h4>Screen 4 · Inside a Stack — Browsing Your Saves</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">Travel Stack — Grid View</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-nav">
+          <div class="ph-nav-back">‹ Back</div>
+          <div class="ph-nav-title">✈️ Travel</div>
+          <div class="ph-nav-action">⋯</div>
+        </div>
+
+        <div class="ph-filters">
+          <div class="ph-filter active">All (14)</div>
+          <div class="ph-filter">Bali (5)</div>
+          <div class="ph-filter">Japan (4)</div>
+          <div class="ph-filter">Italy (3)</div>
+          <div class="ph-filter">Videos</div>
+          <div class="ph-filter">Articles</div>
+        </div>
+
+        <div class="ph-grid">
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#87CEEB,#f4a460);">🏖️
+              <div class="ph-item-badge">▶ 2:34</div>
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Ultimate Bali Guide — Hidden Beaches</div>
+              <div class="ph-item-desc">Explore untouched beaches in Nusa Penida and Uluwatu...</div>
+              <div class="ph-item-source">📷 Instagram · 3d ago</div>
+            </div>
+          </div>
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#ff9a9e,#fad0c4);">🏯
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">7 Days in Tokyo — Full Itinerary</div>
+              <div class="ph-item-desc">Temples, ramen spots, and Shibuya nightlife...</div>
+              <div class="ph-item-source">▶ YouTube · 1w ago</div>
+            </div>
+          </div>
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#a1c4fd,#c2e9fb);">🏨
+              <div class="ph-item-deal">💰 $189/night</div>
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Santorini Sunset Hotel</div>
+              <div class="ph-item-desc">Infinity pool overlooking the caldera...</div>
+              <div class="ph-item-source">🌐 Safari · 5d ago</div>
+            </div>
+          </div>
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#d4fc79,#96e6a1);">🍜
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Best Ramen in Kyoto</div>
+              <div class="ph-item-desc">Local spots the tourists don't know about...</div>
+              <div class="ph-item-source">🎵 TikTok · 2w ago</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="ann highlight">
+      <div class="ann-label">AI-Generated Filter Chips</div>
+      <p><strong>The user never created "Bali" or "Japan" filters.</strong> The AI detected these destinations from saved content and auto-generated filter chips. User just taps to filter. This is the magic moment — "it organized my travel saves by destination without me doing anything."</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Visual Grid</div>
+      <p>Pinterest-style grid with thumbnail, title, AI summary, source icon, and time. Each card shows just enough to recognize the content. Tapping opens the detail view.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Source Platform Indicators</div>
+      <p>Every card shows where it came from: 📷 Instagram, ▶ YouTube, 🎵 TikTok, 🌐 Safari. Helps users remember context: "Oh right, that was the TikTok video Ankit sent me."</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Price on Travel Items</div>
+      <p>For hotels and bookable items, the price badge appears directly on the card. One of the most useful pieces of extracted metadata. Tapping leads to the booking page (affiliate link).</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Swipe Gestures (Not Shown)</div>
+      <p>Swipe left on any card → Delete/Archive. Swipe right → Move to another stack. Long press → Multi-select for bulk actions. All standard iOS gestures — no learning curve.</p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- SCREEN 5: ITEM DETAIL -->
+<h4>Screen 5 · Item Detail — Everything About This Save</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">Item Detail View</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-nav">
+          <div class="ph-nav-back">‹ Travel</div>
+          <div class="ph-nav-title"></div>
+          <div class="ph-nav-action">↗</div>
+        </div>
+
+        <div class="ph-detail-img" style="background:linear-gradient(135deg,#a1c4fd,#c2e9fb);">
+          🏨
+          <div style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.5); color:#fff; padding:3px 8px; border-radius:6px; font-size:0.55rem;">Cached image · won't disappear</div>
+        </div>
+
+        <div style="font-weight:700; font-size:1rem; margin-bottom:2px;">Santorini Sunset Hotel</div>
+        <div style="font-size:0.7rem; color:var(--phone-subtext); margin-bottom:10px;">🌐 Saved from Safari · 5 days ago</div>
+
+        <div style="font-size:0.72rem; background:var(--phone-bar); padding:10px; border-radius:8px; margin-bottom:10px; line-height:1.5;">
+          <strong style="font-size:0.62rem; color:var(--phone-teal);">AI SUMMARY</strong><br>
+          Luxury boutique hotel in Oia, Santorini with cave-style rooms and infinity pool overlooking the caldera. From $189/night. Best time: May-October.
+        </div>
+
+        <div class="ph-detail-actions">
+          <div class="ph-detail-btn primary">Open Original ↗</div>
+          <div class="ph-detail-btn secondary">Search Flights</div>
+        </div>
+
+        <div class="ph-detail-meta">
+          <strong>📍 Location:</strong> Oia, Santorini, Greece
+        </div>
+        <div class="ph-detail-meta">
+          <strong>💰 Price:</strong> From $189/night
+        </div>
+        <div class="ph-detail-meta">
+          <strong>🏷️ AI Tags:</strong><br>
+          <span class="ph-chip">hotel</span>
+          <span class="ph-chip">santorini</span>
+          <span class="ph-chip">greece</span>
+          <span class="ph-chip">luxury</span>
+          <span class="ph-chip">pool</span>
+          <span class="ph-chip">caldera view</span>
+        </div>
+        <div class="ph-detail-meta">
+          <strong>📂 Stack:</strong> Travel › Greece
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="ann highlight">
+      <div class="ann-label">AI Summary Box</div>
+      <p>The most valuable element. One glance tells you everything: what it is, key details, price, best time. Generated entirely on-device by Foundation Models. The user doesn't have to re-watch a 3-minute video or re-read a caption to remember why they saved this.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Two Primary Actions</div>
+      <p><strong>"Open Original"</strong> — goes to the source URL in Safari or the native app. <strong>"Search Flights"</strong> — contextual action based on stack type. For Shopping: "Buy" or "Compare Prices." For Recipes: "Start Cooking." For Learning: "Watch Video." The second button is always contextual.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Extracted Metadata</div>
+      <p>Location, price, tags — all extracted by on-device AI at save time. Searchable. Filterable. The user never typed any of this. This is what makes the app feel magical.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">"Cached image · won't disappear"</div>
+      <p>Subtle reassurance: even if the Instagram post is deleted, your image and all metadata is safe. This is a key value prop for users who've lost saved content before.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Monetization (Invisible)</div>
+      <p>"Search Flights" leads to Skyscanner via affiliate link. "Buy" on shopping items leads to affiliate link. "Compare Prices" shows the Better Deal Found feature. The user sees helpful actions. You earn commission. Completely aligned.</p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- SCREEN 6: SEARCH -->
+<h4>Screen 6 · Search — "That Thing I Saved"</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">Search — Natural Language</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div style="padding:8px 0;">
+          <div style="background:var(--phone-card); border:2px solid var(--phone-text); border-radius:12px; padding:10px 12px; font-size:0.78rem; display:flex; align-items:center; gap:6px;">
+            🔍 <span style="opacity:1;">blue dress</span><span style="opacity:0.3; animation:none;">|</span>
+          </div>
+        </div>
+
+        <div style="font-family:var(--mono); font-size:0.55rem; color:var(--phone-subtext); margin:8px 0 6px; letter-spacing:0.05em;">3 RESULTS</div>
+
+        <div class="ph-item" style="display:flex; gap:10px; padding:10px; margin-bottom:6px;">
+          <div style="width:56px; height:56px; border-radius:8px; background:linear-gradient(135deg,#89CFF0,#a7d8f0); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">👗</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; font-size:0.72rem;">Zara Floral Midi Dress</div>
+            <div style="font-size:0.6rem; color:var(--phone-subtext);">Blue floral print · ₹3,990 · Size M available</div>
+            <div style="font-size:0.52rem; color:var(--phone-muted); margin-top:2px;">🛍️ Shopping · 📷 Instagram · 12d ago</div>
+          </div>
+        </div>
+
+        <div class="ph-item" style="display:flex; gap:10px; padding:10px; margin-bottom:6px;">
+          <div style="width:56px; height:56px; border-radius:8px; background:linear-gradient(135deg,#6495ED,#b8d4f0); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">👔</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; font-size:0.72rem;">H&M Linen Wrap Dress</div>
+            <div style="font-size:0.6rem; color:var(--phone-subtext);">Navy blue · $49.99</div>
+            <div style="font-size:0.52rem; color:var(--phone-muted); margin-top:2px;">🛍️ Shopping · 🎵 TikTok · 3w ago</div>
+          </div>
+        </div>
+
+        <div class="ph-item" style="display:flex; gap:10px; padding:10px; margin-bottom:6px;">
+          <div style="width:56px; height:56px; border-radius:8px; background:linear-gradient(135deg,#4169E1,#87CEFA); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">🏖️</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; font-size:0.72rem;">Outfit Inspo — Amalfi Coast</div>
+            <div style="font-size:0.6rem; color:var(--phone-subtext);">Blue sundress outfit idea for Italy trip</div>
+            <div style="font-size:0.52rem; color:var(--phone-muted); margin-top:2px;">✈️ Travel · 📷 Instagram · 1m ago</div>
+          </div>
+        </div>
+
+        <div style="text-align:center; padding:16px; font-size:0.68rem; color:var(--phone-subtext);">
+          Search finds across all stacks using<br>AI tags, summaries, and metadata
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab active"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="ann highlight">
+      <div class="ann-label">Cross-Stack Search</div>
+      <p><strong>"blue dress" found results in Shopping AND Travel stacks.</strong> The search queries across all AI-generated tags, summaries, entity extractions, and metadata. The user doesn't need to remember which stack something is in — just describe what they remember.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Natural Language</div>
+      <p>Users can search with vague memory: "that pasta recipe," "hotel with pool," "running shoes under $100." The on-device AI matches against the rich metadata it extracted at save time. This is where the investment in entity extraction pays off.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Result Cards — Compact But Rich</div>
+      <p>Each result shows: thumbnail, title, key detail (price/location), which stack it's in, source platform, and when it was saved. Enough context to recognize the item without opening it.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Fully Offline</div>
+      <p>Search works completely offline. All tags, summaries, and metadata are stored locally. No server round-trip. Results appear as you type — feels instant.</p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- SCREEN 7: SAVE TAB -->
+<h4>Screen 7 · Save Tab — Manual Entry & Quick Notes</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">Save Tab — Two Options</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-header">
+          <h2>Save Something</h2>
+        </div>
+
+        <div style="background:var(--phone-card); border-radius:12px; padding:16px; margin-bottom:10px; border:1px solid rgba(0,0,0,0.04);">
+          <div style="font-weight:700; font-size:0.82rem; margin-bottom:6px;">🔗 Paste a Link</div>
+          <div style="background:var(--phone-bar); border-radius:8px; padding:10px; font-size:0.68rem; color:var(--phone-muted); margin-bottom:6px;">https://</div>
+          <div style="font-size:0.6rem; color:var(--phone-subtext);">Paste any URL from Safari, shopping sites, blogs, or social media</div>
+        </div>
+
+        <div style="text-align:center; font-size:0.62rem; color:var(--phone-muted); margin:8px 0;">— or —</div>
+
+        <div style="background:var(--phone-card); border-radius:12px; padding:16px; margin-bottom:10px; border:1px solid rgba(0,0,0,0.04);">
+          <div style="font-weight:700; font-size:0.82rem; margin-bottom:6px;">📝 Quick Note</div>
+          <div style="background:var(--phone-bar); border-radius:8px; padding:10px; font-size:0.68rem; color:var(--phone-muted); min-height:60px; margin-bottom:6px;">Dishoom restaurant in London — black daal is amazing, Ankit recommended...</div>
+          <div style="font-size:0.6rem; color:var(--phone-subtext);">AI will extract names, places, and details from your note</div>
+        </div>
+
+        <div style="background:var(--phone-card); border-radius:12px; padding:16px; border:1px solid rgba(0,0,0,0.04); opacity:0.6;">
+          <div style="font-weight:700; font-size:0.82rem; margin-bottom:4px;">📸 Save from Photos</div>
+          <div style="font-size:0.6rem; color:var(--phone-subtext);">Select a screenshot or photo — AI will read and classify it</div>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab active"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="ann highlight">
+      <div class="ann-label">The "Non-Link" Save</div>
+      <p><strong>Quick Note is the underrated killer feature.</strong> Most content curation apps only handle links. But recommendations happen IRL — at dinner, in meetings, from friends. "You should watch Shogun." "Try the biryani at Paradise." Quick Note captures these with AI parsing the text into structured data.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Paste a Link</div>
+      <p>For when share sheet doesn't work, or the user copied a URL from desktop. Paste → AI fetches metadata and classifies → saved. Same flow as share extension but initiated from within the app.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Save from Photos</div>
+      <p>For screenshots already in the camera roll. User selects an image → AI runs Vision + OCR → classifies and extracts text. Perfect for screenshots of product pages, recipes, or inspiration images saved days ago.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Primary Save Path</div>
+      <p>90% of saves will still come through the Share Extension (Screen 3). This tab is the fallback for the other 10% — manual URLs, IRL recommendations, and screenshots. It's important but not the main entry point.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- SCREEN 8: EMPTY / ZERO STATE    -->
+<!-- ============================== -->
+
+<h4>Screen 8 · Empty State — First Launch After Onboarding</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">First Time — Zero Saves</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-header">
+          <h2>Your Stacks</h2>
+          <div class="ph-sub">Save something to get started</div>
+        </div>
+
+        <!-- Empty illustration area -->
+        <div style="text-align:center; padding:28px 10px 20px;">
+          <div style="font-size:2.8rem; margin-bottom:8px; opacity:0.9;">📱 → 📤 → ✨</div>
+          <div style="font-weight:700; font-size:0.85rem; margin-bottom:4px;">Save from any app</div>
+          <div style="font-size:0.65rem; color:var(--phone-subtext); line-height:1.5; max-width:200px; margin:0 auto;">
+            Tap <strong>Share</strong> in Instagram, YouTube, Safari, or any app — then tap our icon. AI does the rest.
+          </div>
+        </div>
+
+        <!-- Try it now CTA -->
+        <div style="background:var(--phone-accent); color:#fff; border-radius:12px; padding:13px; text-align:center; margin:0 8px 14px;">
+          <div style="font-weight:700; font-size:0.78rem;">Try it — copy this link</div>
+          <div style="font-size:0.58rem; opacity:0.85; margin-top:2px;">We'll show you how the magic works</div>
+        </div>
+
+        <!-- Demo stacks (ghosted) -->
+        <div style="opacity:0.35;">
+          <div class="ph-bucket">
+            <div class="ph-bucket-icon" style="background:#dbeafe;">✈️</div>
+            <div class="ph-bucket-info">
+              <div class="ph-bucket-name">Travel</div>
+              <div class="ph-bucket-meta">Hotels, flights, destinations</div>
+            </div>
+            <div class="ph-bucket-count">0</div>
+          </div>
+          <div class="ph-bucket">
+            <div class="ph-bucket-icon" style="background:#fef3c7;">🍳</div>
+            <div class="ph-bucket-info">
+              <div class="ph-bucket-name">Recipes</div>
+              <div class="ph-bucket-meta">Meals, ingredients, cooking</div>
+            </div>
+            <div class="ph-bucket-count">0</div>
+          </div>
+          <div class="ph-bucket">
+            <div class="ph-bucket-icon" style="background:#fce7f3;">🛍️</div>
+            <div class="ph-bucket-info">
+              <div class="ph-bucket-name">Shopping</div>
+              <div class="ph-bucket-meta">Products, deals, wishlists</div>
+            </div>
+            <div class="ph-bucket-count">0</div>
+          </div>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="phone-col">
+    <div class="phone-label">After First Save — Stack Appears</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:42</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-header">
+          <h2>Your Stacks</h2>
+          <div class="ph-sub">1 item saved</div>
+        </div>
+
+        <!-- Active stack -->
+        <div class="ph-bucket" style="border:1.5px solid var(--phone-accent); box-shadow:0 2px 12px rgba(228,100,58,0.12);">
+          <div class="ph-bucket-icon" style="background:#dbeafe;">✈️</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Travel <span class="ph-bucket-new">1 new</span></div>
+            <div class="ph-bucket-meta">AI classified your first save!</div>
+          </div>
+          <div class="ph-bucket-count">1</div>
+        </div>
+
+        <!-- Celebration micro-moment -->
+        <div style="text-align:center; padding:16px 10px; margin:8px 0;">
+          <div style="font-size:1.6rem; margin-bottom:4px;">🎉</div>
+          <div style="font-weight:700; font-size:0.75rem;">First save — nice!</div>
+          <div style="font-size:0.6rem; color:var(--phone-subtext); margin-top:2px;">Keep saving and AI gets smarter</div>
+        </div>
+
+        <!-- Still ghosted stacks waiting -->
+        <div style="opacity:0.25;">
+          <div class="ph-bucket">
+            <div class="ph-bucket-icon" style="background:#fef3c7;">🍳</div>
+            <div class="ph-bucket-info">
+              <div class="ph-bucket-name">Recipes</div>
+            </div>
+            <div class="ph-bucket-count">0</div>
+          </div>
+          <div class="ph-bucket">
+            <div class="ph-bucket-icon" style="background:#fce7f3;">🛍️</div>
+            <div class="ph-bucket-info">
+              <div class="ph-bucket-name">Shopping</div>
+            </div>
+            <div class="ph-bucket-count">0</div>
+          </div>
+          <div class="ph-bucket">
+            <div class="ph-bucket-icon" style="background:#e0e7ff;">🎬</div>
+            <div class="ph-bucket-info">
+              <div class="ph-bucket-name">Watch Later</div>
+            </div>
+            <div class="ph-bucket-count">0</div>
+          </div>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="ann highlight">
+      <div class="ann-label">The Critical First 60 Seconds</div>
+      <p><strong>Day 1 retention lives or dies here.</strong> After onboarding, the user lands on an empty Home screen. If it feels dead, they close the app and never return. The empty state must feel like a launchpad, not a void.</p>
+      <p class="why">The ghosted stacks at 35% opacity show the user what's coming — "this will fill up with my saves." The stacks exist before the user saves anything, so the home screen is never truly empty. They're just waiting to be activated.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">The "Try It" CTA</div>
+      <p>The orange button copies a demo URL to clipboard and opens a mini-tutorial: "Now open Safari, tap Share, and tap our icon." The user practices the save flow with a real URL. When it works, the travel stack lights up — they've learned the core interaction.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">First Save Celebration</div>
+      <p>When the user returns to the app after their first share-extension save, the classified stack gets a subtle glow treatment and the "First save — nice!" micro-celebration appears. This one moment confirms the entire value proposition: "I shared something → it's organized → I didn't do anything." Then it fades, never shown again.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Progressive Reveal</div>
+      <p>Stacks only become fully visible once they have at least 1 item. Empty stacks stay ghosted. As the user saves more, the home screen progressively fills with life. By 10-15 saves, the ghosted stacks are gone and the home screen looks like the standard Screen 2 wireframe.</p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- SCREEN 9: INBOX TRIAGE          -->
+<!-- ============================== -->
+
+<h4>Screen 9 · Inbox Triage — The Swipe-to-Sort Card Stack</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">Inbox — Card Stack</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-header">
+          <h2>Inbox</h2>
+          <div class="ph-sub">3 saves need a home</div>
+        </div>
+
+        <!-- Triage card stack -->
+        <div style="position:relative; height:320px; margin:8px 0;">
+          <!-- Back card (peeking) -->
+          <div style="position:absolute; top:8px; left:8px; right:8px; height:280px; background:var(--phone-card); border-radius:16px; border:1px solid rgba(0,0,0,0.05); box-shadow:0 1px 4px rgba(0,0,0,0.04); transform:scale(0.94); transform-origin:bottom center;"></div>
+          <!-- Middle card (peeking) -->
+          <div style="position:absolute; top:4px; left:4px; right:4px; height:280px; background:var(--phone-card); border-radius:16px; border:1px solid rgba(0,0,0,0.06); box-shadow:0 2px 6px rgba(0,0,0,0.05); transform:scale(0.97); transform-origin:bottom center;"></div>
+          <!-- Front card -->
+          <div style="position:absolute; top:0; left:0; right:0; background:var(--phone-card); border-radius:16px; border:1.5px solid rgba(228,100,58,0.2); box-shadow:0 4px 20px rgba(0,0,0,0.08); overflow:hidden;">
+            <!-- Card image area -->
+            <div style="height:130px; background:linear-gradient(135deg,#dbeafe,#bfdbfe); display:flex; align-items:center; justify-content:center; position:relative;">
+              <span style="font-size:2.4rem;">🏖️</span>
+              <div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.55); color:#fff; padding:2px 7px; border-radius:5px; font-family:var(--mono); font-size:0.48rem;">INSTAGRAM</div>
+              <div style="position:absolute; top:8px; right:8px; background:var(--phone-accent); color:#fff; padding:2px 7px; border-radius:5px; font-family:var(--mono); font-size:0.48rem;">68% CONF</div>
+            </div>
+            <!-- Card content -->
+            <div style="padding:12px 14px;">
+              <div style="font-weight:700; font-size:0.82rem; margin-bottom:3px;">Santorini Sunset Hotel</div>
+              <div style="font-size:0.62rem; color:var(--phone-subtext); margin-bottom:10px;">From $189/night · Santorini, Greece</div>
+              <!-- Stack suggestions -->
+              <div style="font-family:var(--mono); font-size:0.5rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--phone-muted); margin-bottom:6px;">AI thinks this belongs in:</div>
+              <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                <span style="background:var(--phone-accent); color:#fff; padding:5px 10px; border-radius:8px; font-size:0.65rem; font-weight:700;">✈️ Travel · 68%</span>
+                <span style="background:var(--phone-bar); padding:5px 10px; border-radius:8px; font-size:0.65rem;">🛍️ Shopping · 22%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Swipe hint -->
+        <div style="text-align:center; margin-top:6px;">
+          <div style="font-size:0.58rem; color:var(--phone-muted);">← Swipe to a stack or tap a suggestion →</div>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="phone-col">
+    <div class="phone-label">Swipe Action — Assigning</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-header">
+          <h2>Inbox</h2>
+          <div class="ph-sub">2 saves left</div>
+        </div>
+
+        <!-- Card being swiped right -->
+        <div style="position:relative; height:320px; margin:8px 0;">
+          <!-- Back card -->
+          <div style="position:absolute; top:4px; left:4px; right:4px; height:280px; background:var(--phone-card); border-radius:16px; border:1px solid rgba(0,0,0,0.06); box-shadow:0 2px 6px rgba(0,0,0,0.05); transform:scale(0.97); transform-origin:bottom center;"></div>
+          <!-- Swiped card (rotated) -->
+          <div style="position:absolute; top:0; left:20px; right:-20px; background:var(--phone-card); border-radius:16px; border:1.5px solid var(--phone-teal); box-shadow:0 4px 20px rgba(26,122,101,0.15); overflow:hidden; transform:rotate(3deg); transform-origin:bottom left;">
+            <div style="height:130px; background:linear-gradient(135deg,#dbeafe,#bfdbfe); display:flex; align-items:center; justify-content:center;">
+              <span style="font-size:2.4rem;">🏖️</span>
+            </div>
+            <div style="padding:12px 14px;">
+              <div style="font-weight:700; font-size:0.82rem; margin-bottom:3px;">Santorini Sunset Hotel</div>
+              <div style="font-size:0.62rem; color:var(--phone-subtext); margin-bottom:10px;">From $189/night · Santorini, Greece</div>
+              <!-- Confirmed destination -->
+              <div style="background:var(--phone-teal); color:#fff; padding:8px 12px; border-radius:10px; text-align:center; font-weight:700; font-size:0.72rem;">
+                → Moving to ✈️ Travel
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center; margin-top:6px;">
+          <div style="font-size:0.58rem; color:var(--phone-teal); font-weight:600;">✓ Sorted! 2 remaining</div>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="ann highlight">
+      <div class="ann-label">Why Inbox Exists</div>
+      <p><strong>Items land here when AI confidence is below 60%.</strong> Rather than silently mis-classifying, the app admits uncertainty and invites the user to sort. The framing is "3 saves need a home" — helpful, not apologetic. The user is a curator, not a janitor fixing AI mistakes.</p>
+      <p class="why">This is the clean ask. Instead of popups, banners, or interrupting the save flow, all low-confidence items collect here quietly. Users triage at their leisure — on the couch, waiting in line. It's a micro-game, not a chore.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Card Stack Design</div>
+      <p>Cards stack like a deck with the next cards peeking behind. Each card shows: thumbnail, platform source, extracted title/metadata, the confidence score, and the AI's top 2 stack suggestions with probability. The user either taps a suggestion chip or swipes the card toward the correct stack.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Swipe Mechanics</div>
+      <p>Swipe right → assign to AI's top pick. Swipe left → show all stacks. Tap a suggestion chip → assign instantly. Each sort animates the card away and reveals the next. When the deck is empty, a celebratory "All sorted!" message appears and the user returns to Home.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Training the Model</div>
+      <p>Every triage action is a labeled training example. If the user taps "Travel" when AI suggested "Shopping," that's a correction signal. Over time (20-30 corrections), the model learns the user's personal classification boundaries. The Inbox should shrink as the AI improves — from 15% of saves initially to under 5% after a month.</p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- SCREEN 10: PROGRESSIVE ENRICHMENT -->
+<!-- ============================== -->
+
+<h4>Screen 10 · Progressive Enrichment — How a Save Gets Smarter Over Time</h4>
+
+<div class="callout blue" style="margin-bottom:24px;">
+<strong>This isn't a screen the user navigates to.</strong> It shows how the same saved item evolves through 4 enrichment zones. Each zone adds data as it becomes available. The UI must handle partial data gracefully — never show empty fields, always show what's available.
+</div>
+
+<div class="phone-row" style="gap:18px;">
+  <!-- Zone 1: Just Saved -->
+  <div class="phone-col">
+    <div class="phone-label">Zone 1 · Just Saved (~0ms)</div>
+    <div class="phone" style="width:240px; min-height:auto;">
+      <div class="phone-content" style="padding:12px;">
+        <div style="background:var(--phone-card); border-radius:12px; overflow:hidden; border:1px solid rgba(0,0,0,0.04); box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+          <!-- Placeholder image -->
+          <div style="height:90px; background:linear-gradient(135deg,#e8e4de 0%,#d5d0c8 50%,#e8e4de 100%); display:flex; align-items:center; justify-content:center; position:relative;">
+            <span style="font-size:1.4rem; opacity:0.5;">📷</span>
+            <div style="position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.4); color:#fff; padding:1px 5px; border-radius:3px; font-family:var(--mono); font-size:0.42rem;">LOADING</div>
+          </div>
+          <div style="padding:9px;">
+            <div style="font-size:0.65rem; font-weight:700; color:var(--phone-subtext);">instagram.com</div>
+            <div style="font-size:0.52rem; color:var(--phone-muted); margin-top:2px;">✈️ Travel</div>
+            <!-- Shimmer bar for title -->
+            <div style="margin-top:6px; height:8px; width:85%; background:linear-gradient(90deg,#eee,#e0dbd3,#eee); border-radius:3px;"></div>
+            <div style="margin-top:3px; height:8px; width:60%; background:linear-gradient(90deg,#eee,#e0dbd3,#eee); border-radius:3px;"></div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top:8px; font-size:0.48rem; color:var(--phone-muted); font-family:var(--mono);">URL + SHARE TEXT ONLY</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zone 2: OG Tags Fetched -->
+  <div class="phone-col">
+    <div class="phone-label">Zone 2 · OG Tags (~1s)</div>
+    <div class="phone" style="width:240px; min-height:auto;">
+      <div class="phone-content" style="padding:12px;">
+        <div style="background:var(--phone-card); border-radius:12px; overflow:hidden; border:1px solid rgba(0,0,0,0.04); box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+          <!-- Real thumbnail appears -->
+          <div style="height:90px; background:linear-gradient(135deg,#87CEEB,#4a90d9); display:flex; align-items:center; justify-content:center; position:relative;">
+            <span style="font-size:1.8rem;">🏖️</span>
+            <div style="position:absolute; top:4px; left:4px; background:rgba(0,0,0,0.5); color:#fff; padding:1px 5px; border-radius:3px; font-family:var(--mono); font-size:0.42rem;">INSTAGRAM</div>
+          </div>
+          <div style="padding:9px;">
+            <div style="font-size:0.65rem; font-weight:700;">Santorini Sunset Hotel</div>
+            <div style="font-size:0.52rem; color:var(--phone-subtext); margin-top:2px;">Luxury beachfront resort with caldera views</div>
+            <div style="font-size:0.48rem; color:var(--phone-muted); margin-top:4px;">✈️ Travel · <span style="color:var(--phone-teal);">instagram.com</span></div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top:8px; font-size:0.48rem; color:var(--phone-muted); font-family:var(--mono);">+ TITLE, THUMBNAIL, DESCRIPTION</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zone 3: AI Enrichment -->
+  <div class="phone-col">
+    <div class="phone-label">Zone 3 · AI Processed (~3s)</div>
+    <div class="phone" style="width:240px; min-height:auto;">
+      <div class="phone-content" style="padding:12px;">
+        <div style="background:var(--phone-card); border-radius:12px; overflow:hidden; border:1px solid rgba(0,0,0,0.04); box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+          <div style="height:90px; background:linear-gradient(135deg,#87CEEB,#4a90d9); display:flex; align-items:center; justify-content:center; position:relative;">
+            <span style="font-size:1.8rem;">🏖️</span>
+            <div style="position:absolute; top:4px; left:4px; background:rgba(0,0,0,0.5); color:#fff; padding:1px 5px; border-radius:3px; font-family:var(--mono); font-size:0.42rem;">INSTAGRAM</div>
+            <div style="position:absolute; bottom:4px; left:4px; background:var(--phone-teal); color:#fff; padding:1px 5px; border-radius:3px; font-family:var(--mono); font-size:0.42rem;">$189/NIGHT</div>
+          </div>
+          <div style="padding:9px;">
+            <div style="font-size:0.65rem; font-weight:700;">Santorini Sunset Hotel</div>
+            <div style="font-size:0.52rem; color:var(--phone-subtext); margin-top:2px;">Luxury beachfront resort with caldera views and infinity pool overlooking the Aegean</div>
+            <div style="display:flex; gap:3px; flex-wrap:wrap; margin-top:5px;">
+              <span style="background:#edf7f2; color:var(--phone-teal); padding:1px 5px; border-radius:3px; font-size:0.44rem;">📍 Santorini</span>
+              <span style="background:#edf7f2; color:var(--phone-teal); padding:1px 5px; border-radius:3px; font-size:0.44rem;">🏨 Hotel</span>
+              <span style="background:#edf7f2; color:var(--phone-teal); padding:1px 5px; border-radius:3px; font-size:0.44rem;">🌅 Beachfront</span>
+            </div>
+            <div style="font-size:0.48rem; color:var(--phone-muted); margin-top:4px;">✈️ Travel · <span style="color:var(--phone-teal);">instagram.com</span></div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top:8px; font-size:0.48rem; color:var(--phone-muted); font-family:var(--mono);">+ PRICE, LOCATION, TAGS, SUMMARY</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zone 5: Background Enrichment -->
+  <div class="phone-col">
+    <div class="phone-label">Zone 5 · Background (hours)</div>
+    <div class="phone" style="width:240px; min-height:auto;">
+      <div class="phone-content" style="padding:12px;">
+        <div style="background:var(--phone-card); border-radius:12px; overflow:hidden; border:1px solid rgba(0,0,0,0.04); box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+          <div style="height:90px; background:linear-gradient(135deg,#87CEEB,#4a90d9); display:flex; align-items:center; justify-content:center; position:relative;">
+            <span style="font-size:1.8rem;">🏖️</span>
+            <div style="position:absolute; top:4px; left:4px; background:rgba(0,0,0,0.5); color:#fff; padding:1px 5px; border-radius:3px; font-family:var(--mono); font-size:0.42rem;">INSTAGRAM</div>
+            <div style="position:absolute; bottom:4px; left:4px; background:var(--phone-teal); color:#fff; padding:1px 5px; border-radius:3px; font-family:var(--mono); font-size:0.42rem;">$189/NIGHT</div>
+            <div style="position:absolute; bottom:4px; right:4px; background:#b8860b; color:#fff; padding:1px 5px; border-radius:3px; font-family:var(--mono); font-size:0.42rem;">↓ $159 DEAL</div>
+          </div>
+          <div style="padding:9px;">
+            <div style="font-size:0.65rem; font-weight:700;">Santorini Sunset Hotel</div>
+            <div style="font-size:0.52rem; color:var(--phone-subtext); margin-top:2px;">Luxury beachfront resort with caldera views and infinity pool overlooking the Aegean</div>
+            <div style="display:flex; gap:3px; flex-wrap:wrap; margin-top:5px;">
+              <span style="background:#edf7f2; color:var(--phone-teal); padding:1px 5px; border-radius:3px; font-size:0.44rem;">📍 Santorini</span>
+              <span style="background:#edf7f2; color:var(--phone-teal); padding:1px 5px; border-radius:3px; font-size:0.44rem;">🏨 Hotel</span>
+              <span style="background:#edf7f2; color:var(--phone-teal); padding:1px 5px; border-radius:3px; font-size:0.44rem;">🌅 Beachfront</span>
+              <span style="background:#fdf3ec; color:var(--accent); padding:1px 5px; border-radius:3px; font-size:0.44rem;">⭐ 4.6 rating</span>
+            </div>
+            <div style="font-size:0.48rem; color:var(--phone-muted); margin-top:4px;">✈️ Travel · <span style="color:var(--phone-teal);">instagram.com</span> · <span style="color:#b8860b; font-weight:600;">Price dropped!</span></div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top:8px; font-size:0.48rem; color:var(--phone-muted); font-family:var(--mono);">+ PRICE TRACKING, RATING, DEALS</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
+  <div class="callout green" style="margin:0;">
+    <strong>Design Rule: Never show empty.</strong> At every stage, the card shows everything it has and nothing it doesn't. No "Loading..." labels on visible fields. No empty metadata rows. The shimmer placeholders in Zone 1 are the only hint that more data is coming — and they disappear the moment real data arrives.
+  </div>
+  <div class="callout orange" style="margin:0;">
+    <strong>Transition: Blur → Sharp.</strong> The thumbnail transitions from a gradient placeholder (Zone 1) to the real image (Zone 2) with a subtle blur-to-sharp animation. Tags and metadata appear with a gentle fade-in. The card subtly "fills up" over time. Users who reopen the app minutes later see fully enriched cards without ever noticing the progression.
+  </div>
+</div>
+
+<div class="callout purple" style="margin-top:12px;">
+  <strong>Developer Note: Partial Data Contract.</strong> Every UI component must handle nil gracefully. The card renderer takes an optional title (show domain if nil), optional image (show gradient placeholder if nil), optional tags (hide tag row if empty), optional price (hide badge if nil). This isn't defensive coding — it's the primary rendering mode for the first 1-3 seconds of every save's life.
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- SCREEN 11: PROCESSING INDICATOR -->
+<!-- ============================== -->
+
+<h4>Screen 11 · Processing Indicators — Active Enrichment States</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">Home — Enrichment in Progress</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:42</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div class="ph-header">
+          <h2>Your Stacks</h2>
+        </div>
+
+        <!-- Processing pill -->
+        <div style="background:linear-gradient(90deg, #fdf3ec, #fff7f0); border:1px solid rgba(228,100,58,0.15); border-radius:10px; padding:8px 12px; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+          <div style="width:18px; height:18px; border-radius:50%; border:2px solid var(--phone-accent); border-top-color:transparent; display:inline-block;"></div>
+          <div>
+            <div style="font-size:0.65rem; font-weight:600;">Enriching 3 recent saves...</div>
+            <div style="font-size:0.5rem; color:var(--phone-subtext);">AI is extracting details in the background</div>
+          </div>
+        </div>
+
+        <div class="ph-search"><span class="lens">🔍</span> Search your saves...</div>
+
+        <!-- Stack with processing item -->
+        <div class="ph-bucket">
+          <div class="ph-bucket-icon" style="background:#dbeafe;">✈️</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Travel <span class="ph-bucket-new">3 new</span></div>
+            <div class="ph-bucket-meta">23 items · Bali, Japan, Santorini</div>
+          </div>
+          <div class="ph-bucket-count">23</div>
+        </div>
+
+        <div class="ph-bucket">
+          <div class="ph-bucket-icon" style="background:#fef3c7;">🍳</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Recipes</div>
+            <div class="ph-bucket-meta">12 items · Italian, Thai, Baking</div>
+          </div>
+          <div class="ph-bucket-count">12</div>
+        </div>
+
+        <div class="ph-bucket">
+          <div class="ph-bucket-icon" style="background:#fce7f3;">🛍️</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Shopping</div>
+            <div class="ph-bucket-meta">8 items · 2 deals found!</div>
+          </div>
+          <div class="ph-bucket-count">8</div>
+        </div>
+
+        <div class="ph-bucket">
+          <div class="ph-bucket-icon" style="background:#e0e7ff;">🎬</div>
+          <div class="ph-bucket-info">
+            <div class="ph-bucket-name">Watch Later</div>
+            <div class="ph-bucket-meta">15 items · YouTube, Netflix</div>
+          </div>
+          <div class="ph-bucket-count">15</div>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="phone-col">
+    <div class="phone-label">Stack View — Card Shimmer</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:42</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div style="display:flex; align-items:center; gap:8px; padding:4px 0 10px;">
+          <span style="font-size:0.85rem;">←</span>
+          <div style="flex:1;"><span style="font-family:'Fraunces',serif; font-size:1.1rem; font-weight:700;">✈️ Travel</span></div>
+        </div>
+
+        <!-- Filter chips -->
+        <div style="display:flex; gap:5px; overflow:hidden; margin-bottom:10px;">
+          <span style="background:var(--phone-text); color:#fff; padding:4px 10px; border-radius:6px; font-size:0.58rem; white-space:nowrap;">All</span>
+          <span style="background:var(--phone-bar); padding:4px 10px; border-radius:6px; font-size:0.58rem; white-space:nowrap;">Bali</span>
+          <span style="background:var(--phone-bar); padding:4px 10px; border-radius:6px; font-size:0.58rem; white-space:nowrap;">Japan</span>
+          <span style="background:var(--phone-bar); padding:4px 10px; border-radius:6px; font-size:0.58rem; white-space:nowrap;">Hotels</span>
+        </div>
+
+        <div class="ph-grid">
+          <!-- Fully enriched card -->
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#fed7aa,#fdba74);">
+              🏯
+              <div class="ph-item-badge">YOUTUBE</div>
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Tokyo Hidden Gems — 3 Day Itinerary</div>
+              <div class="ph-item-desc">Complete guide: Shimokitazawa, Yanaka, teamLab</div>
+              <div class="ph-item-source">▶ youtube.com · 2d ago</div>
+            </div>
+          </div>
+
+          <!-- PROCESSING card — shimmer -->
+          <div class="ph-item" style="border:1px solid rgba(228,100,58,0.12);">
+            <div class="ph-item-img" style="background:linear-gradient(90deg,#e8e4de,#d5d0c8,#e8e4de); background-size:200% 100%;">
+              <div style="font-size:0.9rem; opacity:0.4;">📷</div>
+            </div>
+            <div class="ph-item-body">
+              <div style="height:8px; width:90%; background:linear-gradient(90deg,#eee,#e0dbd3,#eee); border-radius:3px; margin-bottom:4px;"></div>
+              <div style="height:8px; width:65%; background:linear-gradient(90deg,#eee,#e0dbd3,#eee); border-radius:3px; margin-bottom:4px;"></div>
+              <div class="ph-item-source" style="opacity:0.5;">⏳ enriching...</div>
+            </div>
+          </div>
+
+          <!-- Fully enriched card -->
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#87CEEB,#4a90d9);">
+              🏖️
+              <div class="ph-item-badge">INSTAGRAM</div>
+              <div class="ph-item-deal">$189/n</div>
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Santorini Sunset Hotel</div>
+              <div class="ph-item-desc">Beachfront resort, caldera views</div>
+              <div class="ph-item-source">📸 instagram.com · 5m ago</div>
+            </div>
+          </div>
+
+          <!-- PROCESSING card — partial data -->
+          <div class="ph-item" style="border:1px solid rgba(228,100,58,0.12);">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#c4b5fd,#8b5cf6);">
+              🎥
+              <div class="ph-item-badge">TIKTOK</div>
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title" style="opacity:0.7;">Bali rice terraces walk...</div>
+              <div style="height:7px; width:75%; background:linear-gradient(90deg,#eee,#e0dbd3,#eee); border-radius:3px; margin:3px 0;"></div>
+              <div class="ph-item-source" style="opacity:0.5;">⏳ extracting tags...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="ann highlight">
+      <div class="ann-label">The Processing Pill</div>
+      <p><strong>When the user opens the app while enrichment is running, a subtle pill appears at the top of Home.</strong> "Enriching 3 recent saves..." with a spinning indicator. It's informational, not blocking — the user can browse and search normally. The pill disappears once all background tasks finish.</p>
+      <p class="why">This solves the "I just saved 5 things from TikTok and opened the app — why do my saves look empty?" confusion. The pill sets expectations without alarm.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Card Shimmer States</div>
+      <p>Inside a stack, cards that are still being enriched show shimmer placeholders where data hasn't arrived yet. The thumbnail area pulses with a gentle gradient animation. Text fields show loading bars. Already-available data (like a TikTok caption from the share sheet) shows immediately while other fields load in.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Mixed-State Grid</div>
+      <p>Enriched and processing cards live side by side in the grid. No separate "processing" section. The shimmer cards are sorted to the top (most recent) and fill in naturally. When enrichment completes, the shimmer dissolves into real content — thumbnail fades in, title text replaces the loading bar, tags appear.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Never Block, Always Show</div>
+      <p>The user can tap a processing card at any time. The Detail screen shows whatever data is available — even if it's just a URL and a platform icon. "Open Original" always works. Users are never locked out of their saves because enrichment is in progress.</p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- SCREEN 12: CONFIDENCE INDICATOR -->
+<!-- ============================== -->
+
+<h4>Screen 12 · Confidence Indicators — Subtle Classification Signals</h4>
+
+<div class="annotation-row">
+  <div class="phone-col">
+    <div class="phone-label">Stack View — Mixed Confidence</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div style="display:flex; align-items:center; gap:8px; padding:4px 0 10px;">
+          <span style="font-size:0.85rem;">←</span>
+          <div style="flex:1;"><span style="font-family:'Fraunces',serif; font-size:1.1rem; font-weight:700;">✈️ Travel</span></div>
+        </div>
+
+        <div style="display:flex; gap:5px; overflow:hidden; margin-bottom:10px;">
+          <span style="background:var(--phone-text); color:#fff; padding:4px 10px; border-radius:6px; font-size:0.58rem;">All</span>
+          <span style="background:var(--phone-bar); padding:4px 10px; border-radius:6px; font-size:0.58rem;">Bali</span>
+          <span style="background:var(--phone-bar); padding:4px 10px; border-radius:6px; font-size:0.58rem;">Japan</span>
+        </div>
+
+        <div class="ph-grid">
+          <!-- High confidence — normal card -->
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#87CEEB,#4a90d9);">
+              🏖️
+              <div class="ph-item-badge">INSTAGRAM</div>
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Santorini Sunset Hotel</div>
+              <div class="ph-item-desc">Luxury beachfront resort</div>
+              <div class="ph-item-source">📸 instagram · 1h ago</div>
+            </div>
+          </div>
+
+          <!-- Medium confidence — subtle indicator -->
+          <div class="ph-item" style="border:1.5px dashed rgba(228,100,58,0.3);">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#fecaca,#fca5a5);">
+              👜
+              <div class="ph-item-badge">PINTEREST</div>
+              <div style="position:absolute; top:5px; left:5px; background:rgba(228,100,58,0.85); color:#fff; padding:1px 5px; border-radius:4px; font-family:var(--mono); font-size:0.42rem;">MAYBE?</div>
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Vintage Leather Weekender Bag</div>
+              <div class="ph-item-desc">Handcrafted carry-on duffle</div>
+              <div class="ph-item-source" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>📌 pinterest · 3h ago</span>
+                <span style="color:var(--phone-accent); font-weight:600;">Move?</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- High confidence — normal -->
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#fed7aa,#fdba74);">
+              🏯
+              <div class="ph-item-badge">YOUTUBE</div>
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Tokyo Hidden Gems</div>
+              <div class="ph-item-desc">3-day itinerary guide</div>
+              <div class="ph-item-source">▶ youtube · 2d ago</div>
+            </div>
+          </div>
+
+          <!-- High confidence — normal -->
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#bbf7d0,#86efac);">
+              🌴
+              <div class="ph-item-badge">TIKTOK</div>
+            </div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Bali Rice Terrace Walk</div>
+              <div class="ph-item-desc">Tegallalang sunrise tour</div>
+              <div class="ph-item-source">🎵 tiktok · 3d ago</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="phone-col">
+    <div class="phone-label">Tap "Move?" — Quick Reassign</div>
+    <div class="phone">
+      <div class="phone-status">
+        <div class="notch"></div>
+        <div class="time">9:41</div>
+        <div class="icons">● ● ●</div>
+      </div>
+      <div class="phone-content">
+        <div style="display:flex; align-items:center; gap:8px; padding:4px 0 10px;">
+          <span style="font-size:0.85rem;">←</span>
+          <div style="flex:1;"><span style="font-family:'Fraunces',serif; font-size:1.1rem; font-weight:700;">✈️ Travel</span></div>
+        </div>
+
+        <!-- Inline reassignment sheet -->
+        <div style="background:var(--phone-card); border-radius:14px; border:1.5px solid var(--phone-accent); box-shadow:0 4px 20px rgba(228,100,58,0.1); padding:14px; margin:8px 0;">
+          <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+            <div style="width:42px; height:42px; border-radius:10px; background:linear-gradient(135deg,#fecaca,#fca5a5); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">👜</div>
+            <div>
+              <div style="font-weight:700; font-size:0.78rem;">Vintage Leather Weekender Bag</div>
+              <div style="font-size:0.55rem; color:var(--phone-subtext);">Currently in ✈️ Travel</div>
+            </div>
+          </div>
+          <div style="font-family:var(--mono); font-size:0.5rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--phone-muted); margin-bottom:6px;">Move to:</div>
+          <div style="display:flex; flex-wrap:wrap; gap:5px;">
+            <span style="background:var(--phone-accent); color:#fff; padding:6px 11px; border-radius:8px; font-size:0.65rem; font-weight:600;">🛍️ Shopping · 72%</span>
+            <span style="background:var(--phone-bar); padding:6px 11px; border-radius:8px; font-size:0.65rem;">✈️ Keep Here</span>
+            <span style="background:var(--phone-bar); padding:6px 11px; border-radius:8px; font-size:0.65rem;">🏠 Home</span>
+          </div>
+        </div>
+
+        <div class="ph-grid" style="opacity:0.4;">
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#87CEEB,#4a90d9); height:60px;">🏖️</div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Santorini Sunset Hotel</div>
+            </div>
+          </div>
+          <div class="ph-item">
+            <div class="ph-item-img" style="background:linear-gradient(135deg,#fed7aa,#fdba74); height:60px;">🏯</div>
+            <div class="ph-item-body">
+              <div class="ph-item-title">Tokyo Hidden Gems</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ph-tabbar">
+          <div class="ph-tab active"><div class="ph-tab-icon">📚</div>Stacks</div>
+          <div class="ph-tab"><div class="ph-tab-icon">🔍</div>Search</div>
+          <div class="ph-tab"><div class="ph-tab-icon">➕</div>Save</div>
+        </div>
+      </div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="ann highlight">
+      <div class="ann-label">The Confidence Spectrum</div>
+      <p><strong>Three tiers of classification confidence, three visual treatments:</strong></p>
+      <p><strong>High (80%+):</strong> Normal card. No indicators. This is the default — the AI is confident, the card looks clean. 70-80% of saves.</p>
+      <p><strong>Medium (60-80%):</strong> Dashed border + "Maybe?" badge + "Move?" link in footer. The card lives in the AI's best-guess stack but quietly invites correction. 10-20% of saves.</p>
+      <p><strong>Low (&lt;60%):</strong> Goes to Inbox for triage (Screen 9). Never placed in a stack with false confidence. 5-15% of saves.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">The "Maybe?" Badge</div>
+      <p>Visible but not alarming. The dashed border is the primary signal — subtle enough that users who don't care can ignore it. The "Move?" link in the source line is the action affordance. Users who notice it can tap to reassign with one touch. Users who don't notice it keep scrolling — no harm done.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Inline Reassignment</div>
+      <p>Tapping "Move?" expands an inline card (not a full modal or new screen) showing the item preview and AI's alternative suggestions with confidence percentages. One tap to move, or "Keep Here" to confirm the current stack and boost its confidence. The grid behind dims to 40% to focus attention.</p>
+    </div>
+    <div class="ann">
+      <div class="ann-label">Context-Aware Ambiguity</div>
+      <p>The weekender bag example is perfect: it's Travel (travel gear) or Shopping (product to buy). The AI can't know the user's intent. The "Maybe?" treatment lets the user resolve this naturally without the AI pretending to be certain. These ambiguous items are the most valuable training signals — they teach the AI about the user's mental model.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+<h2>Complete Screen Map</h2>
+
+<div class="callout blue">
+<strong>The entire app is 7 screens + 1 overlay + reference states:</strong>
+<p>
+<strong>1. Onboarding</strong> (3 panels, shown once) → <strong>2. Home / Stacks</strong> (the hub — list of all stacks) → <strong>3. Share Extension</strong> (overlay — the &lt;100ms save) → <strong>4. Stack View</strong> (grid of items within a stack) → <strong>5. Item Detail</strong> (full view of a single save) → <strong>6. Search</strong> (find anything across all stacks) → <strong>7. Save Tab</strong> (manual URL paste and quick notes) → <strong>8. Empty State</strong> (first launch experience) → <strong>9. Inbox Triage</strong> (swipe-to-sort low-confidence saves)
+</p>
+<p><strong>Reference screens (not navigable):</strong> <strong>10. Progressive Enrichment</strong> (how a card evolves through zones) → <strong>11. Processing Indicators</strong> (shimmer states and enrichment pill) → <strong>12. Confidence Indicators</strong> (medium-confidence visual treatment)</p>
+<p style="margin-bottom:0;">That's it. No settings page (put a gear icon in the Home header — leads to a minimal sheet with notification preferences, Pro upgrade, and "About"). No profile page. No feed. No social features in MVP. The complexity is in the AI pipeline, not the UI.</p>
+</div>
+
+<h4>User Flow Summary</h4>
+<div style="background:var(--card); border:1px solid var(--border); border-radius:6px; padding:22px; font-size:0.88rem; line-height:2.2;">
+  <strong>Save flow (90% of interactions):</strong><br>
+  User is in Instagram/TikTok/YouTube/Safari → Taps Share → Taps our icon → <strong>Sees "✓ Saved to [Stack]" with domain name for ~1.5s</strong> → Auto-dismissed → Back to original app → <em>Enrichment happens silently in background</em><br><br>
+  <strong>Browse flow:</strong><br>
+  Opens app → Home screen shows all stacks (processing pill if enrichment active) → <strong>Taps a stack</strong> → Grid of saved items with AI filter chips (some cards may show shimmer if still enriching) → <strong>Taps an item</strong> → Detail view with whatever data is available → <strong>"Open Original" or contextual action</strong><br><br>
+  <strong>Inbox triage flow:</strong><br>
+  Opens app → Inbox shows "3 saves need a home" → <strong>Swipe cards to stacks</strong> or <strong>tap AI suggestion chips</strong> → Each sort trains the model → Empty inbox = "All sorted!" → <strong>Back to Home</strong><br><br>
+  <strong>Medium-confidence correction flow:</strong><br>
+  Browsing a stack → Notices dashed-border card with "Maybe?" badge → <strong>Taps "Move?"</strong> → Inline reassignment card shows AI's alternatives → <strong>One tap to move or "Keep Here"</strong> → Card updated, AI learns<br><br>
+  <strong>Search flow:</strong><br>
+  Opens app → <strong>Taps search bar</strong> (prominent on home) or Search tab → Types "blue dress" or "bali hotel" → <strong>Results across all stacks</strong> → Taps result → Detail view<br><br>
+  <strong>Manual save flow (10% of interactions):</strong><br>
+  Opens app → Save tab → <strong>Paste URL</strong> or <strong>Type quick note</strong> or <strong>Pick from photos</strong> → AI classifies → Saved to stack<br><br>
+  <strong>First-time flow:</strong><br>
+  Onboarding (3 panels) → Empty state with ghosted stacks → <strong>Taps "Try it"</strong> → Practices share flow with demo URL → First save celebration → <strong>Progressive reveal as more saves added</strong>
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- DESIGN PRINCIPLES               -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>Design Principles</h2>
+
+<div class="callout orange">
+<strong>1. "Your phone already knows."</strong> The entire brand message is: your expensive phone has an AI chip in it. We put it to work. You save things. It organizes them. Privately. Instantly. No cloud. No waiting. The phone you already own is the smartest filing system you've ever had.
+</div>
+
+<div class="callout green">
+<strong>2. Zero-configuration intelligence.</strong> The app should never ask the user to "set up categories" or "configure your preferences" or "choose your interests." Everything is inferred from what they save. The AI-generated filter chips in the stack view (Bali, Japan, Italy) appear organically as the user saves content. The app configures itself.
+</div>
+
+<div class="callout blue">
+<strong>3. Speed is the feature.</strong> Share extension: under 2 seconds. Search results: instant (offline). Opening a stack: instant (local data). Classification: under 3 seconds. If any interaction takes more than 3 seconds, users will stop saving. Speed must be treated as a core feature, not a performance metric.
+</div>
+
+<div class="callout purple">
+<strong>4. Show the AI's work, subtly.</strong> Don't hide the intelligence. When AI extracts a location, show "📍 Santorini, Greece" on the card. When it generates a summary, show it prominently. When filter chips appear automatically, the user notices "I didn't create this — the app figured it out." This builds trust in the AI and justifies the value proposition. But never be loud about it — no "AI-powered!" badges. Let the intelligence speak through the UI.
+</div>
+
+<div class="callout green">
+<strong>5. Be honest about timing.</strong> Never show data you don't have. The share extension shows a domain name and stack icon — not a fake title that hasn't loaded yet. Cards start minimal and fill in as enrichment completes. Shimmer placeholders signal "more is coming" without pretending it's already here. The user trusts the app because it never lies about its state. A save gets smarter over time — and the UI makes that visible without making it alarming.
+</div>
+</div>
+
+<hr>
+
+<!-- ============================== -->
+<!-- WHAT'S NOT IN MVP               -->
+<!-- ============================== -->
+
+<div class="section">
+<h2>What's Intentionally NOT in the MVP</h2>
+
+<p>Just as important as what's in:</p>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:5px; padding:14px;">
+    <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--muted);">❌ No account / sign-in</div>
+    <div style="font-size:0.78rem;">Works completely without an account. No login wall. Add accounts only when user wants sync (Pro feature).</div>
+  </div>
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:5px; padding:14px;">
+    <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--muted);">❌ No settings page</div>
+    <div style="font-size:0.78rem;">A minimal sheet accessible from a gear icon on Home. Notification toggle, Pro upgrade, About. That's it.</div>
+  </div>
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:5px; padding:14px;">
+    <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--muted);">❌ No social features</div>
+    <div style="font-size:0.78rem;">No shared stacks, no public profiles, no following. Solo experience only in MVP. Social = Phase 2.</div>
+  </div>
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:5px; padding:14px;">
+    <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--muted);">❌ No widgets</div>
+    <div style="font-size:0.78rem;">Home screen widgets are Phase 2. Focus on the core loop first. Widgets = growth feature after PMF.</div>
+  </div>
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:5px; padding:14px;">
+    <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--muted);">❌ No custom stacks in free tier</div>
+    <div style="font-size:0.78rem;">Wait — actually, give 3 free custom stacks. The 8 default smart stacks cover 90% of use cases. Custom is a Pro unlock for heavy users.</div>
+  </div>
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:5px; padding:14px;">
+    <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--muted);">❌ No complex animations</div>
+    <div style="font-size:0.78rem;">Two animations matter: the save confirmation (checkmark + stack icon) and the enrichment shimmer-to-content transition. Everything else is standard iOS transitions. Don't over-design.</div>
+  </div>
+</div>
+</div>
+
+</div>
+</body>
+</html>
