@@ -1,20 +1,22 @@
-# Staq — Feature Design Documents Index
+# Staqer — Feature Design Documents Index
 
-**13 Feature Specs · 517 estimated development hours · 4 phases**
+**13+ Feature Specs · ~890 estimated development hours · 4 phases**
+
+*Native iOS (Swift/SwiftUI) + Native Android (Kotlin/Jetpack Compose) · KMP shared logic layer*
 
 ---
 
-## MVP Features (Phase 1 — Months 1–3)
+## MVP Features (Phase 1 — Months 1–4)
 
 | Doc | Feature | Priority | Effort | Dependencies |
 |-----|---------|----------|--------|-------------|
-| [F01](./F01-Share-Extension.md) | **Share Extension** — System share sheet integration for one-tap saving from Instagram, TikTok, YouTube | P0 | ~51h (1.5 wk) | None |
-| [F02](./F02-Smart-Auto-Categorization.md) | **Smart Auto-Categorization** — Three-tier AI classification (on-device AI → rule-based → server) with keyword dictionaries and richness scoring | P0 | ~83h (3 wk) | F1 |
-| [F03](./F03-Content-Library.md) | **Content Library** — Visual grid/list library with category filtering, full-text search, swipe actions | P0 | ~66h (2.5 wk) | F1, F2 |
-| [F04](./F04-Structured-Data-Cards.md) | **Structured Data Cards** — Recipe, Travel, Product, Fitness, and Generic card templates with interactive elements | P0 | ~59h (2 wk) | F2, F3 |
-| [F05](./F05-Deep-Extract.md) | **Deep Extract** — On-demand server scraping + on-device transcription pipeline with quota management and paywall | P0 | ~85h (3.5 wk) | F1, F2, F4 |
+| [F01](./F01-Share-Extension.md) | **Share Extension** — System share sheet integration for one-tap saving from Instagram, TikTok, YouTube, Threads + URL normalization pipeline, onboarding tutorial, analytics | P0 | ~64h (2 wk) | None |
+| [F02](./F02-Smart-Auto-Categorization.md) | **Smart Auto-Categorization** — Four-tier AI classification (on-device AI → bundled model → TF-IDF keywords → regex) with multilingual dictionaries (5 languages), OCR pipeline, accuracy monitoring | P0 | ~116h (4 wk) | F1 |
+| [F03](./F03-Content-Library.md) | **Content Library** — Visual grid/staggered/list library with category filtering, FTS5 search, Quick Save FAB, multi-layer thumbnail caching, offline-first architecture | P0 | ~130h (4 wk) | F1, F2 |
+| [F04](./F04-Structured-Data-Cards.md) | **Structured Data Cards** — 8 card types (Recipe, Travel, Product, Fitness, Beauty, Education, Fashion, Generic) with unit conversion, timers, dietary tags, weather, sharing/virality, theming | P0 | ~146h (4-5 wk) | F2, F3 |
+| [F05](./F05-Deep-Extract.md) | **Deep Extract** — Server scraping with circuit breaker + on-device transcription/OCR pipeline, job queue, cost optimization, security hardening, quality assurance | P0 | ~127h (5 wk) | F1, F2, F4 |
 
-**Phase 1 Total: ~344 hours (~12 weeks with parallel iOS + Android development)**
+**Phase 1 Total: ~583 hours (~16 weeks with parallel iOS + Android development)**
 
 ---
 
@@ -48,13 +50,16 @@
 
 Every feature document follows a consistent structure:
 
-1. **Feature Overview** — What it does and why it matters
+1. **Feature Overview** — What it does, why it matters, competitive context
 2. **User Stories** — Acceptance criteria for each story
 3. **UX Design** — ASCII wireframes, interaction flows, state diagrams, design principles
 4. **Edge Cases** — Comprehensive error handling and boundary conditions
-5. **Technical Implementation** — Architecture, data models, code patterns
-6. **Development Plan** — Task-level breakdown with per-task effort estimates
-7. **Definition of Done** — Checkboxes for QA sign-off
+5. **Technical Implementation** — Architecture, data models, code patterns (Swift/Kotlin)
+6. **Platform-Specific Details** — iOS (SwiftUI, Core Data, Foundation Models) and Android (Jetpack Compose, Room, Gemini Nano) native implementations
+7. **Analytics & Events** — Key metrics, tracking events, success criteria
+8. **Performance Benchmarks** — Target thresholds for latency, memory, battery
+9. **Development Plan** — Task-level breakdown with per-task effort estimates
+10. **Definition of Done** — Checkboxes for QA sign-off
 
 ---
 
@@ -96,9 +101,9 @@ F1 Share Extension (foundation)
 
 | Phase | Hours | Weeks (parallel dev) | Features |
 |-------|-------|---------------------|----------|
-| Phase 1: MVP | 344h | ~12 weeks | F1–F5 |
+| Phase 1: MVP | 583h | ~16 weeks | F1–F5 |
 | Phase 2: Polish | 143h | ~7 weeks | F6–F9 |
 | Phase 3: Growth | 165h | ~9.5 weeks | F10–F13 |
-| **Total** | **652h** | **~28.5 weeks** | **13 features** |
+| **Total** | **~891h** | **~32.5 weeks** | **13 features** |
 
-*Estimates assume 1 iOS + 1 Android developer working in parallel, with shared backend work.*
+*Estimates assume 1 iOS + 1 Android developer working in parallel, with shared KMP logic layer and dedicated backend work.*

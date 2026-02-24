@@ -1,10 +1,10 @@
 # PRODUCT REQUIREMENTS DOCUMENT
 ## Staq — Smart Social Content Organizer
 
-**Version:** 1.0  
-**Date:** February 23, 2026  
-**Author:** Vishal  
-**Status:** Draft  
+**Version:** 1.1
+**Date:** February 24, 2026
+**Author:** Vishal
+**Status:** Draft
 **Confidentiality:** Internal
 
 ---
@@ -23,15 +23,19 @@ The core innovation is a **hybrid on-device/server architecture** that processes
 
 Social media users save an average of 50–200 posts per month across platforms. Instagram's built-in "Saved" feature and TikTok's "Favorites" offer no organization, no search, and no way to extract the actual content (recipe ingredients, travel locations, product names) from the video.
 
-### 2.2 User Pain Points
+### 2.2 Content Decay & the "Save and Forget" Cycle
 
-- **Saves become a graveyard** — users save content with intent to revisit but can never find it again among hundreds of bookmarks
+Saved content suffers from rapid decay in usefulness. Studies of digital bookmarking behavior show that approximately **60–70% of bookmarked items are never revisited** after being saved. The intent-to-action gap widens over time: a Reel saved today with a clear purpose ("make this for dinner") becomes an unrecognizable thumbnail two weeks later. Within 30 days, the average user cannot recall the context or content of more than half their saves. This is the "content graveyard" effect — users accumulate hundreds of saves that silently rot in a chronological list, delivering zero value.
+
+### 2.3 User Pain Points
+
+- **Saves become a graveyard** — users save content with intent to revisit but can never find it again among hundreds of bookmarks. Research on personal information management suggests a **re-find failure rate of 40–60%** for unstructured digital collections — users who attempt to locate a specific previously saved item fail to find it roughly half the time.
 - **Content is locked in video format** — a 60-second recipe Reel contains 12 ingredients and 8 steps, but users must re-watch the entire video to extract them
 - **No cross-platform organization** — saves are siloed within each platform (Instagram, TikTok, YouTube, Pinterest) with no unified view
 - **Context is lost** — users forget why they saved something weeks later; the original intent ("make this for dinner", "visit this place") disappears
 - **Platform algorithms bury saves** — Instagram's saved collections have no search, no tags, and no sorting beyond chronological
 
-### 2.3 Market Validation
+### 2.4 Market Validation
 
 - Over 200 billion Reels are played daily across Facebook and Instagram (Meta, 2025)
 - Instagram's "Save" button is one of the most-used engagement actions, surpassing shares on many content types
@@ -81,7 +85,31 @@ Social media users save an average of 50–200 posts per month across platforms.
 - **Need:** Product name, price, and purchase link extracted automatically
 - **Willingness to pay:** Low-medium — would use free tier, upgrade if heavily invested
 
-### 4.2 Target Markets
+#### Persona 4: The Side Hustler ("Aisha")
+- Age 22–35, saves business tips, marketing strategies, and entrepreneurship advice Reels
+- **Frustration:** Saves dozens of "how to grow on Instagram" and "pricing your freelance work" Reels weekly, but they all blur together. Can never find the specific growth hack or pricing framework when she actually needs it for a client pitch or content strategy session.
+- **Need:** A structured library where business/marketing saves are auto-tagged by topic (social media growth, pricing, sales funnels, branding) with key takeaways extracted — not just a thumbnail wall.
+- **Willingness to pay:** Medium-high — views it as a business investment. If Staq replaces her habit of screenshotting advice and losing it in Camera Roll, she will pay.
+
+### 4.2 Gen Z Behavior Patterns
+
+Gen Z (ages 14–27) are the heaviest consumers and savers of short-form video content. Key behavior signals relevant to Staq:
+
+- **Short-form video is the default search engine.** A significant share of younger users turn to TikTok and Instagram before Google for discovery — restaurants, recipes, product reviews, travel tips.
+- **"Save for later" is the new bookmark.** Gen Z uses the save/favorite button as a lightweight intent signal ("I want this but not right now"), creating massive personal content backlogs.
+- **Low tolerance for friction.** If the save-to-retrieve loop takes more than a few taps, they abandon the tool. Staq's share extension must feel instant.
+- **Platform-fluid identity.** The same user saves Reels on Instagram, TikToks on TikTok, and Shorts on YouTube. Cross-platform unification is not a nice-to-have — it is table stakes for this audience.
+
+### 4.3 India-Specific User Behavior
+
+India is Instagram's largest user base and Staq's primary launch market. Unique behavior patterns to design around:
+
+- **WhatsApp sharing culture:** Indian users frequently forward Reels and TikToks via WhatsApp rather than using in-app saves. Staq must handle URLs shared from WhatsApp (pasted links, forwarded messages) as a first-class input path — not just direct shares from Instagram/TikTok.
+- **Regional language content:** A large and growing share of Indian short-form video content is in Hindi, Tamil, Telugu, Marathi, Bengali, and other regional languages. On-device classification must handle multilingual captions and hashtags. OCR and text extraction should support Devanagari and other Indic scripts. Transcript extraction for regional-language audio is a Phase 2 priority.
+- **Price sensitivity and data consciousness:** Indian users are highly price-sensitive (see Section 9 for India pricing) and often on limited mobile data plans. Lightweight on-device processing (no video download required for Tier 1/2) is a significant advantage. Minimize background data usage.
+- **Feature phone / mid-range prevalence:** A large segment of Indian users are on mid-range Android devices (Redmi, Realme, Samsung A-series) that will fall into Tier 2 processing. The rule-based classifier must deliver a good experience on these devices.
+
+### 4.4 Target Markets
 
 - **Primary:** India (Instagram's largest user base, high Reels engagement, price-sensitive — optimize for lightweight/free path)
 - **Secondary:** United States (higher willingness to pay, strong YouTube Shorts usage)
@@ -90,6 +118,8 @@ Social media users save an average of 50–200 posts per month across platforms.
 ---
 
 ## 5. Competitive Landscape
+
+### 5.1 Direct Competitors
 
 | Feature | Trott | Faves | Dewey | PickTok | **Staq (Ours)** |
 |---------|-------|-------|-------|---------|-----------------|
@@ -103,9 +133,20 @@ Social media users save an average of 50–200 posts per month across platforms.
 | Cost Per Save | $0.02–0.07 | ~$0.01 | ~$0.005 | ~$0.005 | **$0.00–0.003** |
 | Pricing | Credit packs | $4.99/mo | $3.99/mo | Free + ads | Free + $4.99/mo |
 
-### 5.1 Key Competitive Advantage
+### 5.2 Indirect Competitors
+
+| Product | Overlap with Staq | Where It Falls Short |
+|---------|-------------------|---------------------|
+| **Pocket** | General-purpose "save for later" tool, strong brand in read-it-later space | Designed for articles and web pages, not video content. No video transcription, no structured data extraction from Reels. No AI categorization. |
+| **Raindrop.io** | Bookmark manager with collections, tags, and visual previews | Power-user oriented, not optimized for short-form video. No AI extraction, no recipe/travel/product cards. Requires manual tagging — opposite of Staq's zero-effort approach. |
+| **Pinterest (native save)** | Users already use Pinterest boards to organize visual inspiration | Pinterest is a discovery platform, not a save-and-retrieve tool for external content. Cannot save Instagram Reels or TikToks into Pinterest. No cross-platform unification. |
+| **Apple/Google Notes** | Users screenshot Reels and paste into Notes as a manual workaround | Completely manual, unstructured, and unsearchable. This is the behavior Staq replaces. |
+
+### 5.3 Key Competitive Advantage
 
 **On-device AI processing is Staq's unfair advantage.** Competitors run all AI processing server-side, costing $0.02–0.07 per save. This forces them into credit-based pricing or restrictive free tiers. Staq's on-device architecture processes 60–70% of saves at $0.00 server cost, enabling a genuinely generous free tier that drives viral growth while maintaining 97%+ gross margins on paid subscriptions.
+
+**The on-device cost advantage compounds at scale.** At 100,000 free users, a server-dependent competitor would spend $20,000–70,000/month on AI processing alone. Staq spends ~$2,000. This 10–35x cost advantage means Staq can sustain a generous free tier indefinitely while competitors are forced to gate features or raise prices — a structural moat that deepens as the user base grows. It also means Staq reaches profitability earlier and with fewer paid conversions, reducing pressure on aggressive monetization that damages user experience.
 
 ---
 
@@ -197,13 +238,67 @@ caption + OCR thumbnail        regex extraction
 | Android (Gemini Nano) | ML Kit GenAI Prompt API | ML Kit Speech | 1.8–3.25B param | Pixel 8+, Galaxy S24+, OnePlus 13, Xiaomi 15, Honor Magic 7 |
 | Older iOS / Android | None (rule-based) | N/A | N/A | All other devices |
 
-### 6.5 Technology Stack
+### 6.5 Kotlin Multiplatform (KMP) Shared Logic Layer
+
+To reduce duplication across two native codebases, Staq uses Kotlin Multiplatform (KMP) for shared business logic. KMP code compiles to native binaries on both platforms — JVM/ART on Android and native framework via Kotlin/Native on iOS — with no runtime bridging overhead.
+
+#### What Goes Into KMP (Shared)
+
+| Layer | Specifics | KMP Libraries |
+|-------|-----------|---------------|
+| **Networking** | API client for Supabase REST, scraper trigger endpoints, URL validation | **Ktor** (HTTP client with platform engines: OkHttp on Android, Darwin on iOS) |
+| **Data Models** | All shared data classes: SavedItem, StructuredCard, UserProfile, Collection, SyncPayload | **kotlinx.serialization** (JSON encoding/decoding, shared across platforms) |
+| **Database / Local Storage** | Local save database schema, queries, migrations | **SQLDelight** (generates type-safe Kotlin APIs from SQL, uses SQLite on both platforms) |
+| **Classification Rules** | Rule-based keyword/hashtag classifier (Tier 2), category definitions, regex extraction patterns | Pure Kotlin (no platform dependencies) |
+| **URL Parsing** | Platform URL detection (Instagram, TikTok, YouTube), deep link extraction, share payload normalization | Pure Kotlin with regex |
+| **Caching Logic** | URL deduplication, thumbnail cache policy, TTL management for extracted data | Pure Kotlin + SQLDelight |
+| **Sync Engine** | Conflict resolution, offline queue management, retry logic for cloud sync | Ktor + SQLDelight |
+
+#### What Stays Native (Platform-Specific)
+
+| Layer | iOS | Android |
+|-------|-----|---------|
+| **UI** | SwiftUI | Jetpack Compose |
+| **On-Device AI (Tier 1)** | Foundation Models framework | ML Kit GenAI Prompt API / Gemini Nano |
+| **Speech-to-Text** | SpeechAnalyzer | ML Kit Speech |
+| **OCR** | Vision framework | ML Kit Text Recognition |
+| **Share Extension** | NSExtensionContext (Swift) | IntentFilter + ShareCompat (Kotlin) |
+| **Platform Integrations** | WidgetKit, Apple Reminders, Shortcuts | Glance Widgets, Google Keep, Android Intents |
+| **Notifications** | UNUserNotificationCenter | Firebase Cloud Messaging / NotificationCompat |
+
+#### KMP Integration Architecture
+
+```
+┌──────────────────────────────────┐
+│         iOS App (SwiftUI)        │
+│  Foundation Models, Vision, etc. │
+└──────────────┬───────────────────┘
+               │ imports KMP framework
+               ▼
+┌──────────────────────────────────┐
+│     KMP Shared Module (.klib)    │
+│  Ktor, SQLDelight, kotlinx.ser  │
+│  Classification, URL Parsing,   │
+│  Caching, Sync, Data Models     │
+└──────────────┬───────────────────┘
+               │ compiles to JVM
+               ▼
+┌──────────────────────────────────┐
+│    Android App (Jetpack Compose) │
+│  Gemini Nano, ML Kit, etc.      │
+└──────────────────────────────────┘
+```
+
+This approach yields an estimated 30–40% shared code while preserving full native performance for UI and AI — the two layers where native implementation matters most.
+
+### 6.6 Technology Stack
 
 - **Frontend:** Native iOS (Swift / SwiftUI) + Native Android (Kotlin / Jetpack Compose)
+- **Shared Logic (KMP):** Ktor (networking), kotlinx.serialization (data models), SQLDelight (local database), pure Kotlin (classification rules, URL parsing, caching)
 - **On-Device AI (iOS):** Foundation Models framework, SpeechAnalyzer, Vision framework — direct native access, no bridging required
 - **On-Device AI (Android):** ML Kit GenAI Prompt API, Gemini Nano via AICore, ML Kit Text Recognition — direct native access
-- **Backend:** Node.js or Python (lightweight API server)
-- **Database:** Supabase (PostgreSQL + Auth + Storage + Realtime)
+- **Backend:** Supabase (PostgreSQL + Auth + Storage + Realtime) with **Supabase Edge Functions** (Deno-based serverless) for lightweight server-side processing
+- **Serverless Processing (Supabase Edge Functions):** URL metadata enrichment, scraper API orchestration, webhook handling for async deep extract jobs, push notification dispatch, usage metering and quota enforcement. Edge Functions run on Deno Deploy globally, cold start < 200ms, billed per invocation — no always-on server cost.
 - **Scraper APIs:** Apify ($0.0026/result) or ScrapeCreators ($0.002/credit) as primary; Bright Data as fallback
 - **Speech-to-Text (server fallback):** OpenAI GPT-4o-mini-transcribe ($0.003/min) or Whisper API ($0.006/min)
 - **LLM (server fallback):** Claude Haiku 4.5 ($0.002/call) or GPT-4o-mini ($0.001/call)
@@ -216,9 +311,19 @@ The decision to build native apps on both platforms (rather than Flutter or Reac
 - **Direct AI API access:** Foundation Models (iOS) and Gemini Nano / ML Kit GenAI (Android) are first-party native frameworks. Native apps access these with zero bridging overhead, faster adoption of new API features, and no dependency on third-party plugin maintainers.
 - **Share Extension performance:** Share extensions are platform-native by definition. Native implementation ensures the fastest possible capture experience (< 500ms acknowledgment).
 - **OS-level integration depth:** Calendar/reminder integration, background processing, notification handling, and on-device speech recognition all benefit from native implementation.
-- **Trade-off acknowledged:** Two codebases increase development effort. Mitigated by using Kotlin Multiplatform (KMP) for shared business logic (networking, data models, classification rules, API clients) while keeping UI and AI layers fully native.
+- **Trade-off acknowledged:** Two codebases increase development effort. Mitigated by using Kotlin Multiplatform (KMP) for shared business logic (networking, data models, classification rules, API clients) while keeping UI and AI layers fully native. See Section 6.5 for full KMP breakdown.
 
-### 6.6 Legal & Compliance
+### 6.7 App Clip (iOS) / Instant App (Android) for Onboarding
+
+To reduce the friction between "hearing about Staq" and "experiencing the first save," evaluate building an **App Clip (iOS)** and **Instant App (Android)** that provides a lightweight, no-install preview of the core save flow.
+
+- **Use case:** User sees a friend share a Staq collection link or taps a Staq QR code / NFC tag. Instead of going to the App Store, the App Clip launches instantly (< 10 MB on iOS) and demonstrates the save-to-organize pipeline with a sample Reel.
+- **iOS App Clip:** Invoked via App Clip Code, universal link, QR code, or NFC. Limited to 10 MB download. Can use Sign in with Apple for frictionless auth. Provides a "Get the Full App" prompt after the first successful demo.
+- **Android Instant App:** Delivered via Google Play Instant. Accessed through a URL (no install). Same lightweight demo experience. Prompts full install after engagement.
+- **Goal:** Convert curious users who encounter Staq in the wild (shared collection links, social media mentions) into active users without the App Store install wall. Measure: App Clip / Instant App → full install conversion rate.
+- **Phase:** Evaluate feasibility in Phase 2. Build if onboarding funnel data shows significant drop-off at the install step.
+
+### 6.8 Legal & Compliance
 
 Instagram scraping operates in a legally defensible gray zone following the **Meta v. Bright Data (Jan 2024)** federal ruling, which established that scraping publicly available data while not logged in does not violate Meta's Terms of Service. Meta subsequently dropped the lawsuit entirely.
 
@@ -298,6 +403,14 @@ For saves where the lightweight path didn't capture enough detail:
 - Deduplicate common ingredients, aggregate quantities
 - Export or share via messaging apps
 
+#### F14: Widget Support (P1)
+Home screen widgets for quick access and ambient awareness of saved content:
+
+- **iOS (WidgetKit):** Small widget showing the 2–3 most recent saves with thumbnails and category badges. Medium widget with a "Quick Save" shortcut that opens the share extension flow. Lock Screen widget showing save count or latest save.
+- **Android (Glance Widgets):** Equivalent widget set using Jetpack Glance (Compose-based widgets). Recent saves grid, quick-save action, and category summary.
+- **Goal:** Keep Staq visible on the home screen to reinforce the save habit and increase weekly active saver rate. Widgets serve as a passive reminder that the user has a growing, organized library.
+- **Phase:** Design in Phase 2, ship alongside Collections (F6).
+
 ### 7.3 Growth Features (Phase 3 — Months 7–12)
 
 #### F10: Collaborative Collections (P2)
@@ -321,17 +434,41 @@ For saves where the lightweight path didn't capture enough detail:
 
 ## 8. User Flows
 
-### 8.1 Core Save Flow
+### 8.1 First-Time User Experience (FTUX)
+
+The flow from install to first save is critical. Every extra tap before the user experiences the core value ("I saved a Reel and it was instantly organized") increases drop-off.
+
+#### Install → First Save Flow
+
+1. **App opens for the first time.** Splash screen with value prop: "Save Reels. Find them instantly."
+2. **Onboarding carousel (3 screens, skippable):**
+   - Screen 1: "Share a Reel from Instagram, TikTok, or YouTube" (shows share sheet animation)
+   - Screen 2: "Staq organizes it automatically — recipes, travel, products, and more" (shows structured card)
+   - Screen 3: "Search and find anything you've saved in seconds" (shows search result)
+3. **Account creation (lightweight).** "Sign in with Apple" / "Sign in with Google" — single tap. Email/password as fallback. No mandatory profile setup. No username required.
+4. **Share extension activation prompt.** "To save Reels, Staq needs to appear in your Share Sheet." Show a brief visual tutorial: how to find and enable the Staq extension in the iOS/Android share sheet settings. Provide a "Try it now" deep link that opens Instagram (or YouTube) so the user can immediately test sharing a Reel.
+5. **Notification permission (deferred).** Do NOT request notification permission during onboarding. Wait until the user has completed their first save and seen their first organized card. Then show an in-context prompt: "Want to know when your deep extract is ready? Enable notifications." This deferred timing dramatically increases opt-in rates compared to a cold ask at launch.
+6. **First save experience.** User shares their first Reel from Instagram/TikTok/YouTube. Staq processes it on-device and shows the organized card. Celebration moment: "Your first save is organized! Here's what Staq found." Highlight the structured data (recipe ingredients, travel location, etc.) to demonstrate immediate value.
+7. **Empty state (if user hasn't saved yet).** If the user opens the library before saving anything, show a friendly empty state: "Your library is waiting. Share your first Reel to get started." Include a direct "Open Instagram" button.
+
+#### Key FTUX Metrics
+
+- Install → onboarding complete: target > 80%
+- Onboarding complete → first save: target > 50% within first 24 hours
+- First save → second save: target > 60% within first 7 days
+- Notification opt-in rate (deferred prompt): target > 55%
+
+### 8.2 Core Save Flow
 
 1. User is browsing Instagram, sees an interesting Reel
 2. User taps **Share → selects Staq** from share sheet
 3. Staq share extension captures URL + metadata
-4. Immediate toast: "✅ Saved to Staq! Organizing..."
+4. Immediate toast: "Saved to Staq! Organizing..."
 5. On-device processing: classify content, extract data (< 2 sec)
 6. User opens Staq later → sees the save already categorized with a structured card
 7. If details are incomplete, "Get Full Details" button is visible
 
-### 8.2 Retrieval Flow
+### 8.3 Retrieval Flow
 
 1. User opens Staq → sees library grid organized by category
 2. Taps "Recipes" category filter
@@ -339,7 +476,7 @@ For saves where the lightweight path didn't capture enough detail:
 4. Sees matching recipe card with ingredients and steps
 5. Taps "View Original" to re-watch the Reel, or "Add to Shopping List"
 
-### 8.3 Deep Extract Flow
+### 8.4 Deep Extract Flow
 
 1. User views a saved Reel card with minimal information (vague caption)
 2. Taps "Get Full Details"
@@ -348,13 +485,13 @@ For saves where the lightweight path didn't capture enough detail:
 5. Card updates with full structured data (ingredients, location details, product info)
 6. If quota exceeded: "Upgrade to Staq Pro for unlimited detailed extractions"
 
-### 8.4 Richness Score Decision Logic
+### 8.5 Richness Score Decision Logic
 
 | Score | What Was Extracted | Action |
 |-------|-------------------|--------|
 | **High** | Full recipe with ingredients, or clear location + details | Save as complete |
 | **Medium** | Got content type and topic but missing specifics | Save with "Get Full Details" button |
-| **Low** | Just URL and vague caption like "omg this 😂" | Paid: auto-escalate. Free: save as bookmark only |
+| **Low** | Just URL and vague caption like "omg this" | Paid: auto-escalate. Free: save as bookmark only |
 
 ---
 
@@ -362,8 +499,8 @@ For saves where the lightweight path didn't capture enough detail:
 
 ### 9.1 Pricing Tiers
 
-| Feature | Free | Staq Pro ($4.99/month) |
-|---------|------|------------------------|
+| Feature | Free | Staq Pro ($4.99/month or $39.99/year) |
+|---------|------|---------------------------------------|
 | Saves per month | Unlimited | Unlimited |
 | Auto-categorization | Yes (on-device) | Yes (on-device) |
 | Search & filter | Yes | Yes + natural language search |
@@ -372,6 +509,27 @@ For saves where the lightweight path didn't capture enough detail:
 | Grocery list export | No | Yes |
 | Shared collections | No | Yes |
 | Export to Notion/Sheets | No | Yes |
+
+**Annual pricing:** $39.99/year represents a 33% discount versus monthly billing ($59.88/year). Annual plans improve retention (users commit for a year) and improve LTV predictability. Promote annual as the default selection on the paywall screen.
+
+#### India-Specific Pricing
+
+| Tier | Monthly | Annual |
+|------|---------|--------|
+| **Staq Pro (India)** | $1.99/month (approx. ₹149/month) | $14.99/year (approx. ₹1,199/year) |
+
+India pricing is approximately 60% lower than US pricing, reflecting purchasing power parity and the competitive landscape in the Indian market. Implemented via App Store / Google Play regional pricing tiers. Users are automatically shown the correct price based on their App Store / Play Store region.
+
+#### Staq Pro Trial Flow
+
+All new users are eligible for a **7-day free trial** of Staq Pro:
+
+1. User hits a Pro-gated feature for the first time (e.g., 11th deep extract, 4th collection, grocery list export).
+2. Soft paywall: "Try Staq Pro free for 7 days. Cancel anytime."
+3. User confirms via App Store / Play Store subscription flow (requires payment method on file, standard iOS/Android trial mechanics).
+4. During trial: full Pro access. Badge in app: "Pro Trial — 5 days remaining."
+5. Day 5: In-app reminder: "Your trial ends in 2 days. Keep Pro?" with option to manage subscription.
+6. Day 7: Trial converts to paid subscription unless cancelled. If cancelled, user reverts to free tier gracefully (collections beyond 3 become read-only, deep extract quota resets).
 
 ### 9.2 Unit Economics
 
@@ -441,9 +599,9 @@ The on-device architecture inverts the typical SaaS cost structure. Most AI-powe
 
 | Phase | Timeline | Deliverables | Success Criteria |
 |-------|----------|-------------|------------------|
-| **Phase 0: Foundation** | Weeks 1–4 | iOS (Swift/SwiftUI) and Android (Kotlin/Compose) project setup, Supabase backend, share extension prototypes on both platforms, on-device AI integration | Share extension captures URLs from 3 platforms on both OS |
+| **Phase 0: Foundation** | Weeks 1–4 | iOS (Swift/SwiftUI) and Android (Kotlin/Compose) project setup, KMP shared module scaffold, Supabase backend + Edge Functions, share extension prototypes on both platforms, on-device AI integration | Share extension captures URLs from 3 platforms on both OS |
 | **Phase 1: MVP** | Weeks 5–12 | Core save flow, on-device classification (all 3 tiers), content library UI, structured data cards, deep extract pipeline | 100 beta testers, >80% categorization accuracy, <3 sec processing |
-| **Phase 2: Polish** | Weeks 13–18 | Collections, natural language search, reminder integration, grocery list, paywall implementation | App Store launch, 1,000 users, >5% conversion |
+| **Phase 2: Polish** | Weeks 13–18 | Collections, natural language search, reminder integration, grocery list, widgets, paywall implementation (incl. trial flow) | App Store launch, 1,000 users, >5% conversion |
 | **Phase 3: Growth** | Weeks 19–30 | Collaborative collections, web clipper, trending/discover feed, export integrations, referral program | 10,000 users, $5K MRR, D30 retention >25% |
 | **Phase 4: Scale** | Weeks 31–52 | International expansion, Android optimization, API platform, enterprise/team features, Pinterest support | 100,000 users, $25K MRR |
 
@@ -461,7 +619,7 @@ The on-device architecture inverts the typical SaaS cost structure. Most AI-powe
 - **Engagement:** saves per user per week, library opens per user per week, search queries per user per week
 - **Quality:** auto-categorization accuracy, deep extract success rate, user override rate (manual re-categorization)
 - **Retention:** D1, D7, D30 retention, weekly active savers / monthly active users
-- **Monetization:** free-to-paid conversion rate, trial start rate, churn rate, LTV, ARPU
+- **Monetization:** free-to-paid conversion rate, trial start rate, trial-to-paid conversion rate, churn rate, LTV, ARPU
 - **Infrastructure:** cost per save, cost per deep extract, scraper success rate, API latency
 
 ---
@@ -472,9 +630,11 @@ The on-device architecture inverts the typical SaaS cost structure. Most AI-powe
 |----------|------|--------|------------|
 | **High** | Instagram changes anti-scraping measures, breaking video extraction | Deep extract feature stops working for Instagram content | Abstracted scraper layer allows provider swap within hours. Multiple providers contracted (Apify, ScrapeCreators, Bright Data). Caption-first approach still works. |
 | **High** | Apple/Google changes on-device AI APIs or deprecates frameworks | Tier 1 processing breaks | Server fallback always available. WhisperKit (open-source) as alternative to SpeechAnalyzer. Rule-based classifier works on all devices. |
+| **High** | On-device AI model quality divergence between iOS and Android | Inconsistent user experience across platforms. Apple's Foundation Models (shipping with iOS 26) are expected to be production-grade, while Google's Gemini Nano Prompt API is still in alpha/early access as of early 2026. Classification accuracy and extraction quality may differ significantly — Android users could see noticeably worse results, leading to lower retention and higher negative review rates on the Play Store. | Build a comprehensive cross-platform extraction quality benchmark (500+ test Reels across all categories). Measure accuracy per-platform and per-device. Set a minimum quality bar — if Gemini Nano falls below threshold on a given content type, automatically route to Tier 2 (rule-based) or Tier 3 (server) instead of delivering poor AI results. Monitor Gemini Nano API maturity closely; maintain a "feature flag" to disable on-device AI per-platform if needed. Contribute to Google's feedback channels to improve Nano quality. |
 | **Medium** | App Store rejection due to scraping-adjacent functionality | Cannot distribute via iOS App Store | App never downloads or stores videos. User-initiated URL sharing is standard behavior. Multiple similar apps (Trott, PickTok) approved and live. |
 | **Medium** | Low free-to-paid conversion rate | Revenue below projections | On-device processing means free tier costs nearly nothing to support. Experiment with paywall placement, trial periods, and annual pricing. Ad-supported tier as fallback. |
 | **Medium** | On-device AI quality insufficient for accurate extraction | Users get incorrect categorization, lose trust | Confidence scoring with graceful degradation. "Not sure about this one" messaging. Easy manual override. Server fallback for low-confidence saves. |
+| **Medium** | User data migration when switching phones (especially cross-platform: iOS to Android or vice versa) | Users who switch devices lose their entire save library, collections, and organized data — destroying the accumulated value that drives retention and willingness to pay. | Cloud sync via Supabase ensures all saves, collections, and extracted data are backed up server-side. Cross-platform migration: user signs into Staq on new device, full library syncs down. Design data export format (JSON or similar) as a portable backup. Test the iOS-to-Android and Android-to-iOS migration flows explicitly during QA. Edge case: users with large libraries (1000+ saves) need incremental sync, not a full dump on first login. |
 | **Low** | Major competitor (Instagram itself) adds native organization features | Core value prop undermined | Cross-platform unification remains valuable. Deeper extraction (recipes, products) unlikely from Instagram. First-mover data moat from user-generated collections. |
 
 ---
@@ -511,14 +671,57 @@ The on-device architecture inverts the typical SaaS cost structure. Most AI-powe
 
 2. **Android Gemini Nano Prompt API:** Currently in Alpha. Need to validate extraction quality for content classification use case before committing to on-device path for Android.
 
-3. **Shared Backend Logic:** With native apps on both platforms, evaluate strategies for maximizing shared business logic — consider Kotlin Multiplatform (KMP) for shared networking, data models, and classification rules across iOS and Android, while keeping UI and on-device AI layers fully native.
+3. **Shared Backend Logic:** With native apps on both platforms, evaluate strategies for maximizing shared business logic — consider Kotlin Multiplatform (KMP) for shared networking, data models, and classification rules across iOS and Android, while keeping UI and on-device AI layers fully native. (See Section 6.5 for current KMP plan — validate assumptions with a prototype sprint.)
 
 4. **Share Sheet Metadata Variability:** The metadata available from the iOS/Android share sheet when sharing from Instagram varies by OS version and app version. Need extensive testing across device/OS combinations.
 
-5. **India Pricing:** $4.99/month may be too high for the Indian market. Consider a regional pricing tier ($1.99–$2.99/month) or annual discount ($29.99/year).
+5. **India Pricing:** $4.99/month may be too high for the Indian market. Consider a regional pricing tier ($1.99–$2.99/month) or annual discount ($29.99/year). (See Section 9.1 for proposed India pricing at $1.99/month / ₹149/month.)
 
 6. **Pinterest Support:** Pinterest has a different content model (images + links vs. videos). Evaluate whether the same architecture applies or if a separate extraction pipeline is needed.
 
+7. **Analytics SDK Choice:** Evaluate PostHog (open-source, self-hostable, privacy-friendly), Mixpanel (strong funnel and retention analysis, generous free tier), or a custom lightweight analytics layer via Supabase. Key considerations: cost at scale, privacy compliance (GDPR/DPDPA), event volume limits on free tiers, and whether self-hosting (PostHog) aligns with our privacy-first positioning.
+
+8. **Crash Reporting & Stability Monitoring:** Evaluate Sentry (cross-platform, detailed crash reports, performance monitoring) vs. Firebase Crashlytics (free, deep Android integration, but adds Google dependency on iOS). Decision should factor in KMP compatibility — Sentry has better Kotlin Multiplatform support. Consider whether bundling Crashlytics (Android) + Sentry (iOS) is worth the fragmentation.
+
+9. **CI/CD Pipeline:** Plan for Fastlane (build automation, code signing, App Store / Play Store deployment) + GitHub Actions (CI triggers, test runners, linting). Evaluate: shared KMP module testing in CI, separate iOS/Android build lanes, TestFlight / Firebase App Distribution for beta builds, and automated screenshot generation for App Store listings.
+
 ---
 
-*End of Document — Staq PRD v1.0*
+## 16. Privacy & Data Philosophy
+
+### 16.1 Privacy as a Core Product Principle
+
+Staq is built on the principle that **your saved content is your personal data, and it should stay on your device by default.** This is not just an engineering decision — it is a product and marketing differentiator.
+
+Most AI-powered apps send every piece of user content to a server for processing. Staq inverts this model: 60–70% of all content processing happens entirely on the user's device. The AI reads the user's saves, classifies them, and extracts structured data — all without any data leaving the phone.
+
+### 16.2 What This Means in Practice
+
+- **On-device by default.** The classification engine, keyword parser, OCR, and (on flagship devices) the LLM all run locally. No server round-trip. No data in transit.
+- **Server processing is opt-in and transient.** When a user taps "Get Full Details," the server fetches the video URL (not the user's data), processes it, and returns extracted text. No video files are stored server-side. Processing pipelines are transient — data is discarded after extraction.
+- **No tracking. No ad networks. No data brokering.** Staq does not integrate any third-party advertising SDK. Analytics are limited to anonymized product usage metrics (feature adoption, retention) — never content-level data.
+- **User data is not the product.** Staq makes money from subscriptions, not from selling or monetizing user data. This is a simple, sustainable business model that keeps incentives aligned with the user.
+
+### 16.3 Privacy-First as a Marketing Differentiator
+
+In a market where users are increasingly aware of data harvesting, Staq's on-device architecture enables a genuine, defensible privacy claim:
+
+> *"Your saves stay on your device. No servers reading your content. No ads. No data selling. Just your stuff, organized."*
+
+This messaging should be prominent in:
+- App Store / Play Store listing (first or second bullet point)
+- Onboarding flow (Screen 2 or 3)
+- Website landing page (above the fold)
+- Social media and content marketing
+
+The privacy positioning is especially powerful in the Indian market, where data privacy concerns are rising alongside the Digital Personal Data Protection Act (DPDPA) implementation, and in the European market under GDPR.
+
+### 16.4 Compliance Posture
+
+- **GDPR (EU):** Minimal server-side data processing reduces GDPR surface area. Data Processing Agreements (DPAs) in place for Supabase and scraper APIs.
+- **CCPA (California):** No sale of personal information. User can request data deletion (account deletion removes all server-side data; local data is under user control).
+- **DPDPA (India):** On-device processing aligns with the DPDPA's data minimization principles. Server-side processing uses Indian data center regions where available (Supabase supports Mumbai region).
+
+---
+
+*End of Document — Staq PRD v1.1*
